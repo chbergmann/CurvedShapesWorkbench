@@ -3,12 +3,12 @@ FreeCAD Workbench for creating 3D shapes from 2D curves
   
 ## Installation
 
-- go in your personal FreeCAD folder ( usually ~/.FreeCAD on Linux )
-- cd Mod ( or create this folder if it doesn't exist )
-- git clone https://github.com/chbergmann/CurvedShapesWorkbench.git
-- start FreeCAD
+- `cd` in to your your personal FreeCAD folder (usually `~/.FreeCAD` on Linux)
+- `cd Mod/` (or create this folder if it doesn't exist)
+- `git clone https://github.com/chbergmann/CurvedShapesWorkbench.git`
+- Start FreeCAD
 
-"Curved Shapes" workbench should now show up in the workbench dropdown list.
+**Result**: "Curved Shapes" workbench should now show up in the workbench dropdown list.
   
 ## Tools
 ### ![](./Resources/icons/curvedArray.svg) Curved Array
@@ -18,7 +18,7 @@ The hullcurves should lie on or parralel to the XY- XZ- or YZ- plane.
 
 ![WingExample](Examples/WingExample.png)
 
-#####Parameters
+#### Parameters
 - Base: The object to make an array from
 - Hullcurves: List of one or more bounding curves        
 - Axis: Direction axis of the Base shape
@@ -39,4 +39,7 @@ This is an example design for testing and presentation of this workbench.
 It is a python script that creates the shape of the [Horten H IX](https://de.wikipedia.org/wiki/Horten_H_IX), a stealth fighter that has been build in Germany in 1944.
 
 ## Discussion
-[https://forum.freecadweb.org/viewtopic.php?f=8&t=36989](https://forum.freecadweb.org/viewtopic.php?f=8&t=36989)
+Please offer feedback or connect with the developer in the [dedicated FreeCAD forum thread](https://forum.freecadweb.org/viewtopic.php?f=8&t=36989).
+
+## License
+GNU Lesser General Public License v3.0
