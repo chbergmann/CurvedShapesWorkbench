@@ -257,21 +257,36 @@ def drawCockpit(doc, scaleFactor, rib_material_height):
     CockpitRight = CurvedShapes.makeCurvedArray(Base=CockpitFront, 
                                              Hullcurves=[CockpitSide, CockpitTop], 
                                              Axis=Vector(0,1,0), 
-                                             Items=8, 
+                                             Items=16, 
+                                             OffsetStart=0, 
+                                             OffsetEnd=0,
+                                             Surface=False,
+                                             extract=False) 
+
+    CockpitTopLeft = doc.addObject('Part::Mirroring', 'CockpitTopLeft')
+    CockpitTopLeft.Normal = Vector(1.0, 0.0, 0.0)
+    CockpitTopLeft.Source = CockpitTop
+    CockpitTopLeft.ViewObject.hide()
+    
+    CockpitFrontLeft = doc.addObject('Part::Mirroring', 'CockpitFrontLeft')
+    CockpitFrontLeft.Normal = Vector(1.0, 0.0, 0.0)
+    CockpitFrontLeft.Source = CockpitFront
+    CockpitFrontLeft.ViewObject.hide()
+    doc.recompute()
+    
+    CockpitLeft = CurvedShapes.makeCurvedArray(Base=CockpitFrontLeft, 
+                                             Hullcurves=[CockpitSide, CockpitTopLeft], 
+                                             Axis=Vector(0,1,0), 
+                                             Items=16, 
                                              OffsetStart=0, 
                                              OffsetEnd=0,
                                              Surface=True,
                                              extract=False) 
-
-    CockpitRight.ViewObject.Transparency = 50
-    
-    CockpitLeft = doc.addObject('Part::Mirroring', 'CockpitLeft')
-    CockpitLeft.Normal = Vector(1.0, 0.0, 0.0)
-    CockpitLeft.Source = CockpitRight
     CockpitLeft.ViewObject.Transparency = 50
     
     Cockpit = doc.addObject('Part::Compound', 'Cockpit')
-    Cockpit.Links = [CockpitLeft]
+    Cockpit.Links = [CockpitRight, CockpitLeft]
+    Cockpit.ViewObject.Transparency = 50
     
     return Cockpit
     

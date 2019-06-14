@@ -28,6 +28,10 @@ The hullcurves should lie on or parralel to the XY- XZ- or YZ- plane.
 - Twist: Applies a rotation around Axis to the array items. 
 - Surface: make a surface (Creates a Loft over the array items)
 - Solid: make a solid if Base is a closed shape
+
+##### Resolve a CurvedArray item to a compound of single objects
+Go to the Part workbench. In the Part menu, select Compound -> Explode compound  
+  
   
 ### ![](./Resources/icons/SketcherToConsole.svg) Sketch To Python
 Exports the geometry from a FreeCAD sketch to a python script.  
