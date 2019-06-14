@@ -18,7 +18,7 @@ The hullcurves should lie on or parralel to the XY- XZ- or YZ- plane.
 
 ![WingExample](Examples/WingExample.png)
 
-#####Parameters
+##### Parameters
 - Base: The object to make an array from
 - Hullcurves: List of one or more bounding curves        
 - Axis: Direction axis of the Base shape

@@ -60,6 +60,6 @@ def makeCurvedArray(Base = None,
     cs = CurvedArray.CurvedArrayWorker(obj, Base, Hullcurves, Axis, Items, OffsetStart, OffsetEnd, Twist, Surface, Solid, extract)
     CurvedArray.CurvedArrayViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
-    return cs.getObj()
+    return obj
 
         
