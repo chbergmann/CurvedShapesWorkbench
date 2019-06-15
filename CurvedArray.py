@@ -44,61 +44,7 @@ class CurvedArrayWorker:
         self.doScaleXYZsum = [False, False, False]
         obj.Proxy = self
     
-    
-    def boundbox_from_intersect(self, curves, pos, normal):        
-        if len(curves) == 0:
-            return None
-        
-        plane = Part.Plane(pos, normal)
-        xmin = float("inf")
-        xmax = float("-inf")
-        ymin = float("inf")
-        ymax = float("-inf")
-        zmin = float("inf")
-        zmax = float("-inf")
-        found = False
-        for n in range(0, len(curves)):
-            curve = curves[n]
-            ipoints = []
-            for edge in curve.Shape.Edges:
-                i = plane.intersect(edge.Curve)          
-                if i: 
-                    for p in i[0]:
-                        parm = edge.Curve.parameter(CurvedShapes.PointVec(p))
-                        if parm >= edge.FirstParameter and parm <= edge.LastParameter:    
-                            ipoints.append(p)
-                            found = True
-            
-            if found == False:
-                return None
-            
-            use_x = True
-            use_y = True
-            use_z = True
-            if len(ipoints) > 1:
-                use_x = self.doScaleXYZ[n][0]
-                use_y = self.doScaleXYZ[n][1]
-                use_z = self.doScaleXYZ[n][2] 
-            
-            for p in ipoints:
-                if use_x and p.X > xmax: xmax = p.X
-                if use_x and p.X < xmin: xmin = p.X
-                if use_y and p.Y > ymax: ymax = p.Y
-                if use_y and p.Y < ymin: ymin = p.Y
-                if use_z and p.Z > zmax: zmax = p.Z
-                if use_z and p.Z < zmin: zmin = p.Z
-          
-        if xmin == float("inf") or xmax == float("-inf"):
-            xmin = 0
-            xmax = 0
-        if ymin == float("inf") or ymax == float("-inf"):
-            ymin = 0
-            ymax = 0
-        if zmin == float("inf") or zmax == float("-inf"):
-            zmin = 0
-            zmax = 0
-       
-        return FreeCAD.BoundBox(xmin, ymin, zmin, xmax, ymax, zmax)
+ 
        
 
     def makeRibs(self, obj):
@@ -245,7 +191,7 @@ class CurvedArrayWorker:
     def makeRib(self, obj, posvec):
         basebbox = obj.Base.Shape.BoundBox    
         basepl = obj.Base.Placement 
-        bbox = self.boundbox_from_intersect(obj.Hullcurves, posvec, obj.Axis)
+        bbox = CurvedShapes.boundbox_from_intersect(obj.Hullcurves, posvec, obj.Axis, self.doScaleXYZ)
         if not bbox:
             return None
           

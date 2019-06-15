@@ -9,17 +9,20 @@ class CurvedShapesWB (Workbench):
     def __init__(self):
         import os
         import CurvedShapes
+        import CurvedSegment
         self.__class__.MenuText = "Curved Shapes"
         self.__class__.ToolTip = "Creates 3D designs from 2D curves"
         self.__class__.Icon = os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "curvedArray.svg")
 
     def Initialize(self):
         "This function is executed when FreeCAD starts"
-        import CurvedShapes # import here all the needed files that create your FreeCAD commands
+        # import here all the needed files that create your FreeCAD commands
+        import CurvedShapes 
+        import CurvedSegment
         import CurvedArray       
         import SketchToPython
         import Horten_HIX
-        self.list = ["CurvedArray", "SketchToPython", "Horten_HIX"] # A list of command names created in the line above
+        self.list = ["CurvedArray", "CurvedSegment", "SketchToPython", "Horten_HIX"] # A list of command names created in the line above
         self.appendToolbar("Curved Shapes",self.list) # creates a new toolbar with your commands
         self.appendMenu("Curved Shapes",self.list) # creates a new menu
 
