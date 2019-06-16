@@ -109,83 +109,13 @@ class CurvedArrayWorker:
             self.compound.Links = links
         
         if (obj.Surface or obj.Solid) and obj.Items > 1:
-            self.makeSurfaceSolid(obj, ribs)
+            obj.Shape = CurvedShapes.makeSurfaceSolid(ribs, obj.Solid)
         else:
             obj.Shape = Part.makeCompound(ribs)
             
         obj.Placement = pl
         
-            
-    def makeSurfaceSolid(self, obj, ribs):
-        surfaces = []
-        for e in range(0, len(obj.Base.Shape.Edges)):
-            edge = obj.Base.Shape.Edges[e]      
-            bs = edge.Curve.toBSpline()
-            umults = bs.getMultiplicities()
-            uknots = bs.getKnots()
-            uperiodic = bs.isPeriodic()
-            udegree = bs.Degree
-            uweights = bs.getWeights()
-            
-            weights = []
-            poles = []
-            for r in ribs:
-                weights += uweights
-                poles.append(r.Edges[e].Curve.getPoles())
-            
-            if len(ribs) > 3:
-                vmults = [4]
-                vknots = [0]
-                for i in range(1, len(ribs) - 3):
-                    vknots.append(i * 1.0 / (len(ribs) - 1))
-                    vmults.append(1)
-                vmults.append(4)
-                vknots.append(1.0)
-            else:
-                vmults = [len(ribs), len(ribs)]
-                vknots = [0.0, 1.0]
-            
-        #print("poles:" + str(len(poles)) + "x" + str(len(poles[0])))
-        #print("umults:" + str(umults))
-        #print("vmults:" + str(vmults))
-        #print("uknots:" + str(uknots))
-        #print("vknots:" + str(vknots))
-        
-            try:
-                bs = Part.BSplineSurface()
-                bs.buildFromPolesMultsKnots(poles, vmults, umults, vknots, uknots, False, uperiodic, udegree, udegree) 
-                surfaces.append(bs.toShape())
-            except:            
-                wiribs = []
-                for r in ribs:
-                    wiribs.append(Part.Wire(r.Edges))
-                                    
-                surfaces.append(Part.makeLoft(wiribs))
-                     
-        if obj.Solid:  
-            face1 = self.makeFace(ribs[0])
-            if face1:
-                surfaces.append(face1)
-            face2 = self.makeFace(ribs[len(ribs)-1])
-            if face2:
-                surfaces.append(face2)
-                    
-        if obj.Surface:      
-            if len(surfaces) == 1:
-                obj.Shape = surfaces[0]
-            elif len(surfaces) > 1:
-                obj.Shape = Part.makeCompound(surfaces) 
 
-        if obj.Solid:        
-            shell = Part.makeShell(surfaces)
-            obj.Shape = Part.makeSolid(shell)
-        
-    def makeFace(self, rib):
-        wire = Part.Wire(rib.Edges)
-        if wire.isClosed():
-            return Part.makeFace(wire, "Part::FaceMakerSimple")
-        else:
-            FreeCAD.Console.PrintError("Base shape is not closed. Cannot draw solid")
         
         
     def makeRib(self, obj, posvec):

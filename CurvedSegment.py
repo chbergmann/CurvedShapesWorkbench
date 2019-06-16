@@ -119,7 +119,12 @@ class CurvedSegmentWorker:
         else:
             ribs = self.makeRibsSameShape(fp)
             
-        fp.Shape = Part.makeCompound(ribs)
+        if fp.Surface or fp.Solid:
+            ribs.insert(0, fp.Shape1.Shape)
+            ribs.append(fp.Shape2.Shape)
+            fp.Shape = CurvedShapes.makeSurfaceSolid(ribs, fp.Solid)
+        else:
+            fp.Shape = Part.makeCompound(ribs)
         
             
     def makeRibsSameShape(self, fp):

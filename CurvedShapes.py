@@ -99,6 +99,83 @@ def boundbox_from_intersect(curves, pos, normal, doScaleXYZ):
    
     return FreeCAD.BoundBox(xmin, ymin, zmin, xmax, ymax, zmax)
     
+            
+def makeSurfaceSolid(ribs, solid):
+    surfaces = []
+    for e in range(0, len(ribs[0].Edges)):
+        edge = ribs[0].Edges[e]      
+        bs = edge.Curve.toBSpline()
+        umults = bs.getMultiplicities()
+        uknots = bs.getKnots()
+        uperiodic = bs.isPeriodic()
+        udegree = bs.Degree
+        uweights = bs.getWeights()
+        
+        weights = []
+        poles = []
+        for r in ribs:
+            weights += uweights
+            spline = r.Edges[e].Curve.toBSpline()
+            poles.append(spline.getPoles())
+        
+        if len(ribs) > 3:
+            vmults = [4]
+            vknots = [0]
+            for i in range(1, len(ribs) - 3):
+                vknots.append(i * 1.0 / (len(ribs) - 1))
+                vmults.append(1)
+            vmults.append(4)
+            vknots.append(1.0)
+        else:
+            vmults = [len(ribs), len(ribs)]
+            vknots = [0.0, 1.0]
+        
+        #print("poles:" + str(len(poles)) + "x" + str(len(poles[0])))
+        #print("umults:" + str(umults))
+        #print("vmults:" + str(vmults))
+        #print("uknots:" + str(uknots))
+        #print("vknots:" + str(vknots))
+    
+        try:
+            bs = Part.BSplineSurface()
+            bs.buildFromPolesMultsKnots(poles, vmults, umults, vknots, uknots, False, uperiodic, udegree, udegree) 
+            surfaces.append(bs.toShape())
+        except:      
+            FreeCAD.Console.PrintError("BSplineSurface failed. Creating Lofts instead\n")      
+            wiribs = []
+            for r in ribs:
+                wiribs.append(Part.Wire(r.Edges))
+                                
+            surfaces.append(Part.makeLoft(wiribs))
+                 
+    if solid:  
+        face1 = makeFace(ribs[0])
+        if face1:
+            surfaces.append(face1)
+        face2 = makeFace(ribs[len(ribs)-1])
+        if face2:
+            surfaces.append(face2)
+
+        try:
+            shell = Part.makeShell(surfaces)
+            return Part.makeSolid(shell)
+        except:
+            FreeCAD.Console.PrintError("Creating solid failed !\n")
+               
+    if len(surfaces) == 1:
+        return surfaces[0]
+    elif len(surfaces) > 1:
+        return Part.makeCompound(surfaces) 
+
+        
+        
+def makeFace(rib):
+    wire = Part.Wire(rib.Edges)
+    if wire.isClosed():
+        return Part.makeFace(wire, "Part::FaceMakerSimple")
+    else:
+        FreeCAD.Console.PrintError("Base shape is not closed. Cannot draw solid")   
+   
         
 def makeCurvedArray(Base = None, 
                     Hullcurves=[], 
