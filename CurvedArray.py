@@ -130,40 +130,8 @@ class CurvedArrayWorker:
         #box.Placement.Base.y = bbox.YMin
         #box.Placement.Base.z = bbox.ZMin
         #Part.show(box)        
-        scalevec = Vector(1, 1, 1)
-        if basebbox.XLength > epsilon: scalevec.x = bbox.XLength / basebbox.XLength
-        if basebbox.YLength > epsilon: scalevec.y = bbox.YLength / basebbox.YLength
-        if basebbox.ZLength > epsilon: scalevec.z = bbox.ZLength / basebbox.ZLength     
-        if scalevec.x < epsilon: 
-            if self.doScaleXYZsum[0]:
-                scalevec.x = epsilon   
-            else:
-                scalevec.x = 1   
-        if scalevec.y < epsilon: 
-            if self.doScaleXYZsum[1]:
-                scalevec.y = epsilon   
-            else:
-                scalevec.y = 1
-        if scalevec.z < epsilon: 
-            if self.doScaleXYZsum[2]:
-                scalevec.z = epsilon   
-            else:
-                scalevec.z = 1
         
-        scalevec2 = scalevec
-        if abs(obj.Axis.x) > 1 - epsilon: scalevec2.x = 1
-        if abs(obj.Axis.y) > 1 - epsilon: scalevec2.y = 1
-        if abs(obj.Axis.z) > 1 - epsilon: scalevec2.z = 1
-        dolly = CurvedShapes.scale(obj.Base, scalevec2)
-        
-        dolly.Placement = basepl
-        if self.doScaleXYZsum[0]:
-            dolly.Placement.Base.x += bbox.XMin - basebbox.XMin * scalevec.x  
-        if self.doScaleXYZsum[1]:           
-            dolly.Placement.Base.y += bbox.YMin - basebbox.YMin * scalevec.y
-        if self.doScaleXYZsum[2]:
-            dolly.Placement.Base.z += bbox.ZMin - basebbox.ZMin * scalevec.z
-        return dolly
+        return CurvedShapes.scaleByBoundbox(obj.Base.Shape, bbox, self.doScaleXYZsum, copy=True)
     
     
     def execute(self, prop):

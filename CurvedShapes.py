@@ -17,8 +17,11 @@ def get_module_path():
     return os.path.dirname(__file__)
 
     
-def scale(obj, delta=Vector(1,1,1), center=Vector(0,0,0)):
-    sh = obj.Shape.copy()
+def scale(shape, delta=Vector(1,1,1), center=Vector(0,0,0), copy=True):
+    if copy:
+        sh = shape.copy()
+    else:
+        sh = shape
     if delta == Vector(1,1,1):
         return sh
     
@@ -35,7 +38,7 @@ def scale(obj, delta=Vector(1,1,1), center=Vector(0,0,0)):
     corr.scale(delta.x,delta.y,delta.z)
     corr = (corr.sub(center)).negative()
     sh.translate(corr)
-    sh.Placement = obj.Placement
+    sh.Placement = shape.Placement
     return sh
 
 
@@ -98,6 +101,42 @@ def boundbox_from_intersect(curves, pos, normal, doScaleXYZ):
         zmax = 0
    
     return FreeCAD.BoundBox(xmin, ymin, zmin, xmax, ymax, zmax)
+
+
+def scaleByBoundbox(shape, boundbox, doScaleXYZ, copy=True):
+    basebbox = shape.BoundBox   
+      
+    scalevec = Vector(1, 1, 1)
+    if basebbox.XLength > epsilon: scalevec.x = boundbox.XLength / basebbox.XLength
+    if basebbox.YLength > epsilon: scalevec.y = boundbox.YLength / basebbox.YLength
+    if basebbox.ZLength > epsilon: scalevec.z = boundbox.ZLength / basebbox.ZLength     
+    if scalevec.x < epsilon: 
+        if doScaleXYZ[0]:
+            scalevec.x = epsilon   
+        else:
+            scalevec.x = 1   
+    if scalevec.y < epsilon: 
+        if doScaleXYZ[1]:
+            scalevec.y = epsilon   
+        else:
+            scalevec.y = 1
+    if scalevec.z < epsilon: 
+        if doScaleXYZ[2]:
+            scalevec.z = epsilon   
+        else:
+            scalevec.z = 1
+    
+    dolly = scale(shape, scalevec, basebbox.Center, copy)    
+    dolly.Placement = shape.Placement
+    
+    if doScaleXYZ[0]:
+        dolly.Placement.Base.x += boundbox.XMin - basebbox.XMin * scalevec.x  
+    if doScaleXYZ[1]:           
+        dolly.Placement.Base.y += boundbox.YMin - basebbox.YMin * scalevec.y
+    if doScaleXYZ[2]:
+        dolly.Placement.Base.z += boundbox.ZMin - basebbox.ZMin * scalevec.z
+        
+    return dolly
     
             
 def makeSurfaceSolid(ribs, solid):
@@ -199,8 +238,8 @@ def makeCurvedArray(Base = None,
 def makeCurvedSegment(Shape1 = None, 
                       Shape2 = None, 
                     Hullcurves=[], 
-                    NormalShape1=Vector(0,0,1), 
-                    NormalShape2=Vector(0,0,1), 
+                    NormalShape1=Vector(0,0,0), 
+                    NormalShape2=Vector(0,0,0), 
                     Items=2, 
                     Surface=False, 
                     Solid=False):

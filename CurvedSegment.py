@@ -11,6 +11,7 @@ import FreeCAD
 from FreeCAD import Vector
 import Part
 import CurvedShapes
+import Draft
 
 global epsilon
 epsilon = CurvedShapes.epsilon
@@ -119,6 +120,9 @@ class CurvedSegmentWorker:
         else:
             ribs = self.makeRibsSameShape(fp)
             
+        if len(fp.Hullcurves) > 0:
+            self.rescaleRibs(fp, ribs)
+            
         if fp.Surface or fp.Solid:
             ribs.insert(0, fp.Shape1.Shape)
             ribs.append(fp.Shape2.Shape)
@@ -193,6 +197,16 @@ class CurvedSegmentWorker:
             ribs.append(newcurve.toShape())
             
         return ribs
+    
+    
+    def rescaleRibs(self, fp, ribs):
+        for i in range(0, len(ribs)):
+            normal = self.vectorMiddle(fp.NormalShape1, fp.NormalShape2, (i + 1) / (fp.Items + 1))
+            #Draft.makeLine(ribs[i].BoundBox.Center, ribs[i].BoundBox.Center + normal)
+            bbox = CurvedShapes.boundbox_from_intersect(fp.Hullcurves, ribs[i].BoundBox.Center, normal, self.doScaleXYZ)
+            if bbox:              
+                ribs[i] = CurvedShapes.scaleByBoundbox(ribs[i], bbox, self.doScaleXYZsum, copy=False)
+             
         
 
 class CurvedSegmentViewProvider:
