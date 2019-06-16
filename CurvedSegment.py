@@ -47,7 +47,7 @@ class CurvedSegmentWorker:
             return
         
         if not fp.Shape2 or not hasattr(fp.Shape2, "Shape"):
-            fp.Shape2 = fp.Shape1
+            return
             
         if fp.NormalShape1 == Vector(0.0,0.0,0.0):
             if hasattr(fp.Shape1, 'Dir'):
@@ -98,9 +98,33 @@ class CurvedSegmentWorker:
         z = vec1.z + (vec2.z - vec1.z) * fraction
         return Vector(x,y,z)
             
+            
     def makeRibs(self, fp):
-        ribs = []
-        for i in range(1, int(fp.Items)):
+        interpolate = False
+        if len(fp.Shape1.Shape.Edges) != len(fp.Shape2.Shape.Edges):
+            interpolate = True
+        else:
+            for e in range(0, len(fp.Shape1.Shape.Edges)):
+                edge1 = fp.Shape1.Shape.Edges[e]
+                edge2 = fp.Shape2.Shape.Edges[e]
+                curve1 = edge1.Curve.toBSpline()
+                curve2 = edge2.Curve.toBSpline()
+                poles1 = curve1.getPoles()
+                poles2 = curve2.getPoles()
+                if len(poles1) != len(poles2):
+                    interpolate = True
+                 
+        if interpolate:
+            ribs = self.makeRibsInterpolate(fp)
+        else:
+            ribs = self.makeRibsSameShape(fp)
+            
+        fp.Shape = Part.makeCompound(ribs)
+        
+            
+    def makeRibsSameShape(self, fp):
+        ribs = []        
+        for i in range(1, fp.Items + 1):
             if len(fp.Shape1.Shape.Edges) == len(fp.Shape2.Shape.Edges):
                 for e in range(0, len(fp.Shape1.Shape.Edges)):
                     edge1 = fp.Shape1.Shape.Edges[e]
@@ -112,44 +136,58 @@ class CurvedSegmentWorker:
                     newcurve = Part.BSplineCurve()
                     
                     newpoles = []
-                    if len(poles1) == len(poles2):
-                        for p in range(len(poles1)):
-                            newpoles.append(self.vectorMiddle(poles1[p], poles2[p], i / int(fp.Items)))
-                            
-                        newcurve.buildFromPolesMultsKnots(newpoles, 
-                                                      curve1.getMultiplicities(), 
-                                                      curve1.getKnots(), 
-                                                      curve1.isPeriodic(), 
-                                                      curve1.Degree,
-                                                      curve1.getWeights(), 
-                                                      curve1.isRational())
-                    else:
-                        points1 = edge1.discretize(fp.InterpolationPoints)
-                        points2 = edge2.discretize(fp.InterpolationPoints)
-                        for p in range(0, fp.InterpolationPoints):
-                            newpoles.append(self.vectorMiddle(points1[p], points2[p], i / int(fp.Items)))
+                    for p in range(len(poles1)):
+                        newpoles.append(self.vectorMiddle(poles1[p], poles2[p], i / (fp.Items + 1)))
                         
-                        newcurve.buildFromPoles(newpoles)
-                        
+                    newcurve.buildFromPolesMultsKnots(newpoles, 
+                                                  curve1.getMultiplicities(), 
+                                                  curve1.getKnots(), 
+                                                  curve1.isPeriodic(), 
+                                                  curve1.Degree,
+                                                  curve1.getWeights(), 
+                                                  curve1.isRational())
+                   
                     ribs.append(newcurve.toShape())
-            else:
-                nr_points = max(len(fp.Shape1.Shape.Edges), len(fp.Shape2.Shape.Edges)) * fp.InterpolationPoints
-                points1 = []
-                points2 = []
-                for edge1 in fp.Shape1.Shape.Edges:
-                    points1 += (edge1.discretize(int(nr_points / len(fp.Shape1.Shape.Edges))))
-                for edge2 in fp.Shape2.Shape.Edges:
-                    points2 += (edge2.discretize(int(nr_points / len(fp.Shape2.Shape.Edges))))
+        return ribs
                     
-                newpoles = []
-                for p in range(0, nr_points):
-                    newpoles.append(self.vectorMiddle(points1[p], points2[p], i / int(fp.Items)))
-                    
-                newcurve = Part.BSplineCurve()
-                newcurve.buildFromPoles(newpoles)
-                ribs.append(newcurve.toShape())
+     
+    def makeRibsInterpolate(self, fp):
+        points1 = []
+        points2 = []
+        len1 = len(fp.Shape1.Shape.Wires)
+        if len(fp.Shape1.Shape.Wires) == 0:
+            len1 = len(fp.Shape1.Shape.Edges)
+                       
+        len2 = len(fp.Shape2.Shape.Wires)
+        if len(fp.Shape2.Shape.Wires) == 0:
+            len2 = len(fp.Shape2.Shape.Edges)
         
-        fp.Shape = Part.makeCompound(ribs)
+        nr_points = max(len1, len2) * fp.InterpolationPoints
+        if len(fp.Shape1.Shape.Wires) == 0:
+            for edge1 in fp.Shape1.Shape.Edges:
+                points1 += (edge1.discretize(int(nr_points / len(fp.Shape1.Shape.Edges))))
+        else:
+            for wire1 in fp.Shape1.Shape.Wires:
+                points1 += (wire1.discretize(int(nr_points / len(fp.Shape1.Shape.Wires))))
+                
+        if len(fp.Shape2.Shape.Wires) == 0:
+            for edge2 in fp.Shape2.Shape.Edges:
+                points2 += (edge2.discretize(int(nr_points / len(fp.Shape2.Shape.Edges))))
+        else:
+            for wire2 in fp.Shape2.Shape.Wires:
+                points2 += (wire2.discretize(int(nr_points / len(fp.Shape2.Shape.Wires))))
+        
+        ribs = []
+        for i in range(1, fp.Items + 1):
+            newpoles = []
+            for p in range(0, nr_points):
+                newpoles.append(self.vectorMiddle(points1[p], points2[p], i / (fp.Items + 1)))
+                
+            newcurve = Part.BSplineCurve()
+            newcurve.buildFromPoles(newpoles)
+            ribs.append(newcurve.toShape())
+            
+        return ribs
         
 
 class CurvedSegmentViewProvider:
