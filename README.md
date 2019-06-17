@@ -26,12 +26,25 @@ The hullcurves should lie on or parralel to the XY- XZ- or YZ- plane.
 - OffsetStart: Offset of the first part in Axis direction
 - OffsetEnd: Offset of the last part from the end in opposite Axis direction
 - Twist: Applies a rotation around Axis to the array items. 
-- Surface: make a surface (Creates a Loft over the array items)
+- Surface: make a surface over the array items
 - Solid: make a solid if Base is a closed shape
 
 ##### Resolve a CurvedArray item to a compound of single objects
 Go to the Part workbench. In the Part menu, select Compound -> Explode compound  
-  
+
+### ![](./Resources/icons/curvedSegment.svg) Curved Segment
+Interpolates between two 2D curves.
+ 
+##### Parameters
+- Shape1: The first object of the segment
+- Shape2: The last object of the segment
+- Hullcurves: List of one or more bounding curves (optional)       
+- NormalShape1: Direction axis of Shape1 (auto computed)
+- NormalShape2: Direction axis of Shape2 (auto computed)
+- Items: Nr. of items between the segments
+- Surface: make a surface over the array items
+- Solid: make a solid if Base is a closed shape
+- InterpolationPoints: Unequal edges will be splitted into this number of points
   
 ### ![](./Resources/icons/SketcherToConsole.svg) Sketch To Python
 Exports the geometry from a FreeCAD sketch to a python script.  
