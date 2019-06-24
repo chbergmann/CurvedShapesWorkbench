@@ -265,12 +265,11 @@ def makeCurvedSegment(Shape1 = None,
                     NormalShape2=Vector(0,0,0), 
                     Items=2, 
                     Surface=False, 
-                    Solid=False,
-                    InterpolationPoints=16):
+                    Solid=False):
     import CurvedSegment
     reload(CurvedSegment)
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedSegment")
-    cs = CurvedSegment.CurvedSegmentWorker(obj, Shape1, Shape2, Hullcurves, NormalShape1, NormalShape2, Items, Surface, Solid, InterpolationPoints)
+    cs = CurvedSegment.CurvedSegmentWorker(obj, Shape1, Shape2, Hullcurves, NormalShape1, NormalShape2, Items, Surface, Solid)
     CurvedSegment.CurvedSegmentViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     return obj
@@ -281,12 +280,11 @@ def makeInterpolatedMiddle(Shape1 = None,
                     NormalShape1=Vector(0,0,0), 
                     NormalShape2=Vector(0,0,0), 
                     Surface=False, 
-                    Solid=False,
-                    InterpolationPoints=16):
+                    Solid=False):
     import InterpolatedMiddle
     reload(InterpolatedMiddle)
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","InterpolatedMiddle")
-    cs = InterpolatedMiddle.InterpolatedMiddleWorker(obj, Shape1, Shape2, NormalShape1, NormalShape2, Surface, Solid, InterpolationPoints)
+    cs = InterpolatedMiddle.InterpolatedMiddleWorker(obj, Shape1, Shape2, NormalShape1, NormalShape2, Surface, Solid)
     InterpolatedMiddle.InterpolatedMiddleViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     return obj     

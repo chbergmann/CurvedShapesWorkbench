@@ -11,6 +11,7 @@ import FreeCAD
 from FreeCAD import Vector
 import Part
 import CurvedShapes
+import Draft
 
 global epsilon
 epsilon = CurvedShapes.epsilon
@@ -118,8 +119,6 @@ class CurvedSegmentWorker:
             self.rescaleRibs(fp, ribs)
             
         if fp.makeSurface or fp.makeSolid:
-            ribs.insert(0, fp.Shape1.Shape)
-            ribs.append(fp.Shape2.Shape)
             fp.Shape = CurvedShapes.makeSurfaceSolid(ribs, fp.makeSolid)
         else:
             fp.Shape = Part.makeCompound(ribs)
@@ -141,12 +140,9 @@ def vectorMiddle(vec1, vec2, fraction):
     return Vector(x,y,z)    
              
              
-def vectorMiddlePlane(fp, vec1, vec2, fraction, alongNormal):
-    midvec = vectorMiddle(fp.Shape1.Shape.BoundBox.Center, fp.Shape2.Shape.BoundBox.Center, fraction)
-    midnorm = vectorMiddle(fp.NormalShape1, fp.NormalShape2, fraction)
-    plane = Part.Plane(midvec, midnorm)
-    if alongNormal:
-        line = Part.makeLine(vec1, vec1 + fp.NormalShape1)
+def vectorMiddlePlane(vec1, vec2, fraction, plane, normalShape1):
+    if normalShape1:
+        line = Part.makeLine(vec1, vec1 + normalShape1)
     else:
         line = Part.makeLine(vec1, vec2)
         
@@ -155,23 +151,36 @@ def vectorMiddlePlane(fp, vec1, vec2, fraction, alongNormal):
         return vectorMiddle(vec1, vec2, fraction)
     
     return CurvedShapes.PointVec(isec[0][0])  
+
+
+def getMidPlane(fp, fraction):
+    midvec = vectorMiddle(fp.Shape1.Shape.BoundBox.Center, fp.Shape2.Shape.BoundBox.Center, fraction)
+    midnorm = vectorMiddle(fp.NormalShape1, fp.NormalShape2, fraction)
+    return Part.Plane(midvec, midnorm)
         
         
 def makeRibsSameShape(fp, items, alongNormal):
     ribs = []        
     for i in range(1, items + 1):  
+        plane = getMidPlane(fp, i / (items + 1))
+        
+        if alongNormal:
+            normalShape1 = fp.NormalShape1
+        else:
+            normalShape1 = None
+        
         for e in range(0, len(fp.Shape1.Shape.Edges)):
             edge1 = fp.Shape1.Shape.Edges[e]
             edge2 = fp.Shape2.Shape.Edges[e]
-            curve1 = edge1.Curve.toBSpline()
-            curve2 = edge2.Curve.toBSpline()
+            curve1 = edge1.Curve.toBSpline(edge1.FirstParameter, edge1.LastParameter)
+            curve2 = edge2.Curve.toBSpline(edge2.FirstParameter, edge2.LastParameter)
             poles1 = curve1.getPoles()
             poles2 = curve2.getPoles()
             newcurve = Part.BSplineCurve()
             
             newpoles = []
             for p in range(len(poles1)):
-                newpoles.append(vectorMiddlePlane(fp, poles1[p], poles2[p], i / (items + 1), alongNormal))
+                newpoles.append(vectorMiddlePlane(poles1[p], poles2[p], i / (items + 1), plane, normalShape1))
                 
             newcurve.buildFromPolesMultsKnots(newpoles, 
                                           curve1.getMultiplicities(), 
@@ -182,47 +191,94 @@ def makeRibsSameShape(fp, items, alongNormal):
                                           curve1.isRational())
            
             ribs.append(newcurve.toShape())
-    return ribs
-                
- 
-def makeRibsInterpolate(fp, items, alongNormal):
-    points1 = []
-    points2 = []
-    len1 = len(fp.Shape1.Shape.Wires)
-    if len(fp.Shape1.Shape.Wires) == 0:
-        len1 = len(fp.Shape1.Shape.Edges)
-                   
-    len2 = len(fp.Shape2.Shape.Wires)
-    if len(fp.Shape2.Shape.Wires) == 0:
-        len2 = len(fp.Shape2.Shape.Edges)
-    
-    nr_points = max(len1, len2) * fp.InterpolationPoints
-    if len(fp.Shape1.Shape.Wires) == 0:
-        for edge1 in fp.Shape1.Shape.Edges:
-            points1 += (edge1.discretize(int(nr_points / len(fp.Shape1.Shape.Edges))))
-    else:
-        for wire1 in fp.Shape1.Shape.Wires:
-            points1 += (wire1.discretize(int(nr_points / len(fp.Shape1.Shape.Wires))))
             
-    if len(fp.Shape2.Shape.Wires) == 0:
-        for edge2 in fp.Shape2.Shape.Edges:
-            points2 += (edge2.discretize(int(nr_points / len(fp.Shape2.Shape.Edges))))
-    else:
-        for wire2 in fp.Shape2.Shape.Wires:
-            points2 += (wire2.discretize(int(nr_points / len(fp.Shape2.Shape.Wires))))
-    
-    ribs = []
-    for i in range(1, items + 1):
-        newpoles = []
-        for p in range(0, nr_points):
-            newpoles.append(vectorMiddlePlane(fp, points1[p], points2[p], i / (items + 1), alongNormal))
-            
-        newcurve = Part.BSplineCurve()
-        newcurve.buildFromPoles(newpoles)
-        ribs.append(newcurve.toShape())
+    if fp.makeSurface or fp.makeSolid:
+        ribs.insert(0, fp.Shape1.Shape)
+        ribs.append(fp.Shape2.Shape)
         
     return ribs
-         
+
+
+def getLengthPoles(shape):
+    poles = []
+    length = 0
+    for edge in shape.Edges:
+        length += edge.Length
+        curve1= edge.Curve.toBSpline(edge.FirstParameter, edge.LastParameter)
+        poles1 = curve1.getPoles()
+        for p in poles1:
+            if not p in poles:
+                poles.append(p)
+                
+    return (length, poles)
+
+
+def polesShape1to2(shape1, shape2):
+    newpoles = []
+    length1 = 0
+    for e1 in shape1.Edges:
+        length1 += e1.Length
+        
+    length2 = 0
+    for e2 in shape2.Edges:
+        length2 += e2.Length
+        
+    lengthfrac = length2 / length1
+    offedge1 = 0    
+    for edge1 in shape1.Edges:
+        curve1 = edge1.Curve.toBSpline(edge1.FirstParameter, edge1.LastParameter)
+        poles1 = curve1.getPoles()
+        
+        for p1 in poles1:
+            offedge2 = 0
+            offsetp1 = (offedge1 + (edge1.Length * curve1.parameter(p1) / (edge1.LastParameter - edge1.FirstParameter))) * lengthfrac
+            for edge2 in shape2.Edges:
+                if offsetp1 >= offedge2 and offsetp1 <= offedge2 + edge2.Length: 
+                    curve2 = edge2.Curve.toBSpline(edge2.FirstParameter, edge2.LastParameter)
+                    poles2 = curve2.getPoles()     
+                    newparam1 = (offsetp1 - offedge2) * (edge2.LastParameter - edge2.FirstParameter) / edge2.Length
+                    pnt = edge2.valueAt(newparam1)
+                    #Draft.makePoint(pnt.x, pnt.y, pnt.z)
+                    newpoles.append((edge2, pnt))
+                    
+                    for i in range (0, len(poles2)):
+                        param2 = curve2.parameter(poles2[i])
+                        if newparam1 == param2:
+                            break;
+                        
+                        if newparam1 > param2:
+                            poles2.insert(i, pnt)
+                            break
+    
+                offedge2 += edge2.Length
+        offedge1 += edge1.Length
+     
+    return newpoles
+
+               
+ 
+def makeRibsInterpolate(fp, items, alongNormal):   
+    ribs = []                        
+    newpoles1 = polesShape1to2(fp.Shape1.Shape, fp.Shape2.Shape)
+    newpoles2 = polesShape1to2(fp.Shape2.Shape, fp.Shape1.Shape)
+        
+    #for i in range(1, items + 1):     
+        #newcurve = Part.BSplineCurve()
+        
+        #newpoles = []
+        #for p in range(len(poles1)):
+        #    newpoles.append(vectorMiddlePlane(fp, poles1[p], poles2[p], i / (items + 1), alongNormal))
+            
+        #newcurve.buildFromPolesMultsKnots(newpoles)
+       
+       #ibs.append(newcurve.toShape())
+            
+    if fp.makeSurface or fp.makeSolid:
+        ribs.insert(0, fp.Shape1.Shape)
+        ribs.append(fp.Shape2.Shape)
+        
+    return ribs
+  
         
 
 class CurvedSegmentViewProvider:
@@ -272,7 +328,7 @@ class CurvedSegment():
             else:
                 FreeCADGui.doCommand("hullcurves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
         
-        FreeCADGui.doCommand("CurvedShapes.makeCurvedSegment(%sItems=4, Surface=False, Solid=False)"%(options))
+        FreeCADGui.doCommand("CurvedShapes.makeCurvedSegment(%sItems=1, Surface=False, Solid=False)"%(options))
         FreeCAD.ActiveDocument.recompute()        
 
     def IsActive(self):
