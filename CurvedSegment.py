@@ -12,6 +12,7 @@ from FreeCAD import Vector
 import Part
 import CurvedShapes
 import Draft
+import math
 
 global epsilon
 epsilon = CurvedShapes.epsilon
@@ -214,7 +215,6 @@ def getLengthPoles(shape):
 
 
 def polesShape1to2(shape1, shape2):
-    newpoles = []
     length1 = 0
     for e1 in shape1.Edges:
         length1 += e1.Length
@@ -223,37 +223,75 @@ def polesShape1to2(shape1, shape2):
     for e2 in shape2.Edges:
         length2 += e2.Length
         
-    lengthfrac = length2 / length1
-    offedge1 = 0    
-    for edge1 in shape1.Edges:
-        curve1 = edge1.Curve.toBSpline(edge1.FirstParameter, edge1.LastParameter)
-        poles1 = curve1.getPoles()
+    nr_edges = int(len(shape1.Edges) * len(shape2.Edges) / math.gcd(len(shape1.Edges), len(shape2.Edges)))
+    nr_frac = int(nr_edges / len(shape2.Edges))
         
-        for p1 in poles1:
-            offedge2 = 0
-            offsetp1 = (offedge1 + (edge1.Length * curve1.parameter(p1) / (edge1.LastParameter - edge1.FirstParameter))) * lengthfrac
-            for edge2 in shape2.Edges:
-                if offsetp1 >= offedge2 and offsetp1 <= offedge2 + edge2.Length: 
-                    curve2 = edge2.Curve.toBSpline(edge2.FirstParameter, edge2.LastParameter)
-                    poles2 = curve2.getPoles()     
-                    newparam1 = (offsetp1 - offedge2) * (edge2.LastParameter - edge2.FirstParameter) / edge2.Length
-                    pnt = edge2.valueAt(newparam1)
-                    #Draft.makePoint(pnt.x, pnt.y, pnt.z)
-                    newpoles.append((edge2, pnt))
-                    
-                    for i in range (0, len(poles2)):
-                        param2 = curve2.parameter(poles2[i])
-                        if newparam1 == param2:
-                            break;
-                        
-                        if newparam1 > param2:
-                            poles2.insert(i, pnt)
-                            break
+    lengthfrac = length2 / length1
+    newpoles = []
+    print("length1 " + str(length1) + ", length2 " + str(length2))
     
-                offedge2 += edge2.Length
-        offedge1 += edge1.Length
-     
+    offedge2 = 0
+    l2 = 0
+    
+    for edge2 in shape2.Edges:
+        for e in range(0, nr_frac):
+            edge2len = edge2.Length / nr_frac
+            l2 += edge2len
+            lparam2 = edge2.LastParameter - edge2.FirstParameter 
+            firstparam2 = edge2.FirstParameter + lparam2 * e / nr_frac
+            lastparam2 = edge2.FirstParameter + lparam2 * (e + 1) / nr_frac
+            curve2 = edge2.Curve.toBSpline(firstparam2, lastparam2)
+            poles2 = curve2.getPoles()  
+            
+            offedge1 = 0  
+            for edge1 in shape1.Edges:
+                curve1 = edge1.Curve.toBSpline(edge1.FirstParameter, edge1.LastParameter)
+                poles1 = curve1.getPoles()
+            
+                for p1 in poles1:
+                    offsetp1 = (offedge1 + (edge1.Length * curve1.parameter(p1) / (curve1.LastParameter - curve1.FirstParameter))) * lengthfrac
+                    if offsetp1 >= offedge2 and offsetp1 <= offedge2 + edge2len:    
+                        newparam1 = (offsetp1 - offedge2) * (lastparam2 - firstparam2) / lparam2
+                        pnt = edge2.valueAt(newparam1)
+                        #print(pnt)
+                        #Draft.makePoint(pnt.x, pnt.y, pnt.z)
+                 
+                        found = False
+                        for i in range (0, len(poles2)):
+                            try:
+                                param2 = curve2.parameter(poles2[i])
+                                if newparam1 >= param2 and newparam1 <= lastparam2:
+                                    poles2.insert(i, pnt)
+                                    found = True
+                                    break
+                            except: 
+                                print("except " + str(i))
+                                del poles2[i]
+                        
+                        if not found:
+                            poles2.append(pnt)   
+                                                   
+                offedge1 += edge1.Length    
+                
+            offedge2 += edge2len
+            newpoles.append(poles2)
+         
     return newpoles
+
+
+def removeDoubles(points):
+    newpoints = []
+    for p in points:
+        found = False
+        for n in newpoints:
+            if (p - n).Length < epsilon:
+                found = True
+                break
+            
+        if not found:
+            newpoints.append(p)
+            
+    return newpoints
 
                
  
@@ -261,17 +299,33 @@ def makeRibsInterpolate(fp, items, alongNormal):
     ribs = []                        
     newpoles1 = polesShape1to2(fp.Shape1.Shape, fp.Shape2.Shape)
     newpoles2 = polesShape1to2(fp.Shape2.Shape, fp.Shape1.Shape)
+    
+    for n in newpoles1:
+        for pnt in n:
+            Draft.makePoint(pnt.x, pnt.y, pnt.z)
+    
+    for n in newpoles2:
+        for pnt in n:
+            Draft.makePoint(pnt.x, pnt.y, pnt.z)
+   
+    for i in range(1, items + 1):     
+        plane = getMidPlane(fp, i / (items + 1))
         
-    #for i in range(1, items + 1):     
-        #newcurve = Part.BSplineCurve()
-        
-        #newpoles = []
-        #for p in range(len(poles1)):
-        #    newpoles.append(vectorMiddlePlane(fp, poles1[p], poles2[p], i / (items + 1), alongNormal))
+        if alongNormal:
+            normalShape1 = fp.NormalShape1
+        else:
+            normalShape1 = None
             
-        #newcurve.buildFromPolesMultsKnots(newpoles)
-       
-       #ibs.append(newcurve.toShape())
+        for i in range(0, len(newpoles1)):
+            interpoles = []
+            for p in range(0, len(newpoles1[i])):
+                pnt = vectorMiddlePlane(newpoles1[i][p], newpoles2[i][p], i / (items + 1), plane, normalShape1)
+                Draft.makePoint(pnt.x, pnt.y, pnt.z)
+                interpoles.append(pnt)
+            
+            newcurve = Part.BSplineCurve()
+            newcurve.buildFromPolesMultsKnots(interpoles)
+            ribs.append(newcurve.toShape())
             
     if fp.makeSurface or fp.makeSolid:
         ribs.insert(0, fp.Shape1.Shape)
