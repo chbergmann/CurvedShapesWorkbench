@@ -237,7 +237,14 @@ def getNormal(obj):
         return obj.Dir
     else:
         return obj.Placement.Rotation.multVec(Vector(0, 0, 1))
-   
+ 
+
+def vectorMiddle(vec1, vec2, fraction):
+    x = vec1.x + (vec2.x - vec1.x) * fraction
+    y = vec1.y + (vec2.y - vec1.y) * fraction
+    z = vec1.z + (vec2.z - vec1.z) * fraction
+    return Vector(x,y,z)   
+       
         
 def makeCurvedArray(Base = None, 
                     Hullcurves=[], 

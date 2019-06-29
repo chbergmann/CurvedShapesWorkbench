@@ -110,6 +110,7 @@ class CurvedSegmentWorker:
                 poles2 = curve2.getPoles()
                 if len(poles1) != len(poles2):
                     interpolate = True
+                    break
                  
         if interpolate:
             ribs = makeRibsInterpolate(fp, fp.Items, False)
@@ -136,36 +137,45 @@ class CurvedSegmentWorker:
             items = fp.Items + 1
             
         for i in range(start, end):
-            normal = self.vectorMiddle(fp.NormalShape1, fp.NormalShape2, (i + 1) / items)
+            normal = CurvedShapes.vectorMiddle(fp.NormalShape1, fp.NormalShape2, (i + 1) / items)
             #Draft.makeLine(ribs[i].BoundBox.Center, ribs[i].BoundBox.Center + normal)
             bbox = CurvedShapes.boundbox_from_intersect(fp.Hullcurves, ribs[i].BoundBox.Center, normal, self.doScaleXYZ)
             if bbox:              
                 ribs[i] = CurvedShapes.scaleByBoundbox(ribs[i], bbox, self.doScaleXYZsum, copy=False)
            
-            
-    def vectorMiddle(self, vec1, vec2, fraction):
-        x = vec1.x + (vec2.x - vec1.x) * fraction
-        y = vec1.y + (vec2.y - vec1.y) * fraction
-        z = vec1.z + (vec2.z - vec1.z) * fraction
-        return Vector(x,y,z)    
              
              
-def vectorMiddlePlane(vec1, vec2, fraction, plane, normalShape1):
-    if normalShape1:
-        line = Part.makeLine(vec1, vec1 + normalShape1)
-    else:
-        line = Part.makeLine(vec1, vec2)
+             
+def vectorMiddlePlane(vec1, vec2, fraction, plane):
+    line = Part.makeLine(vec1, vec2)
         
     isec = plane.intersect(line.Curve)
     if not isec or len(isec[0]) != 1:
-        return CurvedSegmentWorker.vectorMiddle(None, vec1, vec2, fraction)
+        return CurvedShapes.vectorMiddle(vec1, vec2, fraction)
     
-    return CurvedShapes.PointVec(isec[0][0])  
+    return CurvedShapes.PointVec(isec[0][0]) 
+
+
+def vectorMiddlePlaneNormal1(vec1, normalShape1, plane):
+    line1 = Part.makeLine(vec1, vec1 + normalShape1)
+        
+    p1 = vec1
+    isec = plane.intersect(line1.Curve)
+    if isec and len(isec[0]) == 1:
+        p1 = CurvedShapes.PointVec(isec[0][0])
+        
+    return p1
+        
+def vectorMiddlePlaneNormal(vec1, vec2, plane, normalShape1, normalShape2):
+    p1 = vectorMiddlePlaneNormal1(vec1, normalShape1, plane)
+    p2 = vectorMiddlePlaneNormal1(vec2, normalShape2, plane)
+        
+    return CurvedShapes.vectorMiddle(p1, p2, 0.5)  
 
 
 def getMidPlane(fp, fraction):
-    midvec = CurvedSegmentWorker.vectorMiddle(None, fp.Shape1.Shape.BoundBox.Center, fp.Shape2.Shape.BoundBox.Center, fraction)
-    midnorm = CurvedSegmentWorker.vectorMiddle(None, fp.NormalShape1, fp.NormalShape2, fraction)
+    midvec = CurvedShapes.vectorMiddle(fp.Shape1.Shape.BoundBox.Center, fp.Shape2.Shape.BoundBox.Center, fraction)
+    midnorm = CurvedShapes.vectorMiddle(fp.NormalShape1, fp.NormalShape2, fraction)
     return Part.Plane(midvec, midnorm)
         
         
@@ -173,11 +183,6 @@ def makeRibsSameShape(fp, items, alongNormal):
     ribs = []        
     for i in range(1, items + 1):  
         plane = getMidPlane(fp, i / (items + 1))
-        
-        if alongNormal:
-            normalShape1 = fp.NormalShape1
-        else:
-            normalShape1 = None
         
         for e in range(0, len(fp.Shape1.Shape.Edges)):
             edge1 = fp.Shape1.Shape.Edges[e]
@@ -190,7 +195,11 @@ def makeRibsSameShape(fp, items, alongNormal):
             
             newpoles = []
             for p in range(len(poles1)):
-                newpoles.append(vectorMiddlePlane(poles1[p], poles2[p], i / (items + 1), plane, normalShape1))
+                if alongNormal:
+                    newpoles.append(vectorMiddlePlaneNormal(poles1[p], poles2[p], plane, fp.NormalShape1, fp.NormalShape2))
+                else:
+                    newpoles.append(vectorMiddlePlane(poles1[p], poles2[p], plane))
+                    
                 
             newcurve.buildFromPolesMultsKnots(newpoles, 
                                           curve1.getMultiplicities(), 
@@ -234,7 +243,10 @@ def makeRibsInterpolate(fp, items, alongNormal):
             points2 = pointslist2[l]
             newpoles = []
             for p in range(0, fp.InterpolationPoints):
-                newpoles.append(vectorMiddlePlane(points1[p], points2[p], i / (items + 1), plane, alongNormal))       
+                if alongNormal:
+                    newpoles.append(vectorMiddlePlaneNormal(points1[p], points2[p], plane, fp.NormalShape1, fp.NormalShape2))
+                else:
+                    newpoles.append(vectorMiddlePlane(points1[p], points2[p], plane))     
             
             bc = Part.BSplineCurve()
             bc.approximate(newpoles)

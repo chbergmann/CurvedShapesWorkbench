@@ -25,13 +25,15 @@ class InterpolatedMiddleWorker:
                  normalShape1=Vector(0,0,0), 
                  normalShape2=Vector(0,0,0), 
                  surface=False, 
-                 solid=False):
+                 solid=False,
+                 interpol=16):
         fp.addProperty("App::PropertyLink",  "Shape1",     "InterpolatedMiddle",   "The first object of the segment").Shape1 = shape1
         fp.addProperty("App::PropertyLink",  "Shape2",     "InterpolatedMiddle",   "The last object of the segment").Shape2 = shape2     
         fp.addProperty("App::PropertyVector", "NormalShape1",    "InterpolatedMiddle",   "Direction axis of Shape1").NormalShape1 = normalShape1 
         fp.addProperty("App::PropertyVector", "NormalShape2",    "InterpolatedMiddle",   "Direction axis of Shape2").NormalShape1 = normalShape2
         fp.addProperty("App::PropertyBool", "makeSurface","InterpolatedMiddle",  "make a surface").makeSurface = surface
         fp.addProperty("App::PropertyBool", "makeSolid","InterpolatedMiddle",  "make a solid").makeSolid = solid
+        fp.addProperty("App::PropertyInteger", "InterpolationPoints", "CurvedSegment",   "Unequal edges will be splitted into this number of points").InterpolationPoints = interpol
         self.update = True
         fp.Proxy = self
  
@@ -64,7 +66,7 @@ class InterpolatedMiddleWorker:
             if not hasattr(fp, p):
                 return
             
-        if prop in proplist:      
+        if prop in proplist:  
             self.execute(fp)
                       
             
@@ -82,7 +84,7 @@ class InterpolatedMiddleWorker:
                 poles2 = curve2.getPoles()
                 if len(poles1) != len(poles2):
                     interpolate = True
-                
+                    break              
         
         if interpolate:
             ribs = CurvedSegment.makeRibsInterpolate(fp, 1, True)
@@ -90,12 +92,12 @@ class InterpolatedMiddleWorker:
             ribs = CurvedSegment.makeRibsSameShape(fp, 1, True)
             
         if fp.makeSurface or fp.makeSolid:
-            ribs.insert(0, fp.Shape1.Shape)
-            ribs.append(fp.Shape2.Shape)
-            fp.Shape = CurvedShapes.makeSurfaceSolid(ribs, fp.makeSolid)
+            shape = CurvedShapes.makeSurfaceSolid(ribs, fp.makeSolid)
         else:
-            fp.Shape = Part.makeCompound(ribs)
+            shape = Part.makeCompound(ribs)
         
+        if shape:
+            fp.Shape = shape
                             
 
 class InterpolatedMiddleViewProvider:
