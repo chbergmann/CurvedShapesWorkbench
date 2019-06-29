@@ -155,21 +155,23 @@ def vectorMiddlePlane(vec1, vec2, fraction, plane):
     
     return CurvedShapes.PointVec(isec[0][0]) 
 
-
-def vectorMiddlePlaneNormal1(vec1, normalShape1, plane):
-    line1 = Part.makeLine(vec1, vec1 + normalShape1)
+        
+def vectorMiddlePlaneNormal1(vec1, vec2, normalShape1, normalShape2):    
+    rota90 = FreeCAD.Rotation(normalShape1.cross(normalShape2), 90)
+    normal90 = rota90.multVec(normalShape1)
+    plane1 = Part.Plane(vec1, normal90)
+    line2 = Part.makeLine(vec2, vec2 + normalShape2)
         
     p1 = vec1
-    isec = plane.intersect(line1.Curve)
+    isec = plane1.intersect(line2.Curve)
     if isec and len(isec[0]) == 1:
         p1 = CurvedShapes.PointVec(isec[0][0])
-        
+    
     return p1
         
-def vectorMiddlePlaneNormal(vec1, vec2, plane, normalShape1, normalShape2):
-    p1 = vectorMiddlePlaneNormal1(vec1, normalShape1, plane)
-    p2 = vectorMiddlePlaneNormal1(vec2, normalShape2, plane)
-        
+def vectorMiddlePlaneNormal(vec1, vec2, normalShape1, normalShape2):    
+    p1 = vectorMiddlePlaneNormal1(vec1, vec2, normalShape1, normalShape2)  
+    p2 = vectorMiddlePlaneNormal1(vec2, vec1, normalShape2, normalShape1)  
     return CurvedShapes.vectorMiddle(p1, p2, 0.5)  
 
 
@@ -181,8 +183,9 @@ def getMidPlane(fp, fraction):
         
 def makeRibsSameShape(fp, items, alongNormal):
     ribs = []        
-    for i in range(1, items + 1):  
-        plane = getMidPlane(fp, i / (items + 1))
+    for i in range(1, items + 1): 
+        fraction =  i / (items + 1)
+        plane = getMidPlane(fp, fraction)
         
         for e in range(0, len(fp.Shape1.Shape.Edges)):
             edge1 = fp.Shape1.Shape.Edges[e]
@@ -196,9 +199,9 @@ def makeRibsSameShape(fp, items, alongNormal):
             newpoles = []
             for p in range(len(poles1)):
                 if alongNormal:
-                    newpoles.append(vectorMiddlePlaneNormal(poles1[p], poles2[p], plane, fp.NormalShape1, fp.NormalShape2))
+                    newpoles.append(vectorMiddlePlaneNormal(poles1[p], poles2[p], fp.NormalShape1, fp.NormalShape2))
                 else:
-                    newpoles.append(vectorMiddlePlane(poles1[p], poles2[p], plane))
+                    newpoles.append(vectorMiddlePlane(poles1[p], poles2[p], fraction, plane))
                     
                 
             newcurve.buildFromPolesMultsKnots(newpoles, 
@@ -236,7 +239,8 @@ def makeRibsInterpolate(fp, items, alongNormal):
         end = items + 1 
         
     for i in range(start, end):
-        plane = getMidPlane(fp, i / (items + 1))
+        fraction =  i / (items + 1)
+        plane = getMidPlane(fp, fraction)
         newshape = []
         for l in range(0, len(pointslist1)):
             points1 = pointslist1[l]
@@ -244,9 +248,9 @@ def makeRibsInterpolate(fp, items, alongNormal):
             newpoles = []
             for p in range(0, fp.InterpolationPoints):
                 if alongNormal:
-                    newpoles.append(vectorMiddlePlaneNormal(points1[p], points2[p], plane, fp.NormalShape1, fp.NormalShape2))
+                    newpoles.append(vectorMiddlePlaneNormal(points1[p], points2[p], fp.NormalShape1, fp.NormalShape2))
                 else:
-                    newpoles.append(vectorMiddlePlane(points1[p], points2[p], plane))     
+                    newpoles.append(vectorMiddlePlane(points1[p], points2[p], fraction, plane))     
             
             bc = Part.BSplineCurve()
             bc.approximate(newpoles)

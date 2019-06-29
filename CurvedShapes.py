@@ -140,65 +140,16 @@ def scaleByBoundbox(shape, boundbox, doScaleXYZ, copy=True):
             
 def makeSurfaceSolid(ribs, solid):
     surfaces = []
-    nr_edges = len(ribs[0].Edges)
-    spline_ok = True
+
+    wiribs = []
     for r in ribs:
-        if len(r.Edges) != nr_edges:
-            spline_ok = False
-        
-    if spline_ok:
-        for e in range(0, len(ribs[0].Edges)):
-            edge = ribs[0].Edges[e]      
-            bs = edge.Curve.toBSpline()
-            umults = bs.getMultiplicities()
-            uknots = bs.getKnots()
-            uperiodic = bs.isPeriodic()
-            udegree = bs.Degree
-            uweights = bs.getWeights()
-            
-            weights = []
-            poles = []
-            for r in ribs:
-                weights += uweights
-                spline = r.Edges[e].Curve.toBSpline()
-                poles.append(spline.getPoles())
-            
-            if len(ribs) > 3:
-                vmults = [4]
-                vknots = [0]
-                for i in range(1, len(ribs) - 3):
-                    vknots.append(i * 1.0 / (len(ribs) - 1))
-                    vmults.append(1)
-                vmults.append(4)
-                vknots.append(1.0)
-            else:
-                vmults = [len(ribs), len(ribs)]
-                vknots = [0.0, 1.0]
-            
-            #print("poles:" + str(len(poles)) + "x" + str(len(poles[0])))
-            #print("umults:" + str(umults))
-            #print("vmults:" + str(vmults))
-            #print("uknots:" + str(uknots))
-            #print("vknots:" + str(vknots))
-    
-            try:
-                bs = Part.BSplineSurface()
-                bs.buildFromPolesMultsKnots(poles, vmults, umults, vknots, uknots, False, uperiodic, udegree, udegree) 
-                surfaces.append(bs.toShape())
-            except:      
-                FreeCAD.Console.PrintError("BSplineSurface failed. Creating Lofts instead\n")  
-                spline_ok = False
-        
-    if not spline_ok:    
-        wiribs = []
-        for r in ribs:
-            wiribs.append(Part.Wire(r.Edges))
-              
-        try:              
-            surfaces.append(Part.makeLoft(wiribs))
-        except:      
-            FreeCAD.Console.PrintError("Creation of surface is not possible !\n")
-            return Part.makeCompound(wiribs)
+        wiribs.append(Part.Wire(r.Edges))
+          
+    try:              
+        surfaces.append(Part.makeLoft(wiribs))
+    except:      
+        FreeCAD.Console.PrintError("Creation of surface is not possible !\n")
+        return Part.makeCompound(wiribs)
                  
     if solid:  
         face1 = makeFace(ribs[0])
@@ -210,12 +161,12 @@ def makeSurfaceSolid(ribs, solid):
 
         try:
             shell = Part.makeShell(surfaces)
-        except:
-            FreeCAD.Console.PrintError("Creating shell failed !\n")
             try:
                 return Part.makeSolid(shell)
             except:
                 FreeCAD.Console.PrintError("Creating solid failed !\n")
+        except:
+            FreeCAD.Console.PrintError("Creating shell failed !\n")
                
     if len(surfaces) == 1:
         return surfaces[0]

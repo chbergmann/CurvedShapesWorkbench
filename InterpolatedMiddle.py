@@ -92,7 +92,12 @@ class InterpolatedMiddleWorker:
             ribs = CurvedSegment.makeRibsSameShape(fp, 1, True)
             
         if fp.makeSurface or fp.makeSolid:
-            shape = CurvedShapes.makeSurfaceSolid(ribs, fp.makeSolid)
+            rib1 = [ribs[0], ribs[1]]
+            shape1 = CurvedShapes.makeSurfaceSolid(rib1, fp.makeSolid)
+            rib2 = [ribs[1], ribs[2]]
+            shape2 = CurvedShapes.makeSurfaceSolid(rib2, fp.makeSolid)
+            
+            shape = Part.makeCompound([shape1, shape2])
         else:
             shape = Part.makeCompound(ribs)
         
