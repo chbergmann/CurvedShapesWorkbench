@@ -143,7 +143,10 @@ def makeSurfaceSolid(ribs, solid):
 
     wiribs = []
     for r in ribs:
-        wiribs.append(Part.Wire(r.Edges))
+        if len(r.Wires) > 0:
+            wiribs += r.Wires
+        else:
+            wiribs.append(Part.Wire(r.Edges))
           
     try:              
         surfaces.append(Part.makeLoft(wiribs))
@@ -161,10 +164,11 @@ def makeSurfaceSolid(ribs, solid):
 
         try:
             shell = Part.makeShell(surfaces)
-            try:
-                return Part.makeSolid(shell)
-            except:
-                FreeCAD.Console.PrintError("Creating solid failed !\n")
+            if face1 and face2:
+                try:
+                    return Part.makeSolid(shell)
+                except:
+                    FreeCAD.Console.PrintError("Creating solid failed !\n")
         except:
             FreeCAD.Console.PrintError("Creating shell failed !\n")
                
@@ -176,11 +180,20 @@ def makeSurfaceSolid(ribs, solid):
         
         
 def makeFace(rib):
-    wire = Part.Wire(rib.Edges)
-    if wire.isClosed():
-        return Part.makeFace(wire, "Part::FaceMakerSimple")
+    if len(rib.Wires) == 1:
+        wire = rib.Wires[0]
     else:
-        FreeCAD.Console.PrintError("Base shape is not closed. Cannot draw solid")   
+        wire = Part.Wire(rib.Edges)
+        
+    if wire.isClosed():
+        try:
+            return Part.makeFace(wire, "Part::FaceMakerSimple")
+        except:
+            FreeCAD.Console.PrintError("Cannot make face from Base shape. Cannot draw solid\n") 
+    else:
+        FreeCAD.Console.PrintError("Base shape is not closed. Cannot draw solid\n")  
+         
+    return None
      
 
 def getNormal(obj):

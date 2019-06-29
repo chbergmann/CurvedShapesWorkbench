@@ -169,7 +169,12 @@ def vectorMiddlePlaneNormal1(vec1, vec2, normalShape1, normalShape2):
     
     return p1
         
-def vectorMiddlePlaneNormal(vec1, vec2, normalShape1, normalShape2):    
+def vectorMiddlePlaneNormal(vec1, vec2, fraction, normalShape1, normalShape2):
+    if fraction == 0:
+        return vec1
+    if fraction == 1:
+        return vec2
+        
     p1 = vectorMiddlePlaneNormal1(vec1, vec2, normalShape1, normalShape2)  
     p2 = vectorMiddlePlaneNormal1(vec2, vec1, normalShape2, normalShape1)  
     return CurvedShapes.vectorMiddle(p1, p2, 0.5)  
@@ -199,7 +204,7 @@ def makeRibsSameShape(fp, items, alongNormal):
             newpoles = []
             for p in range(len(poles1)):
                 if alongNormal:
-                    newpoles.append(vectorMiddlePlaneNormal(poles1[p], poles2[p], fp.NormalShape1, fp.NormalShape2))
+                    newpoles.append(vectorMiddlePlaneNormal(poles1[p], poles2[p], fraction, fp.NormalShape1, fp.NormalShape2))
                 else:
                     newpoles.append(vectorMiddlePlane(poles1[p], poles2[p], fraction, plane))
                     
@@ -211,8 +216,10 @@ def makeRibsSameShape(fp, items, alongNormal):
                                           curve1.Degree,
                                           curve1.getWeights(), 
                                           curve1.isRational())
-           
-            ribs.append(newcurve.toShape())
+            
+            rib = newcurve.toShape()
+            wire = Part.Wire(rib.Edges)
+            ribs.append(wire)
             
     if fp.makeSurface or fp.makeSolid:
         ribs.insert(0, fp.Shape1.Shape)
@@ -248,7 +255,7 @@ def makeRibsInterpolate(fp, items, alongNormal):
             newpoles = []
             for p in range(0, fp.InterpolationPoints):
                 if alongNormal:
-                    newpoles.append(vectorMiddlePlaneNormal(points1[p], points2[p], fp.NormalShape1, fp.NormalShape2))
+                    newpoles.append(vectorMiddlePlaneNormal(points1[p], points2[p], fraction, fp.NormalShape1, fp.NormalShape2))
                 else:
                     newpoles.append(vectorMiddlePlane(points1[p], points2[p], fraction, plane))     
             
