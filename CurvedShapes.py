@@ -146,7 +146,11 @@ def makeSurfaceSolid(ribs, solid):
         if len(r.Wires) > 0:
             wiribs += r.Wires
         else:
-            wiribs.append(Part.Wire(r.Edges))
+            try:
+                wiribs.append(Part.Wire(r.Edges))
+            except:
+                FreeCAD.Console.PrintError("Cannot make a wire. Creation of surface is not possible !\n")
+                return
           
     try:              
         surfaces.append(Part.makeLoft(wiribs))

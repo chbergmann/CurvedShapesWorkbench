@@ -33,7 +33,7 @@ class InterpolatedMiddleWorker:
         fp.addProperty("App::PropertyVector", "NormalShape2",    "InterpolatedMiddle",   "Direction axis of Shape2").NormalShape1 = normalShape2
         fp.addProperty("App::PropertyBool", "makeSurface","InterpolatedMiddle",  "make a surface").makeSurface = surface
         fp.addProperty("App::PropertyBool", "makeSolid","InterpolatedMiddle",  "make a solid").makeSolid = solid
-        fp.addProperty("App::PropertyInteger", "InterpolationPoints", "CurvedSegment",   "Unequal edges will be splitted into this number of points").InterpolationPoints = interpol
+        fp.addProperty("App::PropertyInteger", "InterpolationPoints", "InterpolatedMiddle",   "Unequal edges will be splitted into this number of points").InterpolationPoints = interpol
         self.update = True
         fp.Proxy = self
  
@@ -87,17 +87,38 @@ class InterpolatedMiddleWorker:
                     break              
         
         if interpolate:
-            ribs = CurvedSegment.makeRibsInterpolate(fp, 1, True)
+            ribs = CurvedSegment.makeRibsInterpolate(fp, 1, True, False)
         else:
-            ribs = CurvedSegment.makeRibsSameShape(fp, 1, True)
+            ribs = CurvedSegment.makeRibsSameShape(fp, 1, True, False)
             
-        if fp.makeSurface or fp.makeSolid:
-            rib1 = [ribs[0], ribs[1]]
-            shape1 = CurvedShapes.makeSurfaceSolid(rib1, fp.makeSolid)
-            rib2 = [ribs[1], ribs[2]]
-            shape2 = CurvedShapes.makeSurfaceSolid(rib2, fp.makeSolid)
+        if (fp.makeSurface or fp.makeSolid) and len(ribs) == 1:
+            rib1 = [fp.Shape1.Shape, ribs[0]]
+            shape1 = CurvedShapes.makeSurfaceSolid(rib1, False)
+            rib2 = [ribs[0], fp.Shape2.Shape]
+            shape2 = CurvedShapes.makeSurfaceSolid(rib2, False)
             
             shape = Part.makeCompound([shape1, shape2])
+            
+            if fp.makeSolid:
+                surfaces = shape1.Faces + shape2.Faces
+                
+                face1 = CurvedShapes.makeFace(fp.Shape1.Shape)
+                if face1:
+                    surfaces.append(face1)
+                face2 = CurvedShapes.makeFace(fp.Shape2.Shape)
+                if face2:
+                    surfaces.append(face2)
+        
+                try:
+                    shell = Part.makeShell(surfaces)
+                    if face1 and face2:
+                        try:
+                            shape = Part.makeSolid(shell)
+                        except:
+                            FreeCAD.Console.PrintError("Creating solid failed !\n")
+                except:
+                    FreeCAD.Console.PrintError("Creating shell failed !\n")
+            
         else:
             shape = Part.makeCompound(ribs)
         
@@ -146,7 +167,7 @@ class InterpolatedMiddle():
             elif sel == selection[1]:
                 FreeCADGui.doCommand("shape2 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[1].ObjectName))
         
-        FreeCADGui.doCommand("CurvedShapes.makeInterpolatedMiddle(shape1, shape2, Surface=False, Solid=False)")
+        FreeCADGui.doCommand("CurvedShapes.makeInterpolatedMiddle(shape1, shape2, Surface=True, Solid=False)")
         FreeCAD.ActiveDocument.recompute()        
 
     def IsActive(self):

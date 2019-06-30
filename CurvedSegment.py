@@ -111,11 +111,12 @@ class CurvedSegmentWorker:
                 if len(poles1) != len(poles2):
                     interpolate = True
                     break
-                 
+         
+        makeStartEnd = fp.makeSurface or fp.makeSolid
         if interpolate:
-            ribs = makeRibsInterpolate(fp, fp.Items, False)
+            ribs = makeRibsInterpolate(fp, fp.Items, False, makeStartEnd)
         else:
-            ribs = makeRibsSameShape(fp, fp.Items, False)
+            ribs = makeRibsSameShape(fp, fp.Items, False, makeStartEnd)
             
         if len(fp.Hullcurves) > 0:
             self.rescaleRibs(fp, ribs)
@@ -186,7 +187,7 @@ def getMidPlane(fp, fraction):
     return Part.Plane(midvec, midnorm)
         
         
-def makeRibsSameShape(fp, items, alongNormal):
+def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
     ribs = []        
     for i in range(1, items + 1): 
         fraction =  i / (items + 1)
@@ -221,14 +222,14 @@ def makeRibsSameShape(fp, items, alongNormal):
             wire = Part.Wire(rib.Edges)
             ribs.append(wire)
             
-    if fp.makeSurface or fp.makeSolid:
+    if makeStartEnd:
         ribs.insert(0, fp.Shape1.Shape)
         ribs.append(fp.Shape2.Shape)
         
     return ribs
                 
  
-def makeRibsInterpolate(fp, items, alongNormal):
+def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
     len1 = len(fp.Shape1.Shape.Edges)
     len2 = len(fp.Shape2.Shape.Edges)
     
@@ -238,7 +239,7 @@ def makeRibsInterpolate(fp, items, alongNormal):
     pointslist2 = EdgesToPoints(fp.Shape2.Shape, int(nr_edges / len2), int(fp.InterpolationPoints))
             
     ribs = []
-    if fp.makeSurface or fp.makeSolid:
+    if makeStartEnd:
         start = 0
         end = items + 2 
     else:   
