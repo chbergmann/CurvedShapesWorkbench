@@ -63,11 +63,6 @@ Interpolates a 2D shape into the middle between two 2D curves. The base shapes c
 - makeSurface: connect Sape1 and Shape 2 with the interpolated middle
 - makeSolid: make a solid if Shape1 and Shape2 are closed shapes
 - InterpolationPoints: Unequal edges will be splitted into this number of points
-  
-### ![](./Resources/icons/SketcherToConsole.svg) Sketch To Python
-Exports the geometry from a FreeCAD sketch to a python script.  
-This may be useful for fully scripted designs.  
-The output can be found in the Report View.  
 
 ### ![](./Resources/icons/Horten_HIX.svg) Horten H IX
 This is an example design for testing and presentation of this workbench.  

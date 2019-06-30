@@ -20,9 +20,8 @@ class CurvedShapesWB (Workbench):
         import CurvedSegment
         import CurvedArray   
         import InterpolatedMiddle 
-        import SketchToPython
         import Horten_HIX
-        self.list = ["CurvedArray", "CurvedSegment", "InterpolatedMiddle", "SketchToPython", "Horten_HIX"] # A list of command names created in the line above
+        self.list = ["CurvedArray", "CurvedSegment", "InterpolatedMiddle", "Horten_HIX"] # A list of command names created in the line above
         self.appendToolbar("Curved Shapes",self.list) # creates a new toolbar with your commands
         self.appendMenu("Curved Shapes",self.list) # creates a new menu
 
