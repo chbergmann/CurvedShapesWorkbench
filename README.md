@@ -35,6 +35,9 @@ Go to the Part workbench. In the Part menu, select Compound -> Explode compound
 ### ![](./Resources/icons/curvedSegment.svg) Curved Segment
 Interpolates between two 2D curves.
  
+![CurvedSegment](Examples/CurvedSegment.jpg)
+![CurvedSegment2](Examples/CurvedSegment2.jpg)
+
 ##### Parameters
 - Shape1: The first object of the segment
 - Shape2: The last object of the segment
@@ -42,8 +45,23 @@ Interpolates between two 2D curves.
 - NormalShape1: Direction axis of Shape1 (auto computed)
 - NormalShape2: Direction axis of Shape2 (auto computed)
 - Items: Nr. of items between the segments
-- Surface: make a surface over the array items
-- Solid: make a solid if Base is a closed shape
+- makeSurface: make a surface over the array items
+- makeSolid: make a solid if Base is a closed shape
+- InterpolationPoints: Unequal edges will be splitted into this number of points
+
+### ![](./Resources/icons/CornerShape.svg) Interpolated Middle
+Interpolates a 2D shape into the middle between two 2D curves. The base shapes can be connected to a shape with a sharp corner.
+
+![InterpolatedMiddle2](Examples/InterpolatedMiddle2.jpg)
+![InterpolatedMiddle](Examples/InterpolatedMiddle.jpg)
+ 
+##### Parameters
+- Shape1: The first object of the segment
+- Shape2: The last object of the segment     
+- NormalShape1: Direction axis of Shape1 (auto computed)
+- NormalShape2: Direction axis of Shape2 (auto computed)
+- makeSurface: connect Sape1 and Shape 2 with the interpolated middle
+- makeSolid: make a solid if Shape1 and Shape2 are closed shapes
 - InterpolationPoints: Unequal edges will be splitted into this number of points
   
 ### ![](./Resources/icons/SketcherToConsole.svg) Sketch To Python
