@@ -1,14 +1,11 @@
 from FreeCAD import Vector, Placement, Rotation
 import FreeCAD
 import FreeCADGui
-import Sketcher
 import Part
 import Draft
 import CurvedShapes
 import CurvedSegment
 import CurvedArray
-import SurfaceCut
-import math
 import BOPTools.JoinFeatures
 from importlib import reload
         
