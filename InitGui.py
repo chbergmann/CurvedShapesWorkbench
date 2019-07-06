@@ -15,11 +15,13 @@ class CurvedShapesWB (Workbench):
 
     def Initialize(self):
         "This function is executed when FreeCAD starts"
-        import CurvedShapes # import here all the needed files that create your FreeCAD commands
-        import CurvedArray       
-        import SketchToPython
+        # import here all the needed files that create your FreeCAD commands
+        import CurvedShapes 
+        import CurvedSegment
+        import CurvedArray   
+        import InterpolatedMiddle 
         import Horten_HIX
-        self.list = ["CurvedArray", "SketchToPython", "Horten_HIX"] # A list of command names created in the line above
+        self.list = ["CurvedArray", "CurvedSegment", "InterpolatedMiddle", "Horten_HIX"] # A list of command names created in the line above
         self.appendToolbar("Curved Shapes",self.list) # creates a new toolbar with your commands
         self.appendMenu("Curved Shapes",self.list) # creates a new menu
 

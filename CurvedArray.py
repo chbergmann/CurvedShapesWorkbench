@@ -38,79 +38,22 @@ class CurvedArrayWorker:
         obj.addProperty("App::PropertyFloat", "Twist","CurvedArray",  "Offset of the last part from the end in opposite Axis direction").Twist = Twist
         obj.addProperty("App::PropertyBool", "Surface","CurvedArray",  "make a surface").Surface = Surface
         obj.addProperty("App::PropertyBool", "Solid","CurvedArray",  "make a solid").Solid = Solid
-        self.obj = obj
         self.extract = extract
         self.compound = None
         self.doScaleXYZ = []
         self.doScaleXYZsum = [False, False, False]
         obj.Proxy = self
-        self.execute("Base")
     
-    
-    def boundbox_from_intersect(self, pos, normal):
-        curves = self.obj.Hullcurves
-        if len(curves) == 0:
-            return None
-        
-        plane = Part.Plane(pos, normal)
-        xmin = float("inf")
-        xmax = float("-inf")
-        ymin = float("inf")
-        ymax = float("-inf")
-        zmin = float("inf")
-        zmax = float("-inf")
-        found = False
-        for n in range(0, len(curves)):
-            curve = curves[n]
-            ipoints = []
-            for edge in curve.Shape.Edges:
-                i = plane.intersect(edge.Curve)          
-                if i: 
-                    for p in i[0]:
-                        parm = edge.Curve.parameter(CurvedShapes.PointVec(p))
-                        if parm >= edge.FirstParameter and parm <= edge.LastParameter:    
-                            ipoints.append(p)
-                            found = True
-            
-            if found == False:
-                return None
-            
-            use_x = True
-            use_y = True
-            use_z = True
-            if len(ipoints) > 1:
-                use_x = self.doScaleXYZ[n][0]
-                use_y = self.doScaleXYZ[n][1]
-                use_z = self.doScaleXYZ[n][2] 
-            
-            for p in ipoints:
-                if use_x and p.X > xmax: xmax = p.X
-                if use_x and p.X < xmin: xmin = p.X
-                if use_y and p.Y > ymax: ymax = p.Y
-                if use_y and p.Y < ymin: ymin = p.Y
-                if use_z and p.Z > zmax: zmax = p.Z
-                if use_z and p.Z < zmin: zmin = p.Z
-          
-        if xmin == float("inf") or xmax == float("-inf"):
-            xmin = 0
-            xmax = 0
-        if ymin == float("inf") or ymax == float("-inf"):
-            ymin = 0
-            ymax = 0
-        if zmin == float("inf") or zmax == float("-inf"):
-            zmin = 0
-            zmax = 0
-       
-        return FreeCAD.BoundBox(xmin, ymin, zmin, xmax, ymax, zmax)
+ 
        
 
-    def makeRibs(self):
-        pl = self.obj.Placement
+    def makeRibs(self, obj):
+        pl = obj.Placement
         ribs = []
         curvebox = FreeCAD.BoundBox(float("-inf"), float("-inf"), float("-inf"), float("inf"), float("inf"), float("inf"))
             
-        for n in range(0, len(self.obj.Hullcurves)):
-            cbbx = self.obj.Hullcurves[n].Shape.BoundBox
+        for n in range(0, len(obj.Hullcurves)):
+            cbbx = obj.Hullcurves[n].Shape.BoundBox
             if self.doScaleXYZ[n][0]:
                 if cbbx.XMin > curvebox.XMin: curvebox.XMin = cbbx.XMin
                 if cbbx.XMax < curvebox.XMax: curvebox.XMax = cbbx.XMax
@@ -122,26 +65,26 @@ class CurvedArrayWorker:
                 if cbbx.ZMax < curvebox.ZMax: curvebox.ZMax = cbbx.ZMax
             
         if curvebox.XMin == float("inf"): 
-            curvebox.XMin = self.obj.Hullcurves[0].Shape.BoundBox.XMin
+            curvebox.XMin = obj.Hullcurves[0].Shape.BoundBox.XMin
         if curvebox.XMin == float("-inf"): 
-            curvebox.XMax = self.obj.Hullcurves[0].Shape.BoundBox.XMax
+            curvebox.XMax = obj.Hullcurves[0].Shape.BoundBox.XMax
         if curvebox.YMin == float("inf"): 
-            curvebox.YMin = self.obj.Hullcurves[0].Shape.BoundBox.YMin
+            curvebox.YMin = obj.Hullcurves[0].Shape.BoundBox.YMin
         if curvebox.YMax == float("-inf"): 
-            curvebox.YMax = self.obj.Hullcurves[0].Shape.BoundBox.YMax
+            curvebox.YMax = obj.Hullcurves[0].Shape.BoundBox.YMax
         if curvebox.ZMin == float("inf"): 
-            curvebox.ZMin = self.obj.Hullcurves[0].Shape.BoundBox.ZMin
+            curvebox.ZMin = obj.Hullcurves[0].Shape.BoundBox.ZMin
         if curvebox.ZMax == float("-inf"): 
-            curvebox.ZMax = self.obj.Hullcurves[0].Shape.BoundBox.ZMax
+            curvebox.ZMax = obj.Hullcurves[0].Shape.BoundBox.ZMax
          
         areavec = Vector(curvebox.XLength, curvebox.YLength, curvebox.ZLength)
-        deltavec = areavec.scale(self.obj.Axis.x, self.obj.Axis.y ,self.obj.Axis.z) - (self.obj.OffsetStart + self.obj.OffsetEnd) * self.obj.Axis
-        sections = int(self.obj.Items)
+        deltavec = areavec.scale(obj.Axis.x, obj.Axis.y ,obj.Axis.z) - (obj.OffsetStart + obj.OffsetEnd) * obj.Axis
+        sections = int(obj.Items)
         startvec = Vector(curvebox.XMin, curvebox.YMin, curvebox.ZMin)
-        if self.obj.Axis.x < 0: startvec.x = curvebox.XMax
-        if self.obj.Axis.y < 0: startvec.y = curvebox.YMax
-        if self.obj.Axis.z < 0: startvec.z = curvebox.ZMax
-        pos0 = startvec + (self.obj.OffsetStart * self.obj.Axis)      
+        if obj.Axis.x < 0: startvec.x = curvebox.XMax
+        if obj.Axis.y < 0: startvec.y = curvebox.YMax
+        if obj.Axis.z < 0: startvec.z = curvebox.ZMax
+        pos0 = startvec + (obj.OffsetStart * obj.Axis)      
             
         for n in range(0, sections):
             if sections > 1:
@@ -149,10 +92,10 @@ class CurvedArrayWorker:
             else:
                 posvec = pos0
                 
-            dolly = self.makeRib(posvec)
+            dolly = self.makeRib(obj, posvec)
             if dolly: 
-                if not self.obj.Twist == 0:
-                    dolly.rotate(dolly.BoundBox.Center, self.obj.Axis, self.obj.Twist * posvec.Length / areavec.Length)
+                if not obj.Twist == 0:
+                    dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twist * posvec.Length / areavec.Length)
                 ribs.append(dolly)  
         
         if self.extract:
@@ -165,84 +108,20 @@ class CurvedArrayWorker:
             self.compound = FreeCAD.ActiveDocument.addObject("Part::Compound","CurvedArrayElements")
             self.compound.Links = links
         
-        if (self.obj.Surface or self.obj.Solid) and self.obj.Items > 1:
-            self.makeSurfaceSolid(ribs)
+        if (obj.Surface or obj.Solid) and obj.Items > 1:
+            obj.Shape = CurvedShapes.makeSurfaceSolid(ribs, obj.Solid)
         else:
-            self.obj.Shape = Part.makeCompound(ribs)
+            obj.Shape = Part.makeCompound(ribs)
             
-        self.obj.Placement = pl
+        obj.Placement = pl
         
-            
-    def makeSurfaceSolid(self, ribs):
-        surfaces = []
-        for e in range(0, len(self.obj.Base.Shape.Edges)):
-            edge = self.obj.Base.Shape.Edges[e]      
-            bs = edge.Curve.toBSpline()
-            umults = bs.getMultiplicities()
-            uknots = bs.getKnots()
-            uperiodic = bs.isPeriodic()
-            udegree = bs.Degree
-            uweights = bs.getWeights()
-            
-            weights = []
-            poles = []
-            for r in ribs:
-                weights += uweights
-                poles.append(r.Edges[e].Curve.getPoles())
-            
-            if len(ribs) > 3:
-                vmults = [4]
-                vknots = [0]
-                for i in range(1, len(ribs) - 3):
-                    vknots.append(i * 1.0 / (len(ribs) - 1))
-                    vmults.append(1)
-                vmults.append(4)
-                vknots.append(1.0)
-            else:
-                vmults = [len(ribs), len(ribs)]
-                vknots = [0.0, 1.0]
-            
-        #print("poles:" + str(len(poles)) + "x" + str(len(poles[0])))
-        #print("umults:" + str(umults))
-        #print("vmults:" + str(vmults))
-        #print("uknots:" + str(uknots))
-        #print("vknots:" + str(vknots))
-        
-            try:
-                bs = Part.BSplineSurface()
-                bs.buildFromPolesMultsKnots(poles, vmults, umults, vknots, uknots, False, uperiodic, udegree, udegree) 
-                surfaces.append(bs.toShape())
-            except:            
-                wiribs = []
-                for r in ribs:
-                    wiribs.append(Part.Wire(r.Edges))
-                                    
-                surfaces.append(Part.makeLoft(wiribs))
-                    
-            if len(surfaces) == 1:
-                self.obj.Shape = surfaces[0]
-            elif len(surfaces) > 1:
-                self.obj.Shape = Part.makeCompound(surfaces)
-            
-        if self.obj.Solid:  
-            face1 = self.makeFace(ribs[0])
-            if face1:
-                face2 = self.makeFace(ribs[len(ribs)-1])
-                shell = Part.makeShell([face1, face2, self.obj.Shape])
-                self.obj.Shape = Part.makeSolid(shell)
-            
-    def makeFace(self, rib):
-        wire = Part.Wire(rib.Edges)
-        if wire.isClosed():
-            return Part.makeFace(wire, "Part::FaceMakerSimple")
-        else:
-            FreeCAD.Console.PrintError("Base shape is not closed. Cannot draw solid")
+
         
         
-    def makeRib(self, posvec):
-        basebbox = self.obj.Base.Shape.BoundBox    
-        basepl = self.obj.Base.Placement 
-        bbox = self.boundbox_from_intersect(posvec, self.obj.Axis)
+    def makeRib(self, obj, posvec):
+        basebbox = obj.Base.Shape.BoundBox    
+        basepl = obj.Base.Placement 
+        bbox = CurvedShapes.boundbox_from_intersect(obj.Hullcurves, posvec, obj.Axis, self.doScaleXYZ)
         if not bbox:
             return None
           
@@ -251,85 +130,46 @@ class CurvedArrayWorker:
         #box.Placement.Base.y = bbox.YMin
         #box.Placement.Base.z = bbox.ZMin
         #Part.show(box)        
-        scalevec = Vector(1, 1, 1)
-        if basebbox.XLength > epsilon: scalevec.x = bbox.XLength / basebbox.XLength
-        if basebbox.YLength > epsilon: scalevec.y = bbox.YLength / basebbox.YLength
-        if basebbox.ZLength > epsilon: scalevec.z = bbox.ZLength / basebbox.ZLength     
-        if scalevec.x < epsilon: 
-            if self.doScaleXYZsum[0]:
-                scalevec.x = epsilon   
-            else:
-                scalevec.x = 1   
-        if scalevec.y < epsilon: 
-            if self.doScaleXYZsum[1]:
-                scalevec.y = epsilon   
-            else:
-                scalevec.y = 1
-        if scalevec.z < epsilon: 
-            if self.doScaleXYZsum[2]:
-                scalevec.z = epsilon   
-            else:
-                scalevec.z = 1
         
-        scalevec2 = scalevec
-        if abs(self.obj.Axis.x) > 1 - epsilon: scalevec2.x = 1
-        if abs(self.obj.Axis.y) > 1 - epsilon: scalevec2.y = 1
-        if abs(self.obj.Axis.z) > 1 - epsilon: scalevec2.z = 1
-        dolly = CurvedShapes.scale(self.obj.Base, scalevec2)
-        
-        dolly.Placement = basepl
-        if self.doScaleXYZsum[0]:
-            dolly.Placement.Base.x += bbox.XMin - basebbox.XMin * scalevec.x  
-        if self.doScaleXYZsum[1]:           
-            dolly.Placement.Base.y += bbox.YMin - basebbox.YMin * scalevec.y
-        if self.doScaleXYZsum[2]:
-            dolly.Placement.Base.z += bbox.ZMin - basebbox.ZMin * scalevec.z
-        return dolly
+        return CurvedShapes.scaleByBoundbox(obj.Base.Shape, bbox, self.doScaleXYZsum, copy=True)
     
     
     def execute(self, prop):
+        if prop.Base and prop.Axis == Vector(0.0,0.0,0.0):
+            if hasattr(prop.Base, 'Dir'):
+                prop.Axis = prop.Base.Dir
+            else:
+                prop.Axis = prop.Base.Placement.Rotation.multVec(Vector(0, 0, 1))
+            return
+        
+        self.doScaleXYZ = []
+        self.doScaleXYZsum = [False, False, False]
+        for h in prop.Hullcurves:
+            bbox = h.Shape.BoundBox
+            doScale = [False, False, False]
+            
+            if bbox.XLength > epsilon: 
+                doScale[0] = True 
+                self.doScaleXYZsum[0] = True
+        
+            if bbox.YLength > epsilon: 
+                doScale[1] = True 
+                self.doScaleXYZsum[1] = True
+        
+            if bbox.ZLength > epsilon: 
+                doScale[2] = True 
+                self.doScaleXYZsum[2] = True
+        
+            self.doScaleXYZ.append(doScale)
+        
+        if prop.Items > 0 and prop.Base and hasattr(prop.Base, "Shape") and len(prop.Hullcurves) > 0:
+            self.makeRibs(prop)
+            return
+        
+    def onChanged(self, fp, prop):
         proplist = ["Base", "Hullcurves", "Axis", "Items", "OffsetStart", "OffsetEnd", "Twist", "Surface", "Solid"]
         if prop in proplist:      
-            if self.obj.Base and self.obj.Axis == Vector(0.0,0.0,0.0):
-                if hasattr(self.obj.Base, 'Dir'):
-                    self.obj.Axis = self.obj.Base.Dir
-                else:
-                    self.obj.Axis = self.obj.Base.Placement.Rotation.multVec(Vector(0, 0, 1))
-                return
-            
-            self.doScaleXYZ = []
-            self.doScaleXYZsum = [False, False, False]
-            for h in self.obj.Hullcurves:
-                bbox = h.Shape.BoundBox
-                doScale = [False, False, False]
-                
-                if bbox.XLength > epsilon: 
-                    doScale[0] = True 
-                    self.doScaleXYZsum[0] = True
-
-                if bbox.YLength > epsilon: 
-                    doScale[1] = True 
-                    self.doScaleXYZsum[1] = True
- 
-                if bbox.ZLength > epsilon: 
-                    doScale[2] = True 
-                    self.doScaleXYZsum[2] = True
-     
-                self.doScaleXYZ.append(doScale)
- 
-            if self.obj.Items > 0 and self.obj.Base and hasattr(self.obj.Base, "Shape") and len(self.obj.Hullcurves) > 0:
-                self.makeRibs()
-     
-     
-    def onChanged(self, fp, prop):
-        self.execute(prop)  
-        
-        
-    def getObj(self):
-        if self.extract:
-            return self.compound
-        else:
-            return self.obj  
+            self.execute(fp)
 
 
 class CurvedArrayViewProvider:
