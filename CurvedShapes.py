@@ -152,8 +152,9 @@ def makeSurfaceSolid(ribs, solid):
                 FreeCAD.Console.PrintError("Cannot make a wire. Creation of surface is not possible !\n")
                 return
           
-    try:              
-        surfaces.append(Part.makeLoft(wiribs))
+    try: 
+        loft = Part.makeLoft(wiribs)
+        surfaces += loft.Faces
     except:      
         FreeCAD.Console.PrintError("Creation of surface is not possible !\n")
         return Part.makeCompound(wiribs)

@@ -21,7 +21,7 @@ def draw_HortenHIX():
     reload(CurvedArray)
 
     length = 500
-    scaleFactor = length / 85
+    scaleFactor = 1#length / 85
     
 
     if FreeCAD.ActiveDocument is not None and FreeCAD.ActiveDocument.Name == "Horten_HIX":
@@ -182,6 +182,16 @@ def draw_HortenHIX():
     
     Cockpit = drawCockpit(doc, scaleFactor, rib_material_height)
     
+    Turbine = makeTurbine(doc, scaleFactor)
+    TurbineCut = makeTurbineCut(doc, scaleFactor)
+    doc.recompute()
+    Draft.rotate([Turbine, TurbineCut], -6, Vector(0.0,length,0.0), axis=Vector(1.0,0.0,0.0), copy=False)
+    Turbine.Placement.Base = Vector(0.0, 0.0, 6.5) * scaleFactor
+    TurbineCut.Placement.Base = Vector(0.0, 0.0, 6.5) * scaleFactor
+    Cut = doc.addObject('Part::Cut', 'Wing')
+    Cut.Base = WingSurface
+    Cut.Tool = TurbineCut
+    
     doc.recompute()
     FreeCADGui.activeDocument().activeView().viewIsometric()
     FreeCADGui.SendMsgToActiveView("ViewFit")
@@ -286,7 +296,95 @@ def drawCockpit(doc, scaleFactor, rib_material_height):
     Cockpit.ViewObject.Transparency = 50
     
     return Cockpit
+
     
+def makeTurbine(doc, scaleFactor = 1):
+    Turbine_parts = []
+    poles = []
+    poles.append(Vector(-8.66, 62.34, 0.0) * scaleFactor)
+    poles.append(Vector(-9.57, 62.34, 0.0) * scaleFactor)
+    poles.append(Vector(-9.5, 60.82, 0.0) * scaleFactor)
+    weights = [1.0, 1.0, 1.0]
+    knots = [0.0, 1.0]
+    mults = [3, 3]
+    bspline = Part.BSplineCurve()
+    bspline.buildFromPolesMultsKnots(poles, mults, knots, False, 2, weights, False)
+    bezier = doc.addObject('Part::Spline', 'BSplineCurve')
+    bezier.Shape = bspline.toShape()
+    Turbine_parts.append(bezier)
+    poles = []
+    poles.append(Vector(-8.89, 32.22, 0.0) * scaleFactor)
+    poles.append(Vector(-9.33, 34.42, 0.0) * scaleFactor)
+    poles.append(Vector(-9.5, 36.07, 0.0) * scaleFactor)
+    weights = [1.0, 1.0, 1.0]
+    knots = [0.0, 1.0]
+    mults = [3, 3]
+    bspline = Part.BSplineCurve()
+    bspline.buildFromPolesMultsKnots(poles, mults, knots, False, 2, weights, False)
+    bezier = doc.addObject('Part::Spline', 'BSplineCurve')
+    bezier.Shape = bspline.toShape()
+    Turbine_parts.append(bezier)
+    line = Draft.makeWire([Vector(-9.5, 60.82, 0.0) * scaleFactor, Vector(-9.5, 36.07, 0.0) * scaleFactor])
+    Turbine_parts.append(line)
+    line = Draft.makeWire([Vector(-8.66, 62.34, 0.0) * scaleFactor, Vector(-8.66, 54.56, 0.0) * scaleFactor])
+    Turbine_parts.append(line)
+    line = Draft.makeWire([Vector(-8.66, 54.56, 0.0) * scaleFactor, Vector(-6.0, 54.56, 0.0) * scaleFactor])
+    Turbine_parts.append(line)
+    line = Draft.makeWire([Vector(-6.0, 54.56, 0.0) * scaleFactor, Vector(-6.0, 29.45, 0.0) * scaleFactor])
+    Turbine_parts.append(line)
+    poles = []
+    poles.append(Vector(-8.89, 32.22, 0.0) * scaleFactor)
+    poles.append(Vector(-8.24, 32.22, 0.0) * scaleFactor)
+    poles.append(Vector(-6.56, 35.65, 0.0) * scaleFactor)
+    poles.append(Vector(-6.58, 29.33, 0.0) * scaleFactor)
+    poles.append(Vector(-6.0, 29.45, 0.0) * scaleFactor)
+    weights = [1.0, 1.0, 1.0, 1.0, 1.0]
+    knots = [0.0, 0.5, 1.0]
+    mults = [4, 1, 4]
+    bspline = Part.BSplineCurve()
+    bspline.buildFromPolesMultsKnots(poles, mults, knots, False, 3, weights, False)
+    bezier = doc.addObject('Part::Spline', 'BSplineCurve')
+    bezier.Shape = bspline.toShape()
+    Turbine_parts.append(bezier)
+    Turbine = BOPTools.JoinFeatures.makeConnect(name = 'Turbine1')
+    Turbine.Objects = Turbine_parts 
+    Turbine.Placement.Base = Vector(0.0, 0.0, 0.0) * scaleFactor
+    Turbine.Placement.Rotation = Rotation (0.0, 0.0, 0.0, 1.0)
+    for obj in Turbine.ViewObject.Proxy.claimChildren():
+        obj.ViewObject.hide()
+    Turbine.ViewObject.hide()
+    Revolve = doc.addObject('Part::Revolution', 'Turbine')
+    Revolve.Axis = Vector(0.0, 1.0, 0.0)
+    Revolve.Base = Vector(-6.0, 0.0, 0.0) * scaleFactor
+    Revolve.Source = Turbine
+    Revolve.Symmetric = True
+    Revolve.Solid = True
+    return Revolve
+
+def makeTurbineCut(doc, scaleFactor = 1):
+    Turbinecut_parts = []
+    line = Draft.makeWire([Vector(-6.0, 0.0, 0.0) * scaleFactor, Vector(-9.5, 0.0, 0.0) * scaleFactor])
+    Turbinecut_parts.append(line)
+    line = Draft.makeWire([Vector(-9.5, 0.0, 0.0) * scaleFactor, Vector(-9.5, 75.0, 0.0) * scaleFactor])
+    Turbinecut_parts.append(line)
+    line = Draft.makeWire([Vector(-9.5, 75.0, 0.0) * scaleFactor, Vector(-6.0, 75.0, 0.0) * scaleFactor])
+    Turbinecut_parts.append(line)
+    line = Draft.makeWire([Vector(-6.0, 75.0, 0.0) * scaleFactor, Vector(-6.0, 0.0, 0.0) * scaleFactor])
+    Turbinecut_parts.append(line)
+    TurbineCut = BOPTools.JoinFeatures.makeConnect(name = 'TurbineCut1')
+    TurbineCut.Objects = Turbinecut_parts
+    TurbineCut.Placement.Base = Vector(0.0, 0.0, 0.0) * scaleFactor
+    TurbineCut.Placement.Rotation = Rotation (0.0, 0.0, 0.0, 1.0)
+    for obj in TurbineCut.ViewObject.Proxy.claimChildren():
+        obj.ViewObject.hide()
+    TurbineCut.ViewObject.hide()
+    Revolve = doc.addObject('Part::Revolution', 'TurbineCut')
+    Revolve.Axis = Vector(0.0, 1.0, 0.0)
+    Revolve.Base = Vector(-6.0, 0.0, 0.0) * scaleFactor
+    Revolve.Source = TurbineCut
+    Revolve.Symmetric = True
+    Revolve.Solid = True
+    return Revolve
 
         
 class Horten_HIX():
