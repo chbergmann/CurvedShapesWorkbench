@@ -4,15 +4,16 @@
 FreeCAD Workbench for creating 3D shapes from 2D curves
   
 ## Installation
+### Automatic Installation
+**Note: This is the recommended way to install this workbench.**  
+The Curved Shapes workbench is available through the builtin FreeCAD [Addon Manager](https://github.com/FreeCAD/FreeCAD-addons#1-builtin-addon-manager).
+Once installed all that is needed is to restart FreeCAD and the workbench will be available in the workbenches dropdown menu.
 
-You can install this workbench from the Addon manager in FreeCAD.
-
-**Manual installation**
+### Manual Installation
 - `cd` in to your your personal FreeCAD folder (usually `~/.FreeCAD` on Linux)
 - `cd Mod/` (or create this folder if it doesn't exist)
 - `git clone https://github.com/chbergmann/CurvedShapesWorkbench.git`
-- Start FreeCAD
-
+- Start FreeCAD  
 **Result**: "Curved Shapes" workbench should now show up in the workbench dropdown list.
   
 ## Tools
@@ -119,7 +120,7 @@ It is a python script that creates the shape of a flying wing RC model.
 ![S800](Examples/S800.jpg)
 
 ## Discussion
-Please offer feedback or connect with the developer in the [dedicated FreeCAD forum thread](https://forum.freecadweb.org/viewtopic.php?f=8&t=36989).
+Please offer feedback or connect with the developer via the [dedicated FreeCAD forum thread](https://forum.freecadweb.org/viewtopic.php?f=8&t=36989).
 
 ## License
 GNU Lesser General Public License v3.0
