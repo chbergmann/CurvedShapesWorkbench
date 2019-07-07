@@ -111,7 +111,7 @@ class CurvedSegmentWorker:
                 if len(poles1) != len(poles2):
                     interpolate = True
                     break
-         
+        
         makeStartEnd = fp.makeSurface or fp.makeSolid
         if interpolate:
             ribs = makeRibsInterpolate(fp, fp.Items, False, makeStartEnd)
@@ -193,6 +193,8 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
         fraction =  i / (items + 1)
         plane = getMidPlane(fp, fraction)
         
+        edges = []
+        curves = []
         for e in range(0, len(fp.Shape1.Shape.Edges)):
             edge1 = fp.Shape1.Shape.Edges[e]
             edge2 = fp.Shape2.Shape.Edges[e]
@@ -200,7 +202,6 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
             curve2 = edge2.Curve.toBSpline(edge2.FirstParameter, edge2.LastParameter)
             poles1 = curve1.getPoles()
             poles2 = curve2.getPoles()
-            newcurve = Part.BSplineCurve()
             
             newpoles = []
             for p in range(len(poles1)):
@@ -208,19 +209,29 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
                     newpoles.append(vectorMiddlePlaneNormal(poles1[p], poles2[p], fraction, fp.NormalShape1, fp.NormalShape2))
                 else:
                     newpoles.append(vectorMiddlePlane(poles1[p], poles2[p], fraction, plane))
-                    
-                
+                           
+            newcurve = Part.BSplineCurve()
             newcurve.buildFromPolesMultsKnots(newpoles, 
-                                          curve1.getMultiplicities(), 
-                                          curve1.getKnots(), 
-                                          curve1.isPeriodic(), 
-                                          curve1.Degree,
-                                          curve1.getWeights(), 
-                                          curve1.isRational())
-            
-            rib = newcurve.toShape()
-            wire = Part.Wire(rib.Edges)
+                                      curve1.getMultiplicities(), 
+                                      curve1.getKnots(), 
+                                      curve1.isPeriodic(), 
+                                      curve1.Degree,
+                                      curve1.getWeights(), 
+                                      curve1.isRational())
+        
+            rib = newcurve.toShape()     
+            curves.append(rib)
+            edges += rib.Edges
+        
+        try:    
+            wire = Part.Wire(edges)
             ribs.append(wire)
+        except:
+            if len(curves == 1):
+                ribs.append(curves[0]) 
+            else:
+                ribs.append(Part.makeCompound(curves))
+            
             
     if makeStartEnd:
         ribs.insert(0, fp.Shape1.Shape)
@@ -265,7 +276,12 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
             newshape.append(bc)
         
         if len(newshape) == 1:
-            ribs.append(newshape[0].toShape())
+            sh = newshape[0].toShape()
+            try:
+                wire = Part.Wire(sh.Edges)
+                ribs.append(wire)
+            except:
+                ribs.append(sh)
         else:
             shapes = []
             for n in newshape:
