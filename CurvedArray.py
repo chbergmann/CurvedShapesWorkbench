@@ -64,17 +64,17 @@ class CurvedArrayWorker:
                 if cbbx.ZMin > curvebox.ZMin: curvebox.ZMin = cbbx.ZMin
                 if cbbx.ZMax < curvebox.ZMax: curvebox.ZMax = cbbx.ZMax
             
-        if curvebox.XMin == float("inf"): 
-            curvebox.XMin = obj.Hullcurves[0].Shape.BoundBox.XMin
         if curvebox.XMin == float("-inf"): 
+            curvebox.XMin = obj.Hullcurves[0].Shape.BoundBox.XMin
+        if curvebox.XMax == float("inf"): 
             curvebox.XMax = obj.Hullcurves[0].Shape.BoundBox.XMax
-        if curvebox.YMin == float("inf"): 
+        if curvebox.YMin == float("-inf"): 
             curvebox.YMin = obj.Hullcurves[0].Shape.BoundBox.YMin
-        if curvebox.YMax == float("-inf"): 
+        if curvebox.YMax == float("inf"): 
             curvebox.YMax = obj.Hullcurves[0].Shape.BoundBox.YMax
-        if curvebox.ZMin == float("inf"): 
+        if curvebox.ZMin == float("-inf"): 
             curvebox.ZMin = obj.Hullcurves[0].Shape.BoundBox.ZMin
-        if curvebox.ZMax == float("-inf"): 
+        if curvebox.ZMax == float("inf"): 
             curvebox.ZMax = obj.Hullcurves[0].Shape.BoundBox.ZMax
          
         areavec = Vector(curvebox.XLength, curvebox.YLength, curvebox.ZLength)
