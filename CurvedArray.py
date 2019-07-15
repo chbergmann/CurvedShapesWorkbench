@@ -23,7 +23,7 @@ class CurvedArrayWorker:
                  obj,
                  base = None,
                  hullcurves=[], 
-                 axis=Vector(0.0,0.0,0.0), items=2, Positions = [],
+                 axis=Vector(0.0,0.0,0.0), items=2, ExtraRibs = [],
                  OffsetStart=0, OffsetEnd=0, 
                  Twist=0.0, 
                  Surface=True, 
@@ -33,7 +33,7 @@ class CurvedArrayWorker:
         obj.addProperty("App::PropertyLinkList",  "Hullcurves",   "CurvedArray",   "Bounding curves").Hullcurves = hullcurves        
         obj.addProperty("App::PropertyVector", "Axis",    "CurvedArray",   "Direction axis").Axis = axis
         obj.addProperty("App::PropertyQuantity", "Items", "CurvedArray",   "Nr. of array items").Items = items
-        obj.addProperty("App::PropertyFloatList","Positions", "CurvedArray","Positions for extra ribs (as floats from 0.0 to 1.0)").Positions = []
+        obj.addProperty("App::PropertyFloatList","ExtraRibs", "CurvedArray","Positions for extra ribs (as floats from 0.0 to 1.0)").ExtraRibs = []
         obj.addProperty("App::PropertyFloat", "OffsetStart","CurvedArray",  "Offset of the first part in Axis direction").OffsetStart = OffsetStart
         obj.addProperty("App::PropertyFloat", "OffsetEnd","CurvedArray",  "Offset of the last part from the end in opposite Axis direction").OffsetEnd = OffsetEnd
         obj.addProperty("App::PropertyFloat", "Twist","CurvedArray",  "Offset of the last part from the end in opposite Axis direction").Twist = Twist
@@ -100,8 +100,8 @@ class CurvedArrayWorker:
                     dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twist * posvec.Length / areavec.Length)
                 ribs.append(dolly)
 
-        if (hasattr(obj,"Positions")):
-            for p in obj.Positions:
+        if (hasattr(obj,"ExtraRibs")):
+            for p in obj.ExtraRibs:
                 posvec = pos0 + (deltavec * p)
                 dolly = self.makeRib(obj, posvec)
 
@@ -174,21 +174,21 @@ class CurvedArrayWorker:
         
             self.doScaleXYZ.append(doScale)
         
-        if (hasattr(prop,"Positions") and len(prop.Positions) != 0) or (prop.Items and prop.Base and hasattr(prop.Base, "Shape") and len(prop.Hullcurves) > 0):
+        if (hasattr(prop,"ExtraRibs") and len(prop.ExtraRibs) != 0) or (prop.Items and prop.Base and hasattr(prop.Base, "Shape") and len(prop.Hullcurves) > 0):
             self.makeRibs(prop)
             return
         
     def onChanged(self, fp, prop):
-        proplist = ["Base", "Hullcurves", "Axis", "Items", "Positions", "OffsetStart", "OffsetEnd", "Twist", "Surface", "Solid"]
+        proplist = ["Base", "Hullcurves", "Axis", "Items", "ExtraRibs", "OffsetStart", "OffsetEnd", "Twist", "Surface", "Solid"]
         if prop in proplist:
-            if "Positions" in prop and len(fp.Positions) != 0:
+            if "ExtraRibs" in prop and len(fp.ExtraRibs) != 0:
                 outOfBounds = False
-                for p in fp.Positions:
+                for p in fp.ExtraRibs:
                     if (p < 0.0 or p > 1.0):
                         outOfBounds = True
                         break
                 if outOfBounds:
-                    FreeCAD.Console.PrintWarning("Some positions are out of bounds, should all be between 0.0 and 1.0, inclusive\n")
+                    FreeCAD.Console.PrintWarning("Some extra rib positions are out of bounds, should all be between 0.0 and 1.0, inclusive\n")
             self.execute(fp)
 
 
