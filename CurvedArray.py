@@ -182,13 +182,10 @@ class CurvedArrayWorker:
         proplist = ["Base", "Hullcurves", "Axis", "Items", "ExtraRibs", "OffsetStart", "OffsetEnd", "Twist", "Surface", "Solid"]
         if prop in proplist:
             if "ExtraRibs" in prop and len(fp.ExtraRibs) != 0:
-                outOfBounds = False
                 for p in fp.ExtraRibs:
                     if (p < 0.0 or p > 1.0):
-                        outOfBounds = True
+                        FreeCAD.Console.PrintWarning("Some extra rib positions are out of bounds, should all be between 0.0 and 1.0, inclusive\n")
                         break
-                if outOfBounds:
-                    FreeCAD.Console.PrintWarning("Some extra rib positions are out of bounds, should all be between 0.0 and 1.0, inclusive\n")
             self.execute(fp)
 
 
