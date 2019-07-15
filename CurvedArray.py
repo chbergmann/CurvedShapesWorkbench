@@ -119,7 +119,7 @@ class CurvedArrayWorker:
             self.compound = FreeCAD.ActiveDocument.addObject("Part::Compound","CurvedArrayElements")
             self.compound.Links = links
         
-        if (obj.Surface or obj.Solid) and obj.Items > 1:
+        if ((hasattr(obj,"Surface") and obj.Surface) or (hasattr(obj,"Solid") and obj.Solid)) and obj.Items > 1:
             obj.Shape = CurvedShapes.makeSurfaceSolid(ribs, obj.Solid)
         else:
             obj.Shape = Part.makeCompound(ribs)
