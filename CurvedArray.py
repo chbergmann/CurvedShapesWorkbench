@@ -23,7 +23,7 @@ class CurvedArrayWorker:
                  obj,
                  base = None,
                  hullcurves=[], 
-                 axis=Vector(0.0,0.0,0.0), items=2, 
+                 axis=Vector(0.0,0.0,0.0), items=2, Positions = [],
                  OffsetStart=0, OffsetEnd=0, 
                  Twist=0.0, 
                  Surface=True, 
@@ -33,6 +33,7 @@ class CurvedArrayWorker:
         obj.addProperty("App::PropertyLinkList",  "Hullcurves",   "CurvedArray",   "Bounding curves").Hullcurves = hullcurves        
         obj.addProperty("App::PropertyVector", "Axis",    "CurvedArray",   "Direction axis").Axis = axis
         obj.addProperty("App::PropertyQuantity", "Items", "CurvedArray",   "Nr. of array items").Items = items
+        obj.addProperty("App::PropertyFloatList","Positions", "CurvedArray","Positions for ribs (as floats from 0.0 to 1.0) -- overrides Items").Positions = []
         obj.addProperty("App::PropertyFloat", "OffsetStart","CurvedArray",  "Offset of the first part in Axis direction").OffsetStart = OffsetStart
         obj.addProperty("App::PropertyFloat", "OffsetEnd","CurvedArray",  "Offset of the last part from the end in opposite Axis direction").OffsetEnd = OffsetEnd
         obj.addProperty("App::PropertyFloat", "Twist","CurvedArray",  "Offset of the last part from the end in opposite Axis direction").Twist = Twist
@@ -86,17 +87,27 @@ class CurvedArrayWorker:
         if obj.Axis.z < 0: startvec.z = curvebox.ZMax
         pos0 = startvec + (obj.OffsetStart * obj.Axis)      
             
-        for n in range(0, sections):
-            if sections > 1:
-                posvec = pos0 + (deltavec * n / (sections - 1))
-            else:
-                posvec = pos0
+        if (not hasattr(obj,"Positions") or len(obj.Positions) == 0):
+            for n in range(0, sections):
+                if sections > 1:
+                    posvec = pos0 + (deltavec * n / (sections - 1))
+                else:
+                    posvec = pos0
                 
-            dolly = self.makeRib(obj, posvec)
-            if dolly: 
-                if not obj.Twist == 0:
-                    dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twist * posvec.Length / areavec.Length)
-                ribs.append(dolly)  
+                dolly = self.makeRib(obj, posvec)
+                if dolly: 
+                    if not obj.Twist == 0:
+                        dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twist * posvec.Length / areavec.Length)
+                    ribs.append(dolly)
+        else:
+            for p in obj.Positions:
+                posvec = pos0 + (deltavec * p)
+                dolly = self.makeRib(obj, posvec)
+
+                if dolly: 
+                    if not obj.Twist == 0:
+                        dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twist * posvec.Length / areavec.Length)
+                    ribs.append(dolly)  
         
         if self.extract:
             links = []
@@ -162,13 +173,22 @@ class CurvedArrayWorker:
         
             self.doScaleXYZ.append(doScale)
         
-        if prop.Items > 0 and prop.Base and hasattr(prop.Base, "Shape") and len(prop.Hullcurves) > 0:
+        if (hasattr(prop,"Positions") and len(prop.Positions) != 0) or (prop.Items and prop.Base and hasattr(prop.Base, "Shape") and len(prop.Hullcurves) > 0):
             self.makeRibs(prop)
             return
         
     def onChanged(self, fp, prop):
-        proplist = ["Base", "Hullcurves", "Axis", "Items", "OffsetStart", "OffsetEnd", "Twist", "Surface", "Solid"]
-        if prop in proplist:      
+        proplist = ["Base", "Hullcurves", "Axis", "Items", "Positions", "OffsetStart", "OffsetEnd", "Twist", "Surface", "Solid"]
+        if prop in proplist:
+            if "Positions" in prop and len(fp.Positions) != 0:
+                setattr(fp,"Items",str(len(fp.Positions)))
+                outOfBounds = False
+                for p in fp.Positions:
+                    if (p < 0.0 or p > 1.0):
+                        outOfBounds = True
+                        break
+                if outOfBounds:
+                    FreeCAD.Console.PrintWarning("Some positions are out of bounds, should all be between 0.0 and 1.0, inclusive\n")
             self.execute(fp)
 
 
