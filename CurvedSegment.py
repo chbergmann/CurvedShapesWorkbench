@@ -227,7 +227,7 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
             wire = Part.Wire(edges)
             ribs.append(wire)
         except:
-            if len(curves == 1):
+            if len(curves) == 1:
                 ribs.append(curves[0]) 
             else:
                 ribs.append(Part.makeCompound(curves))
