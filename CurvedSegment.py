@@ -28,7 +28,8 @@ class CurvedSegmentWorker:
                  items=2, 
                  surface=False, 
                  solid=False,
-                 interpol=16):
+                 interpol=16,
+                 Twist = 0.0):
         fp.addProperty("App::PropertyLink",  "Shape1",     "CurvedSegment",   "The first object of the segment").Shape1 = shape1
         fp.addProperty("App::PropertyLink",  "Shape2",     "CurvedSegment",   "The last object of the segment").Shape2 = shape2
         fp.addProperty("App::PropertyLinkList",  "Hullcurves",   "CurvedSegment",   "Bounding curves").Hullcurves = hullcurves        
@@ -38,6 +39,8 @@ class CurvedSegmentWorker:
         fp.addProperty("App::PropertyBool", "makeSurface","CurvedSegment",  "make a surface").makeSurface = surface
         fp.addProperty("App::PropertyBool", "makeSolid","CurvedSegment",  "make a solid").makeSolid = solid
         fp.addProperty("App::PropertyInteger", "InterpolationPoints", "CurvedSegment",   "Unequal edges will be splitted into this number of points").InterpolationPoints = interpol
+        fp.addProperty("App::PropertyFloat", "Twist","CurvedSegment",  "Compensates a rotation between Shape1 and Shape2").Twist = Twist
+        fp.addProperty("App::PropertyBool", "Reverse","CurvedSegment",  "Reverses the rotation of one Shape").Reverse = False
         self.doScaleXYZ = []
         self.doScaleXYZsum = [False, False, False]
         self.update = True
@@ -88,7 +91,7 @@ class CurvedSegmentWorker:
         
         
     def onChanged(self, fp, prop):
-        proplist = ["Shape1", "Shape2", "Hullcurves", "NormalShape1", "NormalShape2", "Items", "makeSurface", "makeSolid", "InterpolationPoints"]
+        proplist = ["Shape1", "Shape2", "Hullcurves", "NormalShape1", "NormalShape2", "Items", "makeSurface", "makeSolid", "InterpolationPoints", "Twist", "Reverse"]
         for p in proplist:
             if not hasattr(fp, p):
                 return
@@ -201,7 +204,7 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
             curve1 = edge1.Curve.toBSpline(edge1.FirstParameter, edge1.LastParameter)
             curve2 = edge2.Curve.toBSpline(edge2.FirstParameter, edge2.LastParameter)
             poles1 = curve1.getPoles()
-            poles2 = curve2.getPoles()
+            poles2 = reorderPoints(curve2.getPoles(), fp.Twist, fp.Reverse)
             
             newpoles = []
             for p in range(len(poles1)):
@@ -248,6 +251,7 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
 
     pointslist1 = EdgesToPoints(fp.Shape1.Shape, int(nr_edges / len1), int(fp.InterpolationPoints))
     pointslist2 = EdgesToPoints(fp.Shape2.Shape, int(nr_edges / len2), int(fp.InterpolationPoints))
+    origin = Vector(0,0,0)
             
     ribs = []
     if makeStartEnd:
@@ -263,7 +267,7 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
         newshape = []
         for l in range(0, len(pointslist1)):
             points1 = pointslist1[l]
-            points2 = pointslist2[l]
+            points2 = reorderPoints(pointslist2[l], fp.Twist, fp.Reverse)
             newpoles = []
             for p in range(0, fp.InterpolationPoints):
                 if alongNormal:
@@ -319,6 +323,31 @@ def EdgesToPoints(shape, nr_frac, points_per_edge):
         
     return llpoints
 
+
+def reorderPoints(points, twist, reverse):
+    nr = len(points)
+    start = int(nr * twist / 360)    
+    closed = False
+    if nr >= 2 and (points[0] - points[nr - 1]).Length < epsilon:
+        closed = True
+        nr = nr - 1
+        
+    newpoints = []
+    if reverse:
+        for i in range(start, -1, -1):
+            newpoints.append(points[i])  
+        for i in range(nr - 1, start, -1):
+            newpoints.append(points[i]) 
+    else:        
+        for i in range(start, nr):
+            newpoints.append(points[i])  
+        for i in range(0, start):
+            newpoints.append(points[i]) 
+            
+    if closed:
+        newpoints.append(points[start])
+        
+    return newpoints 
         
 
 class CurvedSegmentViewProvider:

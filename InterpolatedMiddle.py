@@ -26,7 +26,8 @@ class InterpolatedMiddleWorker:
                  normalShape2=Vector(0,0,0), 
                  surface=False, 
                  solid=False,
-                 interpol=16):
+                 interpol=16,
+                 Twist = 0.0):
         fp.addProperty("App::PropertyLink",  "Shape1",     "InterpolatedMiddle",   "The first object of the segment").Shape1 = shape1
         fp.addProperty("App::PropertyLink",  "Shape2",     "InterpolatedMiddle",   "The last object of the segment").Shape2 = shape2     
         fp.addProperty("App::PropertyVector", "NormalShape1",    "InterpolatedMiddle",   "Direction axis of Shape1").NormalShape1 = normalShape1 
@@ -34,6 +35,8 @@ class InterpolatedMiddleWorker:
         fp.addProperty("App::PropertyBool", "makeSurface","InterpolatedMiddle",  "make a surface").makeSurface = surface
         fp.addProperty("App::PropertyBool", "makeSolid","InterpolatedMiddle",  "make a solid").makeSolid = solid
         fp.addProperty("App::PropertyInteger", "InterpolationPoints", "InterpolatedMiddle",   "Unequal edges will be splitted into this number of points").InterpolationPoints = interpol
+        fp.addProperty("App::PropertyFloat", "Twist","InterpolatedMiddle",  "Compensates a rotation between Shape1 and Shape2").Twist = Twist
+        fp.addProperty("App::PropertyBool", "Reverse","InterpolatedMiddle",  "Reverses the rotation of one Shape").Reverse = False
         self.update = True
         fp.Proxy = self
  

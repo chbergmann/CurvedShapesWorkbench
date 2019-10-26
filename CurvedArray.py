@@ -39,7 +39,6 @@ class CurvedArrayWorker:
         obj.addProperty("App::PropertyBool", "Surface","CurvedArray",  "make a surface").Surface = Surface
         obj.addProperty("App::PropertyBool", "Solid","CurvedArray",  "make a solid").Solid = Solid
         self.extract = extract
-        self.compound = None
         self.doScaleXYZ = []
         self.doScaleXYZsum = [False, False, False]
         obj.Proxy = self
@@ -98,15 +97,6 @@ class CurvedArrayWorker:
                     dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twist * posvec.Length / areavec.Length)
                 ribs.append(dolly)  
         
-        if self.extract:
-            links = []
-            for r in ribs:
-                f = FreeCAD.ActiveDocument.addObject("Part::Feature","CurvedArrayElement")
-                f.Shape = r
-                links.append(f)
-            
-            self.compound = FreeCAD.ActiveDocument.addObject("Part::Compound","CurvedArrayElements")
-            self.compound.Links = links
         
         if (obj.Surface or obj.Solid) and obj.Items > 1:
             obj.Shape = CurvedShapes.makeSurfaceSolid(ribs, obj.Solid)
@@ -115,6 +105,9 @@ class CurvedArrayWorker:
             
         obj.Placement = pl
         
+        if self.extract:
+            CompoundTools.Explode.explodeCompound(obj)
+            obj.ViewObject.hide()
 
         
         
