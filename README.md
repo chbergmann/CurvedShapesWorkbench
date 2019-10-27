@@ -3,6 +3,9 @@ FreeCAD Workbench for creating 3D shapes from 2D curves
   
 ## Installation
 
+You can install this workbench from the Addon manager in FreeCAD.
+
+**Manual installation**
 - `cd` in to your your personal FreeCAD folder (usually `~/.FreeCAD` on Linux)
 - `cd Mod/` (or create this folder if it doesn't exist)
 - `git clone https://github.com/chbergmann/CurvedShapesWorkbench.git`
@@ -14,7 +17,7 @@ FreeCAD Workbench for creating 3D shapes from 2D curves
 ### ![](./Resources/icons/curvedArray.svg) Curved Array
 Creates an array and resizes the items in the bounds of one or more hull curves.
 In this example, the orange base shape is rescaled in the bounds of the red and violet hullcurves. The curves do not have to be connected.  
-The hullcurves should lie on or parralel to the XY- XZ- or YZ- plane.  
+The hullcurves should lie on or parallel to the XY- XZ- or YZ- plane.  
 
 ![WingExample](Examples/WingExample.png)
 
@@ -30,9 +33,9 @@ The hullcurves should lie on or parralel to the XY- XZ- or YZ- plane.
 - Surface: make a surface over the array items
 - Solid: make a solid if Base is a closed shape
 
-##### Resolve a CurvedArray item to a compound of single objects
+#### Resolve a CurvedArray item to a compound of single objects
 Go to the Part workbench. In the Part menu, select Compound -> Explode compound  
-
+  
 ### ![](./Resources/icons/curvedSegment.svg) Curved Segment
 Interpolates between two 2D curves. The interpolated curves can be resized in the bounds of some hullcurves.  
  
@@ -50,7 +53,9 @@ Select two 2D shapes first. The curved segment will be created between them. If 
 - Items: Nr. of items between the segments
 - makeSurface: make a surface over the array items
 - makeSolid: make a solid if Base is a closed shape
-- InterpolationPoints: ignored if Shape1 and Shape2 have the same number of edges and poles. Otherwise all edges will be splitted (discretized) into this number of points
+- InterpolationPoints: ignored if Shape1 and Shape2 have the same number of edges and poles. Otherwise all edges will be splitted (discretized) into this number of points  
+- Twist: Compensates a rotation between Shape1 and Shape2
+- Reverse: Reverses the rotation of one Shape
 
 ### ![](./Resources/icons/CornerShape.svg) Interpolated Middle
 Interpolates a 2D shape into the middle between two 2D curves. The base shapes can be connected to a shape with a sharp corner.
@@ -65,11 +70,34 @@ Interpolates a 2D shape into the middle between two 2D curves. The base shapes c
 - NormalShape2: Direction axis of Shape2 (auto computed)
 - makeSurface: connect Shape1 and Shape2 with a surface over the interpolated middle
 - makeSolid: make a solid if Shape1 and Shape2 are closed shapes
-- InterpolationPoints: ignored if Shape1 and Shape2 have the same number of edges and poles. Otherwise all edges will be splitted (discretized) into this number of points
+- InterpolationPoints: ignored if Shape1 and Shape2 have the same number of edges and poles. Otherwise all edges will be splitted (discretized) into this number of points  
+- Twist: Compensates a rotation between Shape1 and Shape2
+- Reverse: Reverses the rotation of one Shape
+  
+  
+### ![](./Resources/icons/surfaceCut.svg) Surface Cut
+Cuts a surface to get the outline curve or a face.  
+This tool is similar to Cross-Sections in the Part workbench, but it is fully parametric and has an option to reduce the complexity of the output curve.
+
+![SurfaceCut](Examples/SurfaceCut.jpg)
+
+#### Parameters
+- Surfaces: List of objects with a surface
+- Normal:   Normal vector of the cut plane
+- Offset:   Offset of the cut plane to the origin
+- Face:     create a face
+- Simplify: reduce the number of poles in complex curves. If true, an approximation curve is calculated. This may drastically reduce the number of points in some curves. This speeds up the usage of the result curve. In special cases this may not work as expected.  
+  
 
 ### ![](./Resources/icons/Horten_HIX.svg) Horten H IX
 This is an example design for testing and presentation of this workbench.  
 It is a python script that creates the shape of the [Horten H IX](https://de.wikipedia.org/wiki/Horten_H_IX), a stealth fighter that has been build in Germany in 1944.
+
+### ![](./Resources/icons/FlyingWingS800.svg) Flying Wing S800
+This is an example design for testing and presentation of this workbench.  
+It is a python script that creates the shape of a flying wing RC model.  
+  
+![S800](Examples/S800.jpg)
 
 ## Discussion
 Please offer feedback or connect with the developer in the [dedicated FreeCAD forum thread](https://forum.freecadweb.org/viewtopic.php?f=8&t=36989).

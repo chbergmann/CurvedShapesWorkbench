@@ -13,12 +13,11 @@ global epsilon
 epsilon = CurvedShapes.epsilon
 
 def draw_HortenHIX():
-    rib_material_height = 33.0
-    baseplate_width = 5.0
-    front_width = 20
     reload(CurvedSegment)
     reload(CurvedShapes)
     reload(CurvedArray)
+    
+    rib_material_height = 33.0
 
     length = 500
     scaleFactor = 1#length / 85
@@ -158,27 +157,15 @@ def draw_HortenHIX():
     WingSurface = CurvedShapes.makeCurvedArray(Base=WingProfile, 
                                              Hullcurves=[WingTopLeft, WingFrontLeft], 
                                              Axis=Vector(-1,0,0), 
-                                             Items=16, 
+                                             Items=128, 
                                              OffsetStart=0, 
-                                             OffsetEnd=winglength * 0.1,
+                                             OffsetEnd=0,
                                              Twist=-twist,
                                              Surface=True,
-                                             Solid=True,
-                                             extract=False) 
+                                             Solid=True) 
     
-    WingSurfaceEnd = CurvedShapes.makeCurvedArray(Base=WingProfile, 
-                                             Hullcurves=[WingTopLeft, WingFrontLeft], 
-                                             Axis=Vector(-1,0,0), 
-                                             Items=32, 
-                                             OffsetStart=winglength * 0.9, 
-                                             OffsetEnd=0.2,
-                                             Twist=-twist,
-                                             Surface=True,
-                                             Solid=True,
-                                             extract=False) 
     
     WingSurface.Label = "WingSurface"
-    WingSurfaceEnd.Label = "WingSurfaceEnd"
     
     Cockpit = drawCockpit(doc, scaleFactor, rib_material_height)
     
@@ -188,9 +175,21 @@ def draw_HortenHIX():
     Draft.rotate([Turbine, TurbineCut], -6, Vector(0.0,length,0.0), axis=Vector(1.0,0.0,0.0), copy=False)
     Turbine.Placement.Base = Vector(0.0, 0.0, 6.5) * scaleFactor
     TurbineCut.Placement.Base = Vector(0.0, 0.0, 6.5) * scaleFactor
-    Cut = doc.addObject('Part::Cut', 'Wing')
-    Cut.Base = WingSurface
-    Cut.Tool = TurbineCut
+    Wing = doc.addObject('Part::Cut', 'Wing')
+    Wing.Base = WingSurface
+    Wing.Tool = TurbineCut
+    doc.recompute()
+    
+    ymax = WingSurface.Shape.BoundBox.YMin + WingSurface.Shape.BoundBox.YLength
+    rota = FreeCAD.Rotation(Vector(0,0,1), 28)
+    vecToWingEnd28 = rota.multVec(Vector(0,1,0))
+    WingCutFront = CurvedShapes.cutSurfaces([Wing], Normal = vecToWingEnd28, Offset=ymax * 0.76, Face=False, Simplify=True)
+    WingCutFront.Label = "WingCutFront"
+    
+    rota = FreeCAD.Rotation(Vector(0,0,1), 18)
+    vecToWingEnd18 = rota.multVec(Vector(0,1,0))
+    WingCutBack = CurvedShapes.cutSurfaces([Wing], Normal = vecToWingEnd18, Offset=ymax * 0.54, Face=False, Simplify=True)
+    WingCutBack.Label = "WingCutBack"
     
     doc.recompute()
     FreeCADGui.activeDocument().activeView().viewIsometric()
