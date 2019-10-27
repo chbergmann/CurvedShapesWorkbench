@@ -345,9 +345,9 @@ class FlyingWingS800():
         draw_S800()
         
     def GetResources(self):
-        import AirplaneDevkit
+        import CurvedShapes
         import os
-        return {'Pixmap'  : os.path.join(AirplaneDevkit.get_module_path(), "Resources", "icons", "FlyingWingS800.svg"),
+        return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "FlyingWingS800.svg"),
                 'MenuText': "S800",
                 'ToolTip' : "A cheap flying wing" }
 
