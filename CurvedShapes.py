@@ -62,11 +62,11 @@ def boundbox_from_intersect(curves, pos, normal, doScaleXYZ):
         curve = curves[n]
         ipoints = []
         for edge in curve.Shape.Edges:
-            i = plane.intersect(edge.Curve)          
+            i = plane.intersect(edge.Curve)   
             if i: 
                 for p in i[0]:
-                    parm = edge.Curve.parameter(PointVec(p))
-                    if parm >= edge.FirstParameter and parm <= edge.LastParameter:    
+                    vert=Part.Vertex(p)
+                    if vert.distToShape(edge)[0] < epsilon:    
                         ipoints.append(p)
                         found = True
         
