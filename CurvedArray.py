@@ -132,7 +132,11 @@ class CurvedArrayWorker:
             if hasattr(prop.Base, 'Dir'):
                 prop.Axis = prop.Base.Dir
             else:
-                prop.Axis = prop.Base.Placement.Rotation.multVec(Vector(0, 0, 1))
+                bbox = prop.Base.Shape.BoundBox
+                if bbox.XLength < epsilon: prop.Axis = Vector(1.0,0.0,0.0)
+                elif bbox.YLength < epsilon: prop.Axis = Vector(0.0,1.0,0.0)
+                elif bbox.ZLength < epsilon: prop.Axis = Vector(0.0,0.0,1.0)
+                else: prop.Axis = prop.Base.Placement.Rotation.multVec(Vector(0, 0, 1))
             return
         
         self.doScaleXYZ = []
