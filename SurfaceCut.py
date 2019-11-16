@@ -52,8 +52,21 @@ class SurfaceCutWorker:
     def cutSurfaces(self, fp):
         edges=list()
         
+        bbox = None
         for obj in fp.Surfaces:
-            for wire in obj.Shape.slice(fp.Normal, fp.Offset):
+            if not bbox:
+                bbox = obj.Shape.BoundBox
+            else:
+                bbox = bbox.united(obj.Shape.BoundBox)
+            
+        vOffset = Vector(bbox.XMin * fp.Normal.x, bbox.YMin * fp.Normal.y, bbox.ZMin * fp.Normal.z)
+        if vOffset.x < 0 or vOffset.y < 0 or vOffset.z < 0:
+            off = -vOffset.Length
+        else:
+            off = vOffset.Length
+            
+        for obj in fp.Surfaces:
+            for wire in obj.Shape.slice(fp.Normal, off + fp.Offset):
                 edges += wire.Edges
         
         if fp.Simplify:    
