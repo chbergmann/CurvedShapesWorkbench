@@ -183,12 +183,12 @@ def draw_HortenHIX():
     ymax = WingSurface.Shape.BoundBox.YMin + WingSurface.Shape.BoundBox.YLength
     rota = FreeCAD.Rotation(Vector(0,0,1), 28)
     vecToWingEnd28 = rota.multVec(Vector(0,1,0))
-    WingCutFront = CurvedShapes.cutSurfaces([Wing], Normal = vecToWingEnd28, Offset=ymax * 0.76, Face=False, Simplify=True)
+    WingCutFront = CurvedShapes.cutSurfaces([Wing], Normal = vecToWingEnd28, Position=Vector(0, ymax * 0.85, 0), Face=False, Simplify=True)
     WingCutFront.Label = "WingCutFront"
     
     rota = FreeCAD.Rotation(Vector(0,0,1), 18)
     vecToWingEnd18 = rota.multVec(Vector(0,1,0))
-    WingCutBack = CurvedShapes.cutSurfaces([Wing], Normal = vecToWingEnd18, Offset=ymax * 0.54, Face=False, Simplify=True)
+    WingCutBack = CurvedShapes.cutSurfaces([Wing], Normal = vecToWingEnd18, Position=Vector(0, ymax * 0.55, 0), Face=False, Simplify=True)
     WingCutBack.Label = "WingCutBack"
     
     doc.recompute()

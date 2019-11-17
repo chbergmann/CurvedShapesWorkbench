@@ -17,10 +17,10 @@ global epsilon
 epsilon = CurvedShapes.epsilon
 
 class SurfaceCutWorker:
-    def __init__(self, obj, Surfaces=[], Normal=Vector(0, 0, 1), Offset=0, Face=False, Simplify=False): 
+    def __init__(self, obj, Surfaces=[], Normal=Vector(0, 0, 1), Position=0, Face=False, Simplify=False): 
         obj.addProperty("App::PropertyLinkList",  "Surfaces",   "SurfaceCut",   "List of objects with a surface").Surfaces = Surfaces
         obj.addProperty("App::PropertyVector",  "Normal",   "SurfaceCut",   "Normal vector of the cut plane").Normal = Normal
-        obj.addProperty("App::PropertyFloat",  "Offset",   "SurfaceCut",   "Position of the cut plane").Offset = Offset
+        obj.addProperty("App::PropertyVector",  "Position",   "SurfaceCut",   "Position of the cut plane relative to Surfaces").Position = Position
         obj.addProperty("App::PropertyBool",  "Face",   "SurfaceCut",   "make a face").Face = Face
         obj.addProperty("App::PropertyBool",  "Simplify",   "SurfaceCut",   "reduce the number of poles in complex curves").Simplify = Simplify
         self.update = True
@@ -38,7 +38,7 @@ class SurfaceCutWorker:
          
      
     def onChanged(self, fp, prop):
-        props = ["Surfaces", "Offset", "Normal", "Simplify"]
+        props = ["Surfaces", "Position", "Normal", "Simplify"]
         if prop in props:
             self.execute(fp)  
             
@@ -52,21 +52,24 @@ class SurfaceCutWorker:
     def cutSurfaces(self, fp):
         edges=list()
         
-        bbox = None
-        for obj in fp.Surfaces:
-            if not bbox:
-                bbox = obj.Shape.BoundBox
-            else:
-                bbox = bbox.united(obj.Shape.BoundBox)
-            
-        vOffset = Vector(bbox.XMin * fp.Normal.x, bbox.YMin * fp.Normal.y, bbox.ZMin * fp.Normal.z)
-        if vOffset.x < 0 or vOffset.y < 0 or vOffset.z < 0:
-            off = -vOffset.Length
+        if len(fp.Surfaces) == 1:
+            vOffset = fp.Surfaces[0].Placement.Base
         else:
-            off = vOffset.Length
+            bbox = None
+            for obj in fp.Surfaces:
+                if not bbox:
+                    bbox = obj.Shape.BoundBox
+                else:
+                    bbox = bbox.united(obj.Shape.BoundBox)
+                
+            vOffset = Vector(bbox.XMin, bbox.YMin, bbox.ZMin)
+            
+        vOffset += fp.Position
+        origin = Vector(0,0,0)
+        off = origin.distanceToPlane(vOffset, fp.Normal) * -1
             
         for obj in fp.Surfaces:
-            for wire in obj.Shape.slice(fp.Normal, off + fp.Offset):
+            for wire in obj.Shape.slice(fp.Normal, off):
                 edges += wire.Edges
         
         if fp.Simplify:    
@@ -124,7 +127,7 @@ class SurfaceCut():
         for sel in selection:
             FreeCADGui.doCommand("curves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
         
-        FreeCADGui.doCommand("CurvedShapes.cutSurfaces(curves, Normal = FreeCAD.Vector(0, 0, 1), Offset=0, Face=False, Simplify=False)")
+        FreeCADGui.doCommand("CurvedShapes.cutSurfaces(curves, Normal = FreeCAD.Vector(0, 0, 1), Position=FreeCAD.Vector(0,0,0), Face=False, Simplify=False)")
         FreeCAD.ActiveDocument.recompute()        
 
     def IsActive(self):

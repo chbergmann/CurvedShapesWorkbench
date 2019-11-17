@@ -84,7 +84,7 @@ This tool is similar to Cross-Sections in the Part workbench, but it is fully pa
 #### Parameters
 - Surfaces: List of objects with a surface
 - Normal:   Normal vector of the cut plane
-- Offset:   Offset of the cut plane to the origin
+- Position: Position of the cut plane relative to Surfaces
 - Face:     create a face
 - Simplify: reduce the number of poles in complex curves. If true, an approximation curve is calculated. This may drastically reduce the number of points in some curves. This speeds up the usage of the result curve. In special cases this may not work as expected.  
   

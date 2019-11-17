@@ -265,10 +265,10 @@ def makeInterpolatedMiddle(Shape1 = None,
     FreeCAD.ActiveDocument.recompute()
     return obj     
 
-def cutSurfaces(Surfaces=[], Normal = Vector(1, 0, 0), Offset=0, Face=False, Simplify=False):    
+def cutSurfaces(Surfaces=[], Normal = Vector(1, 0, 0), Position=Vector(0,0,0), Face=False, Simplify=False):    
     import SurfaceCut                  
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","SurfaceCut")
-    SurfaceCut.SurfaceCutWorker(obj, Surfaces, Normal, Offset, Face, Simplify)
+    SurfaceCut.SurfaceCutWorker(obj, Surfaces, Normal, Position, Face, Simplify)
     SurfaceCut.SurfaceCutViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     return obj
