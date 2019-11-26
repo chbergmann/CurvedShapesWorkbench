@@ -11,9 +11,6 @@ import FreeCAD
 from FreeCAD import Vector
 import Part
 import CurvedShapes
-import Draft
-import math
-from importlib import reload
 
 global epsilon
 epsilon = CurvedShapes.epsilon
@@ -82,26 +79,48 @@ class NotchConnectorWorker:
     def cutNotches(self, fp):
         shapes = []
         halfsize = fp.CutDirection / 2
-        for base in self.extractCompounds([fp.Base]):
-            if len(base.Shape.Solids) > 0 :
-                bbox = base.Shape.BoundBox
-                basecube = Part.makeBox(bbox.XLength + 2*epsilon, bbox.YLength + 2*epsilon, bbox.ZLength + 2*epsilon)
-                basecube.Placement.Base = Vector(bbox.XMin - epsilon, bbox.YMin - epsilon, bbox.ZMin - epsilon)
-                cutcubes = []
-                for tool in self.extractCompounds(fp.Tools):   
-                    if len(tool.Shape.Solids) > 0:
-                        common = basecube.common(tool.Shape)
-                        if len(common.Solids) > 0:
-                            bbox = common.BoundBox
-                            cutcube = Part.makeBox(bbox.XLength + 2*epsilon, bbox.YLength + 2*epsilon, bbox.ZLength + 2*epsilon)
-                            cutcube.Placement.Base.x = bbox.XMin + bbox.XLength * halfsize.x - epsilon
-                            cutcube.Placement.Base.y = bbox.YMin + bbox.YLength * halfsize.y - epsilon
-                            cutcube.Placement.Base.z = bbox.ZMin + bbox.ZLength * halfsize.z - epsilon
-                            cutcubes.append(cutcube)                    
-                        
-                if len(cutcubes) > 0:
-                    shapes.append(base.Shape.cut(cutcubes))
-            
+        for obj in self.extractCompounds([fp.Base]):
+            isExtrude = hasattr(obj, "LengthFwd") and hasattr(obj, "Base")
+            if isExtrude:
+                bShape = obj.Base.Shape
+            else:
+                bShape = obj.Shape
+                
+            cutcubes = []
+            for tool in self.extractCompounds(fp.Tools):  
+                if len(tool.Shape.Solids) > 0:
+                    tbox = tool.Shape.BoundBox
+                    common = tool.Shape.common(bShape)
+                    cbox = common.BoundBox
+                    if cbox.XLength + cbox.YLength + cbox.ZLength > epsilon:
+                        vSize = Vector(cbox.XLength, cbox.YLength, cbox.ZLength)
+                        vPlace = Vector(cbox.XMin, cbox.YMin, cbox.ZMin)
+                        if vSize.x < epsilon: 
+                            vSize.x = tbox.XLength
+                            vPlace.x = tbox.XMin
+                        if vSize.y < epsilon: 
+                            vSize.y = tbox.YLength
+                            vPlace.y = tbox.YMin
+                        if vSize.z < epsilon: 
+                            vSize.z = tbox.ZLength   
+                            vPlace.z = tbox.ZMin
+                            
+                        cutcube = Part.makeBox(vSize.x, vSize.y, vSize.z)
+                        cutcube.Placement.Base = vPlace
+                        cutcube.Placement.Base.x += cbox.XLength * halfsize.x
+                        cutcube.Placement.Base.y += cbox.YLength * halfsize.y
+                        cutcube.Placement.Base.z += cbox.ZLength * halfsize.z
+                        cutcubes.append(cutcube)  
+                    
+            if len(cutcubes) > 0:
+                cutted = bShape.cut(cutcubes)
+                if isExtrude:
+                    ext = cutted.extrude(obj.Dir * float(obj.LengthFwd + obj.LengthRev))
+                    ext.Placement.Base -= obj.Dir * float(obj.LengthRev)                    
+                    shapes.append(ext)
+                else:
+                    shapes.append(cutted)
+                
         if len(shapes) == 1:
             fp.Shape = shapes[0]
         elif len(shapes) > 1:
@@ -144,8 +163,6 @@ class NotchConnector():
     def Activated(self):
         FreeCADGui.doCommand("import CurvedShapes")
         FreeCADGui.doCommand("import NotchConnector")
-        FreeCADGui.doCommand("from importlib import reload")
-        FreeCADGui.doCommand("reload(NotchConnector)")
         
         selection = FreeCADGui.Selection.getSelection()
         if len(selection) < 2:
