@@ -78,6 +78,7 @@ Interpolates a 2D shape into the middle between two 2D curves. The base shapes c
 ### ![](./Resources/icons/surfaceCut.svg) Surface Cut
 Cuts a surface to get the outline curve or a face.  
 This tool is similar to Cross-Sections in the Part workbench, but it is fully parametric and has an option to reduce the complexity of the output curve.
+It tries to remove overlapping edges.
 
 ![SurfaceCut](Examples/SurfaceCut.jpg)
 
@@ -88,13 +89,27 @@ This tool is similar to Cross-Sections in the Part workbench, but it is fully pa
 - Face:     create a face
 - Simplify: reduce the number of poles in complex curves. If true, an approximation curve is calculated. This may drastically reduce the number of points in some curves. This speeds up the usage of the result curve. In special cases this may not work as expected.  
   
+  
+### ![](./Resources/icons/NotchConnector.svg) Notch Connector
+Cuts notches into an object to make it connectable other objects with a notch.  
+  
+![NotchConnector](Examples/NotchConnector.jpg)  
+  
+Select two objects, then select Notch Connector. Two NotchConnector objects will be created.
+
+#### Parameters
+- Base:  		Object to cut
+- Tools: 		The object that cuts Base   
+- CutDirection: The direction of the cut (autocomputed)    
+- Reverse: 		Reverses the direction of the cut 
+
+## Example Scripts
+Example designs for testing and presentation of this workbench.  
 
 ### ![](./Resources/icons/Horten_HIX.svg) Horten H IX
-This is an example design for testing and presentation of this workbench.  
 It is a python script that creates the shape of the [Horten H IX](https://de.wikipedia.org/wiki/Horten_H_IX), a stealth fighter that has been build in Germany in 1944.
 
-### ![](./Resources/icons/FlyingWingS800.svg) Flying Wing S800
-This is an example design for testing and presentation of this workbench.  
+### ![](./Resources/icons/FlyingWingS800.svg) Flying Wing S800 
 It is a python script that creates the shape of a flying wing RC model.  
   
 ![S800](Examples/S800.jpg)
