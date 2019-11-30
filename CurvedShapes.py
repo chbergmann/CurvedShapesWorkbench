@@ -265,12 +265,12 @@ def makeInterpolatedMiddle(Shape1 = None,
     FreeCAD.ActiveDocument.recompute()
     return obj     
 
-def cutSurfaces(Surfaces=[], Normal = Vector(1, 0, 0), Position=Vector(0,0,0), Face=False, Simplify=False):    
+def cutSurfaces(Surfaces=[], Normal = Vector(1, 0, 0), Position=Vector(0,0,0), Face=False, Simplify=0):    
     import SurfaceCut                  
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","SurfaceCut")
     SurfaceCut.SurfaceCutWorker(obj, Surfaces, Normal, Position, Face, Simplify)
     SurfaceCut.SurfaceCutViewProvider(obj.ViewObject)
-    FreeCAD.ActiveDocument.recompute()
+    #FreeCAD.ActiveDocument.recompute()
     return obj
 
 
@@ -279,7 +279,7 @@ def makeNotchConnector(Base, Tools, CutDirection=Vector(0,0,0), Reverse=False):
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","NotchConnector")
     NotchConnector.NotchConnectorWorker(obj, Base, Tools, CutDirection, Reverse)
     NotchConnector.NotchConnectorViewProvider(obj.ViewObject)
-    FreeCAD.ActiveDocument.recompute()
+    #FreeCAD.ActiveDocument.recompute()
     return obj
     
                  

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 __title__ = "SurfaceCut"
 __author__ = "Christian Bergmann"
 __license__ = "LGPL 2.1"
@@ -11,18 +10,19 @@ import FreeCAD
 from FreeCAD import Vector
 import Part
 import CurvedShapes
+import Draft
 from importlib import reload
     
 global epsilon
 epsilon = CurvedShapes.epsilon
 
 class SurfaceCutWorker:
-    def __init__(self, obj, Surfaces=[], Normal=Vector(0, 0, 1), Position=0, Face=False, Simplify=False): 
+    def __init__(self, obj, Surfaces=[], Normal=Vector(0, 0, 1), Position=0, Face=False, Simplify=0): 
         obj.addProperty("App::PropertyLinkList",  "Surfaces",   "SurfaceCut",   "List of objects with a surface").Surfaces = Surfaces
         obj.addProperty("App::PropertyVector",  "Normal",   "SurfaceCut",   "Normal vector of the cut plane").Normal = Normal
         obj.addProperty("App::PropertyVector",  "Position",   "SurfaceCut",   "Position of the cut plane relative to Surfaces").Position = Position
         obj.addProperty("App::PropertyBool",  "Face",   "SurfaceCut",   "make a face").Face = Face
-        obj.addProperty("App::PropertyBool",  "Simplify",   "SurfaceCut",   "reduce the number of poles in complex curves").Simplify = Simplify
+        obj.addProperty("App::PropertyQuantity",  "Simplify",   "SurfaceCut",   "if >0, discretize each edge to this number of poles and approximate.").Simplify = Simplify
         self.update = True
         obj.Proxy = self  
     
@@ -72,27 +72,65 @@ class SurfaceCutWorker:
             for wire in obj.Shape.slice(fp.Normal, off):
                 edges += wire.Edges
         
-        if fp.Simplify:    
-            edges = self.removeEdgeComplexity(edges) 
+        if fp.Simplify > 0:    
+            edges = self.removeEdgeComplexity(fp, edges) 
+            
+        edges = self.removeDoubles(edges)
             
         comp = Part.Compound(edges)
         comp.connectEdgesToWires(False, 1e-7)  
         fp.Shape = comp
         
     
-    def removeEdgeComplexity(self, edges):
+    def removeEdgeComplexity(self, fp, edges):
         newedges = []
         for e in edges:
-            if type(e.Curve) == Part.BSplineCurve and e.Curve.NbPoles > 16:         
+            if fp.Simplify > 0 and type(e.Curve) == Part.BSplineCurve and e.Curve.NbPoles > fp.Simplify:         
                 poles = e.discretize(Deflection = 1.0)
                 bc = Part.BSplineCurve()
                 bc.approximate(poles)
+                
                 newedges.append(bc.toShape().Edges[0])            
             else:
                 newedges.append(e)
                 
         return newedges
     
+    
+    def removeDoubles(self, edges):
+        newedges = []
+        for e in edges:
+            found = False
+            for e2 in edges:                
+                if e != e2 and self.isSameEdge(e, e2):
+                    found = True
+                    break
+                    
+            if not found:
+                newedges.append(e)
+                
+        return newedges
+                    
+                    
+    def isSameEdge(self, e1, e2):
+        pol1 = e1.discretize(Deflection = 1.0)
+        pol2 = e2.discretize(Deflection = 1.0)
+        if len(pol1) != len(pol2): return False
+        
+        equal = True
+        for n in range(len(pol1)):
+            v = pol1[n] - pol2[n]
+            if v.Length > epsilon: equal = False
+            
+        if equal: return True
+        
+        for n in range(len(pol1)):
+            v = pol1[n] - pol2[len(pol1) - n - 1]
+            if v.Length > epsilon: return False
+            
+        return True
+        
+        
 
 class SurfaceCutViewProvider:
     def __init__(self, vfp):
