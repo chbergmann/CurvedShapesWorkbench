@@ -205,6 +205,10 @@ def getNormal(obj):
     if hasattr(obj, 'Dir'):
         return obj.Dir
     else:
+        bbox = obj.Shape.BoundBox
+        if bbox.XLength < epsilon: return Vector(1.0,0.0,0.0)
+        elif bbox.YLength < epsilon: return Vector(0.0,1.0,0.0)
+        elif bbox.ZLength < epsilon: return Vector(0.0,0.0,1.0)
         return obj.Placement.Rotation.multVec(Vector(0, 0, 1))
  
 
