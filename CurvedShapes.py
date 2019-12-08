@@ -278,10 +278,10 @@ def cutSurfaces(Surfaces=[], Normal = Vector(1, 0, 0), Position=Vector(0,0,0), F
     return obj
 
 
-def makeNotchConnector(Base, Tools, CutDirection=Vector(0,0,0), Reverse=False):
+def makeNotchConnector(Base, Tools, CutDirection=Vector(0,0,0), CutDepth=50.0):
     import NotchConnector                  
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","NotchConnector")
-    NotchConnector.NotchConnectorWorker(obj, Base, Tools, CutDirection, Reverse)
+    NotchConnector.NotchConnectorWorker(obj, Base, Tools, CutDirection, CutDepth)
     NotchConnector.NotchConnectorViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     return obj

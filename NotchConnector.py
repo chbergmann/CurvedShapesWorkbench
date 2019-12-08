@@ -21,11 +21,11 @@ class NotchConnectorWorker:
                  Base,
                  Tools,
                  CutDirection=Vector(0,0,0),
-                 Reverse=False):
+                 CutDepth=50.0):
         fp.addProperty("App::PropertyLink",  "Base",   "NotchConnector",   "Object to cut").Base = Base  
         fp.addProperty("App::PropertyLinkList",  "Tools",   "NotchConnector",   "Object to cut").Tools = Tools        
         fp.addProperty("App::PropertyVector", "CutDirection", "NotchConnector",  "The direction of the cut").CutDirection = CutDirection     
-        fp.addProperty("App::PropertyBool", "Reverse", "NotchConnector",  "Reverses the direction of the cut").Reverse = Reverse   
+        fp.addProperty("App::PropertyFloat", "CutDepth", "NotchConnector",  "-100 to +100 Percent").CutDepth = CutDepth   
         fp.Proxy = self
         
         
@@ -34,10 +34,16 @@ class NotchConnectorWorker:
         if prop in proplist:      
             self.execute(fp)
             
+        if prop == "CutDepth":
+            fp.CutDirection = fp.CutDirection.normalize() * fp.CutDepth / 50
+            self.execute(fp)
+            
+            
     def execute(self, fp):
         if not fp.Base or not fp.Tools:
             return 
         
+        fp.Proxy = None
         if fp.CutDirection == Vector(0.0,0.0,0.0):
             bbox = self.extractCompounds([fp.Base])[0].Shape.BoundBox
             v = Vector(1,1,1)
@@ -54,17 +60,20 @@ class NotchConnectorWorker:
             elif bbox.YLength < bbox.XLength and bbox.YLength < bbox.ZLength:
                 v.y = 0
             else:
-                v.z = 0
-            
-            if fp.Reverse:
-                v = v * -1
+                v.z = 0            
                 
-            fp.CutDirection = v
-            return
+            fp.CutDirection = v * fp.CutDepth / 50
+        
+        else:
+            if fp.CutDirection.x + fp.CutDirection.y + fp.CutDirection.z >0:
+                fp.CutDepth = fp.CutDirection.Length * 50
+            else:
+                fp.CutDepth = -fp.CutDirection.Length * 50
             
+        fp.Proxy = self
         self.cutNotches(fp)
-        
-        
+          
+    
     def extractCompounds(self, obj):
         extracted = []
         for o in obj:
@@ -74,7 +83,18 @@ class NotchConnectorWorker:
                 extracted.append(o)
                 
         return extracted
-        
+    
+    
+    def extractShapes(self, lobj):
+        shapes = []
+        for obj in lobj:
+            if len(obj.Shape.Solids) > 0:
+                shapes += obj.Shape.Solids
+            else:
+                shapes += obj.Shape.Faces
+            
+        return shapes
+    
     
     def cutNotches(self, fp):
         shapes = []
@@ -82,15 +102,15 @@ class NotchConnectorWorker:
         for obj in self.extractCompounds([fp.Base]):
             isExtrude = hasattr(obj, "LengthFwd") and hasattr(obj, "Base")
             if isExtrude:
-                bShape = obj.Base.Shape
+                bShapes = obj.Base
             else:
-                bShape = obj.Shape
-                
-            cutcubes = []
-            for tool in self.extractCompounds(fp.Tools):  
-                if len(tool.Shape.Solids) > 0:
-                    tbox = tool.Shape.BoundBox
-                    common = tool.Shape.common(bShape)
+                bShapes = obj
+            
+            for bShape in self.extractShapes([bShapes]):    
+                cutcubes = []
+                for tool in self.extractShapes(fp.Tools):              
+                    tbox = tool.BoundBox
+                    common = tool.common(bShape)
                     cbox = common.BoundBox
                     if cbox.XLength + cbox.YLength + cbox.ZLength > epsilon:
                         vSize = Vector(cbox.XLength, cbox.YLength, cbox.ZLength)
@@ -110,10 +130,13 @@ class NotchConnectorWorker:
                         cutcube.Placement.Base.x += cbox.XLength * halfsize.x
                         cutcube.Placement.Base.y += cbox.YLength * halfsize.y
                         cutcube.Placement.Base.z += cbox.ZLength * halfsize.z
-                        cutcubes.append(cutcube)  
-                    
-            if len(cutcubes) > 0:
-                cutted = bShape.cut(cutcubes)
+                        cutcubes.append(cutcube) 
+                        
+                if len(cutcubes) > 0:
+                    cutted = bShape.cut(cutcubes)
+                else:
+                    cutted = bShape
+                
                 if isExtrude:
                     ext = cutted.extrude(obj.Dir * float(obj.LengthFwd + obj.LengthRev))
                     ext.Placement.Base -= obj.Dir * float(obj.LengthRev)                    
@@ -176,9 +199,9 @@ class NotchConnector():
             else:
                 FreeCADGui.doCommand("tools.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.Name))
         
-        FreeCADGui.doCommand("CurvedShapes.makeNotchConnector(base, tools, Reverse=False)")
+        FreeCADGui.doCommand("CurvedShapes.makeNotchConnector(base, tools, CutDepth=50.0)")
         if len(selection) == 2:
-            FreeCADGui.doCommand("CurvedShapes.makeNotchConnector(tools[0], [base], Reverse=True)")            
+            FreeCADGui.doCommand("CurvedShapes.makeNotchConnector(tools[0], [base], CutDepth=-50.0)")            
             
         FreeCAD.ActiveDocument.recompute()        
 
