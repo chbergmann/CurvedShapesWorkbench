@@ -5,6 +5,7 @@ FreeCAD Workbench for creating 3D shapes from 2D curves
   
 ## Installation
 ### Automatic Installation
+[![FreeCAD Addon manager status](https://img.shields.io/badge/FreeCAD%20addon%20manager-available-brightgreen)](https://github.com/FreeCAD/FreeCAD-addons)  
 **Note: This is the recommended way to install this workbench.**  
 The Curved Shapes workbench is available through the builtin FreeCAD [Addon Manager](https://github.com/FreeCAD/FreeCAD-addons#1-builtin-addon-manager).
 Once installed all that is needed is to restart FreeCAD and the workbench will be available in the workbenches dropdown menu.
@@ -17,7 +18,7 @@ Once installed all that is needed is to restart FreeCAD and the workbench will b
 **Result**: "Curved Shapes" workbench should now show up in the workbench dropdown list.
   
 ## Tools
-### ![](./Resources/icons/curvedArray.svg) Curved Array
+### ![curvedArrayIcon](./Resources/icons/curvedArray.svg) Curved Array
 Creates an array and resizes the items in the bounds of one or more hull curves.
 In this example, the orange base shape is rescaled in the bounds of the red and violet hullcurves. The curves do not have to be connected.  
 The hullcurves should lie on or parallel to the XY- XZ- or YZ- plane.  
@@ -41,7 +42,7 @@ If you create a surface or solid and it looks weird, this may be caused by very 
 
 To resolve a CurvedArray item to a compound of single objects, go to the Part workbench. In the Part menu, select Compound -> Explode compound  
   
-### ![](./Resources/icons/curvedSegment.svg) Curved Segment
+### ![curvedSegmentIcon](./Resources/icons/curvedSegment.svg) Curved Segment
 Interpolates between two 2D curves. The interpolated curves can be resized in the bounds of some hullcurves.  
  
 ![CurvedSegment](Examples/CurvedSegment.jpg)
@@ -62,7 +63,7 @@ Select two 2D shapes first. The curved segment will be created between them. If 
 - Twist: Compensates a rotation between Shape1 and Shape2
 - Reverse: Reverses the rotation of one Shape
 
-### ![](./Resources/icons/CornerShape.svg) Interpolated Middle
+### ![CornerShapeIcon](./Resources/icons/CornerShape.svg) Interpolated Middle
 Interpolates a 2D shape into the middle between two 2D curves. The base shapes can be connected to a shape with a sharp corner.
 
 ![InterpolatedMiddle2](Examples/InterpolatedMiddle2.jpg)
@@ -80,7 +81,7 @@ Interpolates a 2D shape into the middle between two 2D curves. The base shapes c
 - Reverse: Reverses the rotation of one Shape
   
   
-### ![](./Resources/icons/surfaceCut.svg) Surface Cut
+### ![surfaceCutIcon](./Resources/icons/surfaceCut.svg) Surface Cut
 Cuts a surface to get the outline curve or a face.  
 This tool is similar to Cross-Sections in the Part workbench, but it is fully parametric and has an option to reduce the complexity of the output curve.
 It tries to remove overlapping edges.
@@ -95,7 +96,7 @@ It tries to remove overlapping edges.
 - Simplify: reduce the number of poles in complex curves. If true, an approximation curve is calculated. This may drastically reduce the number of points in some curves. This speeds up the usage of the result curve. In special cases this may not work as expected.  
   
   
-### ![](./Resources/icons/NotchConnector.svg) Notch Connector
+### ![NotchConnectorIcon](./Resources/icons/NotchConnector.svg) Notch Connector
 Cuts notches into overlapping objects to make it connectable to each other.  
   
 ![NotchConnector](Examples/NotchConnector.jpg)  
@@ -111,10 +112,10 @@ Select two objects, then select Notch Connector. Two NotchConnector objects will
 ## Example Scripts
 Example designs for testing and presentation of this workbench.  
 
-### ![](./Resources/icons/Horten_HIX.svg) Horten H IX
+### ![Horten_HIX_Icon](./Resources/icons/Horten_HIX.svg) Horten H IX
 It is a python script that creates the shape of the [Horten Ho 229 (also called Horten H IX)](https://en.wikipedia.org/wiki/Horten_Ho_229), a stealth fighter that has been build in Germany in 1944.
 
-### ![](./Resources/icons/FlyingWingS800.svg) Flying Wing S800 
+### ![FlyingWingS800-sIcon](./Resources/icons/FlyingWingS800.svg) Flying Wing S800 
 It is a python script that creates the shape of a flying wing RC model.  
   
 ![S800](Examples/S800.jpg)
