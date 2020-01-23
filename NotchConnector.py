@@ -115,13 +115,13 @@ class NotchConnectorWorker:
                     if cbox.XLength + cbox.YLength + cbox.ZLength > epsilon:
                         vSize = Vector(cbox.XLength, cbox.YLength, cbox.ZLength)
                         vPlace = Vector(cbox.XMin, cbox.YMin, cbox.ZMin)
-                        if vSize.x < epsilon: 
+                        if vSize.x < epsilon or vSize.x > tbox.XLength: 
                             vSize.x = tbox.XLength
                             vPlace.x = tbox.XMin
-                        if vSize.y < epsilon: 
+                        if vSize.y < epsilon or vSize.y > tbox.YLength: 
                             vSize.y = tbox.YLength
                             vPlace.y = tbox.YMin
-                        if vSize.z < epsilon: 
+                        if vSize.z < epsilon or vSize.z > tbox.ZLength: 
                             vSize.z = tbox.ZLength   
                             vPlace.z = tbox.ZMin
                             
@@ -138,8 +138,8 @@ class NotchConnectorWorker:
                     cutted = bShape
                 
                 if isExtrude:
+                    cutted.Placement.Base -= obj.Dir * float(obj.LengthRev)               
                     ext = cutted.extrude(obj.Dir * float(obj.LengthFwd + obj.LengthRev))
-                    ext.Placement.Base -= obj.Dir * float(obj.LengthRev)                    
                     shapes.append(ext)
                 else:
                     shapes.append(cutted)
