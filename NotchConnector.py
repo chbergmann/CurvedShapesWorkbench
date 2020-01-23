@@ -25,7 +25,7 @@ class NotchConnectorWorker:
         fp.addProperty("App::PropertyLink",  "Base",   "NotchConnector",   "Object to cut").Base = Base  
         fp.addProperty("App::PropertyLinkList",  "Tools",   "NotchConnector",   "Object to cut").Tools = Tools        
         fp.addProperty("App::PropertyVector", "CutDirection", "NotchConnector",  "The direction of the cut").CutDirection = CutDirection     
-        fp.addProperty("App::PropertyFloat", "CutDepth", "NotchConnector",  "-100 to +100 Percent").CutDepth = CutDepth   
+        fp.addProperty("App::PropertyFloat", "CutDepth", "NotchConnector",  "Length of the cut in percent").CutDepth = CutDepth   
         fp.Proxy = self
         
         
@@ -34,8 +34,9 @@ class NotchConnectorWorker:
         if prop in proplist:      
             self.execute(fp)
             
-        if prop == "CutDepth":
-            fp.CutDirection = fp.CutDirection.normalize() * fp.CutDepth / 50
+        if prop == "CutDepth" and fp.CutDirection != Vector(0.0,0.0,0.0):
+            cdep = 100 - abs(fp.CutDepth)
+            fp.CutDirection = fp.CutDirection.normalize() * cdep / 50
             self.execute(fp)
             
             
@@ -49,7 +50,7 @@ class NotchConnectorWorker:
             v = Vector(1,1,1)
             if bbox.XLength < bbox.YLength and bbox.XLength < bbox.ZLength:
                 v.x = 0
-            elif bbox.YLength < bbox.XLength and bbox.YLength < bbox.ZLength:
+            elif bbox.YLength <= bbox.XLength and bbox.YLength < bbox.ZLength:
                 v.y = 0
             else:
                 v.z = 0
@@ -57,18 +58,12 @@ class NotchConnectorWorker:
             bbox = self.extractCompounds(fp.Tools)[0].Shape.BoundBox
             if bbox.XLength < bbox.YLength and bbox.XLength < bbox.ZLength:
                 v.x = 0
-            elif bbox.YLength < bbox.XLength and bbox.YLength < bbox.ZLength:
+            elif bbox.YLength <= bbox.XLength and bbox.YLength < bbox.ZLength:
                 v.y = 0
             else:
                 v.z = 0            
                 
             fp.CutDirection = v * fp.CutDepth / 50
-        
-        else:
-            if fp.CutDirection.x + fp.CutDirection.y + fp.CutDirection.z >0:
-                fp.CutDepth = fp.CutDirection.Length * 50
-            else:
-                fp.CutDepth = -fp.CutDirection.Length * 50
             
         fp.Proxy = self
         self.cutNotches(fp)
