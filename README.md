@@ -1,4 +1,6 @@
 # Curved Shapes
+[> deutsch <](LIESMICH.md) 
+   
 FreeCAD Workbench for creating 3D shapes from 2D curves
   
 ## Installation
@@ -20,7 +22,8 @@ In this example, the orange base shape is rescaled in the bounds of the red and 
 The hullcurves should lie on or parallel to the XY- XZ- or YZ- plane.  
 
 ![WingExample](Examples/WingExample.png)
-
+  
+The first curve that you select for CurvedArray creation will be the item that is swept and resized in the bounds of the other selected curves.
 
 #### Parameters
 - Base: The object to make an array from
@@ -33,8 +36,9 @@ The hullcurves should lie on or parallel to the XY- XZ- or YZ- plane.
 - Surface: make a surface over the array items
 - Solid: make a solid if Base is a closed shape
 
-#### Resolve a CurvedArray item to a compound of single objects
-Go to the Part workbench. In the Part menu, select Compound -> Explode compound  
+If you create a surface or solid and it looks weird, this may be caused by very small items at the start and end of the CurvedArray. In this case, enter values bigger than 0 for Start Offset and End Offset. This will create bigger start and end items located not at the very end.
+
+To resolve a CurvedArray item to a compound of single objects, go to the Part workbench. In the Part menu, select Compound -> Explode compound  
   
 ### ![](./Resources/icons/curvedSegment.svg) Curved Segment
 Interpolates between two 2D curves. The interpolated curves can be resized in the bounds of some hullcurves.  
@@ -91,7 +95,7 @@ It tries to remove overlapping edges.
   
   
 ### ![](./Resources/icons/NotchConnector.svg) Notch Connector
-Cuts notches into an object to make it connectable other objects with a notch.  
+Cuts notches into overlapping objects to make it connectable to each other.  
   
 ![NotchConnector](Examples/NotchConnector.jpg)  
   
@@ -101,13 +105,13 @@ Select two objects, then select Notch Connector. Two NotchConnector objects will
 - Base:  		Object to cut
 - Tools: 		The object that cuts Base   
 - CutDirection: The direction of the cut (autocomputed)    
-- Reverse: 		Reverses the direction of the cut 
+- CutDepth: 	The depth of the cut in percent
 
 ## Example Scripts
 Example designs for testing and presentation of this workbench.  
 
 ### ![](./Resources/icons/Horten_HIX.svg) Horten H IX
-It is a python script that creates the shape of the [Horten H IX](https://de.wikipedia.org/wiki/Horten_H_IX), a stealth fighter that has been build in Germany in 1944.
+It is a python script that creates the shape of the [Horten Ho 229 (also called Horten H IX)](https://en.wikipedia.org/wiki/Horten_Ho_229), a stealth fighter that has been build in Germany in 1944.
 
 ### ![](./Resources/icons/FlyingWingS800.svg) Flying Wing S800 
 It is a python script that creates the shape of a flying wing RC model.  
