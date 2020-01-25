@@ -1,5 +1,5 @@
 # Curved Shapes
-[> deutsch <](LIESMICH.md) 
+[> deutsch <](https://github.com/chbergmann/CurvedShapesWorkbench/blob/master/LIESMICH.md) 
    
 FreeCAD Workbench for creating 3D shapes from 2D curves
   

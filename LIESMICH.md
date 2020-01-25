@@ -1,11 +1,11 @@
 # Curved Shapes
-[> english <](README.md)  
+[> english <](https://github.com/chbergmann/CurvedShapesWorkbench/blob/master/README.md)  
   
 FreeCAD Arbeitsbereich zum Erstellen von 3D Körpern aus 2D Kurven
   
 ## Installation
 
-Dieser Arbeitsbereich kann über den Addon manager in FreeCAD installiet werden.
+Dieser Arbeitsbereich kann über den Addon manager in FreeCAD installiert werden.
 
 **Manuelle Installation**
 - `cd` in deinen FreeCAD Ordner (normalerweise `~/.FreeCAD` on Linux)
@@ -108,7 +108,7 @@ Zuerst zwei sich überlagende Objekte in FreeCAD auswählen, dann Notch Connecto
 - CutDepth: 	Tiefe des Schnitts in Prozent
 
 ## Beispiele
-Beispiele zum Testen und zue Demonstration dieses Arbeitsbereichs. 
+Beispiele zum Testen und zur Demonstration dieses Arbeitsbereichs. 
 
 ### ![](./Resources/icons/Horten_HIX.svg) Horten H IX
 Ein Python Skript zum Generieren einer [Horten H IX (auch Horten Ho 229 genannt)](https://de.wikipedia.org/wiki/Horten_H_IX), ein Stealth Fighter aus dem 2. Weltkrieg, der seiner Zeit um Jahrzehnte voraus war.
