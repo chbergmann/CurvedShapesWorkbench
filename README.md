@@ -1,21 +1,23 @@
-# Curved Shapes
+# Curved Shapes Workbench
 [> deutsch <](https://github.com/chbergmann/CurvedShapesWorkbench/blob/master/LIESMICH.md) 
    
-FreeCAD Workbench for creating 3D shapes from 2D curves
+A FreeCAD External Workbench for creating 3D shapes from 2D curves
   
 ## Installation
+
 ### Automatic Installation
 [![FreeCAD Addon manager status](https://img.shields.io/badge/FreeCAD%20addon%20manager-available-brightgreen)](https://github.com/FreeCAD/FreeCAD-addons)  
 **Note: This is the recommended way to install this workbench.**  
 The Curved Shapes workbench is available through the builtin FreeCAD [Addon Manager](https://github.com/FreeCAD/FreeCAD-addons#1-builtin-addon-manager).
-Once installed all that is needed is to restart FreeCAD and the workbench will be available in the workbenches dropdown menu.
+Once installed all that is needed is to restart FreeCAD and the workbench will be available in the [workbench dropdown list](https://freecadweb.org/wiki/Std_Workbench) menu.
 
 ### Manual Installation
-- `cd` in to your your personal FreeCAD folder (usually `~/.FreeCAD` on Linux)
-- `cd Mod/` (or create this folder if it doesn't exist)
-- `git clone https://github.com/chbergmann/CurvedShapesWorkbench.git`
-- Start FreeCAD  
-**Result**: "Curved Shapes" workbench should now show up in the workbench dropdown list.
+
+```bash
+cd ~/FreeCAD/Mod/ 
+git clone https://github.com/chbergmann/CurvedShapesWorkbench.git
+```
+When you restart FreeCAD, "Curved Shapes" workbench should now show up in the [workbench dropdown list](https://freecadweb.org/wiki/Std_Workbench).
   
 ## Tools
 ### ![curvedArrayIcon](./Resources/icons/curvedArray.svg) Curved Array
@@ -40,7 +42,7 @@ The first curve that you select for CurvedArray creation will be the item that i
 
 If you create a surface or solid and it looks weird, this may be caused by very small items at the start and end of the CurvedArray. In this case, enter values bigger than 0 for Start Offset and End Offset. This will create bigger start and end items located not at the very end.
 
-To resolve a CurvedArray item to a compound of single objects, go to the Part workbench. In the Part menu, select Compound -> Explode compound  
+To resolve a CurvedArray item to a compound of single objects, go to the Part workbench. In the [Part workbench](https://www.freecadweb.org/wiki/Part_Workbench), select **Part → Compound → [Explode compound](https://www.freecadweb.org/wiki/Part_ExplodeCompound)**
   
 ### ![curvedSegmentIcon](./Resources/icons/curvedSegment.svg) Curved Segment
 Interpolates between two 2D curves. The interpolated curves can be resized in the bounds of some hullcurves.  
@@ -76,14 +78,14 @@ Interpolates a 2D shape into the middle between two 2D curves. The base shapes c
 - NormalShape2: Direction axis of Shape2 (auto computed)
 - makeSurface: connect Shape1 and Shape2 with a surface over the interpolated middle
 - makeSolid: make a solid if Shape1 and Shape2 are closed shapes
-- InterpolationPoints: ignored if Shape1 and Shape2 have the same number of edges and poles. Otherwise all edges will be splitted (discretized) into this number of points  
+- InterpolationPoints: ignored if Shape1 and Shape2 have the same number of edges and poles. Otherwise all edges will be split (discretized) into this number of points  
 - Twist: Compensates a rotation between Shape1 and Shape2
 - Reverse: Reverses the rotation of one Shape
   
   
 ### ![surfaceCutIcon](./Resources/icons/surfaceCut.svg) Surface Cut
 Cuts a surface to get the outline curve or a face.  
-This tool is similar to Cross-Sections in the Part workbench, but it is fully parametric and has an option to reduce the complexity of the output curve.
+This tool is similar to [Cross-Sections](https://www.freecadweb.org/wiki/Part_SectionCross) in the [Part workbench](https://www.freecadweb.org/wiki/Part_Workbench), but it is fully parametric and has an option to reduce the complexity of the output curve.
 It tries to remove overlapping edges.
 
 ![SurfaceCut](Examples/SurfaceCut.jpg)
@@ -109,14 +111,14 @@ Select two objects, then select Notch Connector. Two NotchConnector objects will
 - CutDirection: The direction of the cut (autocomputed)    
 - CutDepth: 	The depth of the cut in percent
 
-## Example Scripts
-Example designs for testing and presentation of this workbench.  
+## Examples
+Example designs in script format for testing and presenting this workbench.  
 
 ### ![Horten_HIX_Icon](./Resources/icons/Horten_HIX.svg) Horten H IX
-It is a python script that creates the shape of the [Horten Ho 229 (also called Horten H IX)](https://en.wikipedia.org/wiki/Horten_Ho_229), a stealth fighter that has been build in Germany in 1944.
+A python script that creates the shape of the [Horten Ho 229 (also called Horten H IX)](https://en.wikipedia.org/wiki/Horten_Ho_229), a stealth fighter that has been build in Germany in 1944.
 
 ### ![FlyingWingS800-sIcon](./Resources/icons/FlyingWingS800.svg) Flying Wing S800 
-It is a python script that creates the shape of a flying wing RC model.  
+A python script that creates the shape of a flying wing RC model.  
   
 ![S800](Examples/S800.jpg)
 
