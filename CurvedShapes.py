@@ -3,6 +3,7 @@ import FreeCAD
 from FreeCAD import Vector
 import Part
 from importlib import reload
+import math
 
 global epsilon
 epsilon = 1e-7
@@ -217,7 +218,29 @@ def vectorMiddle(vec1, vec2, fraction):
     y = vec1.y + (vec2.y - vec1.y) * fraction
     z = vec1.z + (vec2.z - vec1.z) * fraction
     return Vector(x,y,z)   
-       
+
+
+# x is in range 0 to 1. result mut be in range 0 to 1.
+def distribute(x, distribution, reverse = False): 
+    d = x   # default = 'linear'   
+        
+    if distribution == 'parabolic':
+        d = x*x
+    
+    if distribution == 'x³':
+        d = x*x*x
+    
+    if distribution == 'sinusoidal':
+        d = math.sin(x * math.pi / 2)
+    
+    if distribution == 'elliptic':
+        d = math.sqrt(1 - x*x)
+    
+    if reverse:
+        d = 1 - d
+        
+    return d  
+        
         
 def makeCurvedArray(Base = None, 
                     Hullcurves=[], 
@@ -228,11 +251,13 @@ def makeCurvedArray(Base = None,
                     Twist=0, 
                     Surface=False, 
                     Solid=False, 
+                    Distribution = 'linear',
+                    DistributionReverse = False,
                     extract=False):
     import CurvedArray
     reload(CurvedArray)
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedArray")
-    cs = CurvedArray.CurvedArrayWorker(obj, Base, Hullcurves, Axis, Items, OffsetStart, OffsetEnd, Twist, Surface, Solid, extract)
+    cs = CurvedArray.CurvedArrayWorker(obj, Base, Hullcurves, Axis, Items, OffsetStart, OffsetEnd, Twist, Surface, Solid, Distribution, DistributionReverse, extract)
     CurvedArray.CurvedArrayViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     return obj
@@ -245,11 +270,16 @@ def makeCurvedSegment(Shape1 = None,
                     NormalShape2=Vector(0,0,0), 
                     Items=2, 
                     Surface=False, 
-                    Solid=False):
+                    Solid=False,
+                    InterpolationPoints=16,
+                    Twist = 0.0,
+                    TwistReverse = False,
+                    Distribution = 'linear',
+                    DistributionReverse = False):
     import CurvedSegment
     reload(CurvedSegment)
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedSegment")
-    cs = CurvedSegment.CurvedSegmentWorker(obj, Shape1, Shape2, Hullcurves, NormalShape1, NormalShape2, Items, Surface, Solid)
+    cs = CurvedSegment.CurvedSegmentWorker(obj, Shape1, Shape2, Hullcurves, NormalShape1, NormalShape2, Items, Surface, Solid, InterpolationPoints, Twist, TwistReverse, Distribution, DistributionReverse)
     CurvedSegment.CurvedSegmentViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     return obj
@@ -260,11 +290,14 @@ def makeInterpolatedMiddle(Shape1 = None,
                     NormalShape1=Vector(0,0,0), 
                     NormalShape2=Vector(0,0,0), 
                     Surface=False, 
-                    Solid=False):
+                    Solid=False,
+                    InterpolationPoints=16,
+                    Twist = 0.0,
+                    TwistReverse = False):
     import InterpolatedMiddle
     reload(InterpolatedMiddle)
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","InterpolatedMiddle")
-    cs = InterpolatedMiddle.InterpolatedMiddleWorker(obj, Shape1, Shape2, NormalShape1, NormalShape2, Surface, Solid)
+    cs = InterpolatedMiddle.InterpolatedMiddleWorker(obj, Shape1, Shape2, NormalShape1, NormalShape2, Surface, Solid, InterpolationPoints, Twist, TwistReverse)
     InterpolatedMiddle.InterpolatedMiddleViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     return obj     

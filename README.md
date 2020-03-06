@@ -39,6 +39,8 @@ The first curve that you select for CurvedArray creation will be the item that i
 - Twist: Applies a rotation around Axis to the array items. 
 - Surface: make a surface over the array items
 - Solid: make a solid if Base is a closed shape
+- Distribution: Algorithm for distance between array elements. Default is 'linear'. Also selectable: parabolic (x²), x³, sinusoidal, elliptic
+- DistributionReverse: Reverses the direction of the Distribution algorithm
 
 If you create a surface or solid and it looks weird, this may be caused by very small items at the start and end of the CurvedArray. In this case, enter values bigger than 0 for Start Offset and End Offset. This will create bigger start and end items located not at the very end.
 
@@ -63,7 +65,9 @@ Select two 2D shapes first. The curved segment will be created between them. If 
 - makeSolid: make a solid if Base is a closed shape
 - InterpolationPoints: ignored if Shape1 and Shape2 have the same number of edges and poles. Otherwise all edges will be splitted (discretized) into this number of points  
 - Twist: Compensates a rotation between Shape1 and Shape2
-- Reverse: Reverses the rotation of one Shape
+- TwistReverse: Reverses the rotation of one Shape
+- Distribution: Algorithm for distance between array elements. Default is 'linear'. Also selectable: parabolic (x²), x³, sinusoidal, elliptic
+- DistributionReverse: Reverses the direction of the Distribution algorithm
 
 ### ![CornerShapeIcon](./Resources/icons/CornerShape.svg) Interpolated Middle
 Interpolates a 2D shape into the middle between two 2D curves. The base shapes can be connected to a shape with a sharp corner.
@@ -80,7 +84,7 @@ Interpolates a 2D shape into the middle between two 2D curves. The base shapes c
 - makeSolid: make a solid if Shape1 and Shape2 are closed shapes
 - InterpolationPoints: ignored if Shape1 and Shape2 have the same number of edges and poles. Otherwise all edges will be split (discretized) into this number of points  
 - Twist: Compensates a rotation between Shape1 and Shape2
-- Reverse: Reverses the rotation of one Shape
+- TwistReverse: Reverses the rotation of one Shape
   
   
 ### ![surfaceCutIcon](./Resources/icons/surfaceCut.svg) Surface Cut

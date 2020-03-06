@@ -28,8 +28,11 @@ class CurvedSegmentWorker:
                  items=2, 
                  surface=False, 
                  solid=False,
-                 interpol=16,
-                 Twist = 0.0):
+                 InterpolationPoints=16,
+                 Twist = 0.0,
+                 TwistReverse = False,
+                 Distribution = 'linear',
+                 DistributionReverse = False):
         fp.addProperty("App::PropertyLink",  "Shape1",     "CurvedSegment",   "The first object of the segment").Shape1 = shape1
         fp.addProperty("App::PropertyLink",  "Shape2",     "CurvedSegment",   "The last object of the segment").Shape2 = shape2
         fp.addProperty("App::PropertyLinkList",  "Hullcurves",   "CurvedSegment",   "Bounding curves").Hullcurves = hullcurves        
@@ -38,9 +41,13 @@ class CurvedSegmentWorker:
         fp.addProperty("App::PropertyInteger", "Items", "CurvedSegment",   "Nr. of items between the segments").Items = items
         fp.addProperty("App::PropertyBool", "makeSurface","CurvedSegment",  "make a surface").makeSurface = surface
         fp.addProperty("App::PropertyBool", "makeSolid","CurvedSegment",  "make a solid").makeSolid = solid
-        fp.addProperty("App::PropertyInteger", "InterpolationPoints", "CurvedSegment",   "Unequal edges will be splitted into this number of points").InterpolationPoints = interpol
+        fp.addProperty("App::PropertyInteger", "InterpolationPoints", "CurvedSegment",   "Unequal edges will be splitted into this number of points").InterpolationPoints = InterpolationPoints
         fp.addProperty("App::PropertyFloat", "Twist","CurvedSegment",  "Compensates a rotation between Shape1 and Shape2").Twist = Twist
-        fp.addProperty("App::PropertyBool", "Reverse","CurvedSegment",  "Reverses the rotation of one Shape").Reverse = False
+        fp.addProperty("App::PropertyBool", "TwistReverse","CurvedSegment",  "Reverses the rotation of one Shape").TwistReverse = TwistReverse
+        fp.addProperty("App::PropertyEnumeration", "Distribution", "CurvedSegment",  "Algorithm for distance between elements")
+        fp.addProperty("App::PropertyBool", "DistributionReverse", "CurvedSegment",  "Reverses direction of Distribution algorithm").DistributionReverse = DistributionReverse
+        fp.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'elliptic']
+        fp.Distribution = Distribution
         self.doScaleXYZ = []
         self.doScaleXYZsum = [False, False, False]
         self.update = True
@@ -91,7 +98,7 @@ class CurvedSegmentWorker:
         
         
     def onChanged(self, fp, prop):
-        proplist = ["Shape1", "Shape2", "Hullcurves", "NormalShape1", "NormalShape2", "Items", "makeSurface", "makeSolid", "InterpolationPoints", "Twist", "Reverse"]
+        proplist = ["Shape1", "Shape2", "Hullcurves", "NormalShape1", "NormalShape2", "Items", "makeSurface", "makeSolid", "InterpolationPoints", "Twist", "TwistReverse", "Distribution", "DistributionReverse"]
         for p in proplist:
             if not hasattr(fp, p):
                 return
@@ -141,7 +148,8 @@ class CurvedSegmentWorker:
             items = fp.Items + 1
             
         for i in range(start, end):
-            normal = CurvedShapes.vectorMiddle(fp.NormalShape1, fp.NormalShape2, (i + 1) / items)
+            d = CurvedShapes.distribute((i + 1) / items, fp.Distribution, fp.DistributionReverse)
+            normal = CurvedShapes.vectorMiddle(fp.NormalShape1, fp.NormalShape2, d)
             #Draft.makeLine(ribs[i].BoundBox.Center, ribs[i].BoundBox.Center + normal)
             bbox = CurvedShapes.boundbox_from_intersect(fp.Hullcurves, ribs[i].BoundBox.Center, normal, self.doScaleXYZ)
             if bbox:              
@@ -193,7 +201,11 @@ def getMidPlane(fp, fraction):
 def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
     ribs = []        
     for i in range(1, items + 1): 
-        fraction =  i / (items + 1)
+        if hasattr(fp, "Distribution"):
+            fraction = CurvedShapes.distribute(i / (items + 1), fp.Distribution, fp.DistributionReverse)
+        else:
+            fraction = i / (items + 1)
+            
         plane = getMidPlane(fp, fraction)
         
         edges = []
@@ -204,7 +216,7 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
             curve1 = edge1.Curve.toBSpline(edge1.FirstParameter, edge1.LastParameter)
             curve2 = edge2.Curve.toBSpline(edge2.FirstParameter, edge2.LastParameter)
             poles1 = curve1.getPoles()
-            poles2 = reorderPoints(curve2.getPoles(), fp.Twist, fp.Reverse)
+            poles2 = reorderPoints(curve2.getPoles(), fp.Twist, fp.TwistReverse)
             
             newpoles = []
             for p in range(len(poles1)):
@@ -262,12 +274,16 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
         end = items + 1 
         
     for i in range(start, end):
-        fraction =  i / (items + 1)
+        if hasattr(fp, "Distribution"):
+            fraction = CurvedShapes.distribute(i / (items + 1), fp.Distribution, fp.DistributionReverse)
+        else:
+            fraction = i / (items + 1)
+                                               
         plane = getMidPlane(fp, fraction)
         newshape = []
         for l in range(0, len(pointslist1)):
             points1 = pointslist1[l]
-            points2 = reorderPoints(pointslist2[l], fp.Twist, fp.Reverse)
+            points2 = reorderPoints(pointslist2[l], fp.Twist, fp.TwistReverse)
             newpoles = []
             for p in range(0, fp.InterpolationPoints):
                 if alongNormal:

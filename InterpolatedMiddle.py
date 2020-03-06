@@ -26,17 +26,18 @@ class InterpolatedMiddleWorker:
                  normalShape2=Vector(0,0,0), 
                  surface=False, 
                  solid=False,
-                 interpol=16,
-                 Twist = 0.0):
+                 InterpolationPoints=16,
+                 Twist = 0.0,
+                 TwistReverse = False):
         fp.addProperty("App::PropertyLink",  "Shape1",     "InterpolatedMiddle",   "The first object of the segment").Shape1 = shape1
         fp.addProperty("App::PropertyLink",  "Shape2",     "InterpolatedMiddle",   "The last object of the segment").Shape2 = shape2     
         fp.addProperty("App::PropertyVector", "NormalShape1",    "InterpolatedMiddle",   "Direction axis of Shape1").NormalShape1 = normalShape1 
         fp.addProperty("App::PropertyVector", "NormalShape2",    "InterpolatedMiddle",   "Direction axis of Shape2").NormalShape1 = normalShape2
         fp.addProperty("App::PropertyBool", "makeSurface","InterpolatedMiddle",  "make a surface").makeSurface = surface
         fp.addProperty("App::PropertyBool", "makeSolid","InterpolatedMiddle",  "make a solid").makeSolid = solid
-        fp.addProperty("App::PropertyInteger", "InterpolationPoints", "InterpolatedMiddle",   "Unequal edges will be splitted into this number of points").InterpolationPoints = interpol
+        fp.addProperty("App::PropertyInteger", "InterpolationPoints", "InterpolatedMiddle",   "Unequal edges will be splitted into this number of points").InterpolationPoints = InterpolationPoints
         fp.addProperty("App::PropertyFloat", "Twist","InterpolatedMiddle",  "Compensates a rotation between Shape1 and Shape2").Twist = Twist
-        fp.addProperty("App::PropertyBool", "Reverse","InterpolatedMiddle",  "Reverses the rotation of one Shape").Reverse = False
+        fp.addProperty("App::PropertyBool", "TwistReverse","InterpolatedMiddle",  "Reverses the rotation of one Shape").TwistReverse = TwistReverse
         self.update = True
         fp.Proxy = self
  
@@ -64,7 +65,7 @@ class InterpolatedMiddleWorker:
         
         
     def onChanged(self, fp, prop):
-        proplist = ["Shape1", "Shape2", "NormalShape1", "NormalShape2", "makeSurface", "makeSolid"]
+        proplist = ["Shape1", "Shape2", "NormalShape1", "NormalShape2", "makeSurface", "makeSolid", "Twist", "TwistReverse"]
         for p in proplist:
             if not hasattr(fp, p):
                 return

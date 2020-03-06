@@ -134,12 +134,14 @@ def draw_HortenHIX():
     WingArray = CurvedShapes.makeCurvedArray(Base=WingProfile, 
                                          Hullcurves=[WingTop, WingFront], 
                                          Axis=Vector(1,0,0), 
-                                         Items=11, 
+                                         Items=16, 
                                          OffsetStart=0, 
                                          OffsetEnd=0,
                                          Twist=twist,
                                          Surface=False,
                                          Solid=False,
+                                         Distribution = 'parabolic',
+                                         DistributionReverse = True,
                                          extract=False)
     
     WingTopLeft = doc.addObject('Part::Mirroring', 'WingTopLeft')
@@ -157,12 +159,13 @@ def draw_HortenHIX():
     WingSurface = CurvedShapes.makeCurvedArray(Base=WingProfile, 
                                              Hullcurves=[WingTopLeft, WingFrontLeft], 
                                              Axis=Vector(-1,0,0), 
-                                             Items=128, 
+                                             Items=32, 
                                              OffsetStart=0, 
                                              OffsetEnd=0,
                                              Twist=-twist,
                                              Surface=True,
-                                             Solid=True) 
+                                             Solid=True,
+                                             Distribution = 'sinusoidal') 
     
     
     WingSurface.Label = "WingSurface"

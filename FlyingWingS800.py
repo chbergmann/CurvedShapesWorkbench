@@ -84,7 +84,7 @@ def draw_S800():
     MiddleProfile = createSketch_MiddleProfile(doc)
     MiddleProfile.ViewObject.Visibility = False
     
-    MiddlePart1 = CurvedShapes.makeCurvedSegment(SplineFoilMiddle, SplineFoilWingInside, [MiddleProfile], Items=4, Surface=True, Solid=True)
+    MiddlePart1 = CurvedShapes.makeCurvedSegment(SplineFoilMiddle, SplineFoilWingInside, [MiddleProfile], Items=4, Surface=True, Solid=True, Distribution='elliptic', DistributionReverse=True)
     MiddlePart1.Label = "MiddlePart1"
     MiddlePart1.ViewObject.Visibility = False
     

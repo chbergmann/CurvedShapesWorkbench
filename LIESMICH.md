@@ -61,7 +61,9 @@ Zuerst zwei 2D Kurven auswählen, dann optional noch eine oder mehrere Hüllkurv
 - makeSolid: Einen Festkörper erstellen (funktioniert nur, wenn Base eine geschlossene Form ist)
 - InterpolationPoints: Wenn Shape1 und Shape2 verschiedenartige Objekte sind, werden die Kurven in diese Anzahl von Einzelpunkten zerlegt  
 - Twist: (Winkel in Grad) kann eine Rotation zwischen Shape1 unf Shape2 kompensieren
-- Reverse: wenn true, wird die Drehrichtung geändert
+- TwistReverse: wenn True, wird die Drehrichtung geändert
+- Distribution: Algorithmus zur Berechnung der Distanz zwischen den Elementen. Default ist 'linear'. Weitere Möglichkeiten: parabolic (x²), x³, sinusoidal, elliptic
+- DistributionReverse: Kehrt die Richtung des Distrubution Algorithmus um
 
 ### ![](./Resources/icons/CornerShape.svg) Interpolated Middle
 Interpoliert eine 2D Kurve in der Mitte zwischen zwei 2D Kurven. Es kann ein Verbinder mit einem Knick zwischen den den Kurven generiert werden.
@@ -78,7 +80,9 @@ Interpoliert eine 2D Kurve in der Mitte zwischen zwei 2D Kurven. Es kann ein Ver
 - makeSolid: Einen Festkörper erstellen (funktioniert nur, wenn Base eine geschlossene Form ist)
 - InterpolationPoints: Wenn Shape1 und Shape2 verschiedenartige Objekte sind, werden die Kurven in diese Anzahl von Einzelpunkten zerlegt  
 - Twist: (Winkel in Grad) kann eine Rotation zwischen Shape1 unf Shape2 kompensieren
-- Reverse: wenn true, wird die Drehrichtung geändert
+- TwistReverse: wenn True, wird die Drehrichtung geändert
+- Distribution: Algorithmus zur Berechnung der Distanz zwischen den Elementen. Default ist 'linear'. Weitere Möglichkeiten: parabolic (x²), x³, sinusoidal, elliptic
+- DistributionReverse: Kehrt die Richtung des Distrubution Algorithmus um
   
   
 ### ![](./Resources/icons/surfaceCut.svg) Surface Cut

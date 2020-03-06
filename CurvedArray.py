@@ -14,6 +14,7 @@ import Part
 import Draft
 import CompoundTools.Explode
 import CurvedShapes
+import math
 
 global epsilon
 epsilon = CurvedShapes.epsilon
@@ -28,6 +29,8 @@ class CurvedArrayWorker:
                  Twist=0.0, 
                  Surface=True, 
                  Solid = False,
+                 Distribution = 'linear',
+                 DistributionReverse = False,
                  extract=False):
         obj.addProperty("App::PropertyLink",  "Base",     "CurvedArray",   "The object to make an array from").Base = base
         obj.addProperty("App::PropertyLinkList",  "Hullcurves",   "CurvedArray",   "Bounding curves").Hullcurves = hullcurves        
@@ -36,14 +39,16 @@ class CurvedArrayWorker:
         obj.addProperty("App::PropertyFloat", "OffsetStart","CurvedArray",  "Offset of the first part in Axis direction").OffsetStart = OffsetStart
         obj.addProperty("App::PropertyFloat", "OffsetEnd","CurvedArray",  "Offset of the last part from the end in opposite Axis direction").OffsetEnd = OffsetEnd
         obj.addProperty("App::PropertyFloat", "Twist","CurvedArray",  "Offset of the last part from the end in opposite Axis direction").Twist = Twist
-        obj.addProperty("App::PropertyBool", "Surface","CurvedArray",  "make a surface").Surface = Surface
-        obj.addProperty("App::PropertyBool", "Solid","CurvedArray",  "make a solid").Solid = Solid
+        obj.addProperty("App::PropertyBool", "Surface","CurvedArray",  "Make a surface").Surface = Surface
+        obj.addProperty("App::PropertyBool", "Solid","CurvedArray",  "Make a solid").Solid = Solid
+        obj.addProperty("App::PropertyEnumeration", "Distribution", "CurvedArray",  "Algorithm for distance between elements")
+        obj.addProperty("App::PropertyBool", "DistributionReverse", "CurvedArray",  "Reverses direction of Distribution algorithm").DistributionReverse = DistributionReverse
+        obj.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'elliptic']
+        obj.Distribution = Distribution
         self.extract = extract
         self.doScaleXYZ = []
         self.doScaleXYZsum = [False, False, False]
         obj.Proxy = self
-    
- 
        
 
     def makeRibs(self, obj):
@@ -84,10 +89,12 @@ class CurvedArrayWorker:
         if obj.Axis.y < 0: startvec.y = curvebox.YMax
         if obj.Axis.z < 0: startvec.z = curvebox.ZMax
         pos0 = startvec + (obj.OffsetStart * obj.Axis)      
-            
-        for n in range(0, sections):
+             
+        for x in range(0, sections):            
             if sections > 1:
-                posvec = pos0 + (deltavec * n / (sections - 1))
+                d = CurvedShapes.distribute(x / (sections - 1), obj.Distribution, obj.DistributionReverse)
+                             
+                posvec = pos0 + (deltavec * d)                
             else:
                 posvec = pos0
                 
@@ -109,7 +116,7 @@ class CurvedArrayWorker:
             CompoundTools.Explode.explodeCompound(obj)
             obj.ViewObject.hide()
 
-        
+    
         
     def makeRib(self, obj, posvec):
         basebbox = obj.Base.Shape.BoundBox    
@@ -157,7 +164,11 @@ class CurvedArrayWorker:
             return
         
     def onChanged(self, fp, prop):
-        proplist = ["Base", "Hullcurves", "Axis", "Items", "OffsetStart", "OffsetEnd", "Twist", "Surface", "Solid"]
+        proplist = ["Base", "Hullcurves", "Axis", "Items", "OffsetStart", "OffsetEnd", "Twist", "Surface", "Solid", "Distribution", "DistributionReverse"]
+        for p in proplist:
+            if not hasattr(fp, p):
+                return 
+            
         if prop in proplist:      
             self.execute(fp)
 
