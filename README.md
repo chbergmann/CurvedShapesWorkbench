@@ -19,6 +19,11 @@ git clone https://github.com/chbergmann/CurvedShapesWorkbench.git
 ```
 When you restart FreeCAD, "Curved Shapes" workbench should now show up in the [workbench dropdown list](https://freecadweb.org/wiki/Std_Workbench).
   
+## Video Tutorial
+JOKO engineering made a great tutorial
+
+[!["FreeCAD Curved Shapes WB: Make Insane and Exact Surfaces Quick! |JOKO ENGINEERING|"](http://img.youtube.com/vi/Wls0cqhVCc4/0.jpg)](http://www.youtube.com/watch?v=Wls0cqhVCc4 "FreeCAD Curved Shapes WB: Make Insane and Exact Surfaces Quick! |JOKO ENGINEERING|")  
+  
 ## Tools
 ### ![curvedArrayIcon](./Resources/icons/curvedArray.svg) Curved Array
 Creates an array and resizes the items in the bounds of one or more hull curves.
@@ -125,6 +130,7 @@ A python script that creates the shape of the [Horten Ho 229 (also called Horten
 A python script that creates the shape of a flying wing RC model.  
   
 ![S800](Examples/S800.jpg)
+
 
 ## Discussion
 Please offer feedback or connect with the developer via the [dedicated FreeCAD forum thread](https://forum.freecadweb.org/viewtopic.php?f=8&t=36989).

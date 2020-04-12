@@ -15,6 +15,11 @@ Dieser Arbeitsbereich kann über den Addon manager in FreeCAD installiert werden
 
 "Curved Shapes" sollte nun in der Liste der Arbeitsbereiche auswählbar sein.
   
+## Video Tutorial
+Hier ein großartiges Tutorial von JOKO engineering (in englisch)
+
+[!["FreeCAD Curved Shapes WB: Make Insane and Exact Surfaces Quick! |JOKO ENGINEERING|"](http://img.youtube.com/vi/Wls0cqhVCc4/0.jpg)](http://www.youtube.com/watch?v=Wls0cqhVCc4 "FreeCAD Curved Shapes WB: Make Insane and Exact Surfaces Quick! |JOKO ENGINEERING|")  
+  
 ## Werkzeuge
 ### ![](./Resources/icons/curvedArray.svg) Curved Array
 Erstellt mehrere Kopien von einem Basisobject (Base) und verschiebt diese und passt die Größe an innerhalb von einer oder mehreren Hüllkurven (Hullcurves)  
