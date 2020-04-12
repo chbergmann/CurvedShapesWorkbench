@@ -170,7 +170,7 @@ def draw_HortenHIX():
     
     WingSurface.Label = "WingSurface"
     
-    Cockpit = drawCockpit(doc, scaleFactor, rib_material_height)
+    Cockpit = drawCockpit(doc, scaleFactor, WingSurface)
     
     Turbine = makeTurbine(doc, scaleFactor)
     TurbineCut = makeTurbineCut(doc, scaleFactor)
@@ -186,12 +186,12 @@ def draw_HortenHIX():
     ymax = WingSurface.Shape.BoundBox.YMin + WingSurface.Shape.BoundBox.YLength
     rota = FreeCAD.Rotation(Vector(0,0,1), 28)
     vecToWingEnd28 = rota.multVec(Vector(0,1,0))
-    WingCutFront = CurvedShapes.cutSurfaces([Wing], Normal = vecToWingEnd28, Position=Vector(0, ymax * 0.85, 0), Face=False, Simplify=True)
+    WingCutFront = CurvedShapes.cutSurfaces([Wing], Normal = vecToWingEnd28, Position=Vector(0, ymax * 0.85, 0), Face=False, Simplify=0)
     WingCutFront.Label = "WingCutFront"
     
     rota = FreeCAD.Rotation(Vector(0,0,1), 18)
     vecToWingEnd18 = rota.multVec(Vector(0,1,0))
-    WingCutBack = CurvedShapes.cutSurfaces([Wing], Normal = vecToWingEnd18, Position=Vector(0, ymax * 0.55, 0), Face=False, Simplify=True)
+    WingCutBack = CurvedShapes.cutSurfaces([Wing], Normal = vecToWingEnd18, Position=Vector(0, ymax * 0.55, 0), Face=False, Simplify=0)
     WingCutBack.Label = "WingCutBack"
     
     doc.recompute()
@@ -199,7 +199,7 @@ def draw_HortenHIX():
     FreeCADGui.SendMsgToActiveView("ViewFit")
     
             
-def drawCockpit(doc, scaleFactor, rib_material_height):
+def drawCockpit(doc, scaleFactor, Wing):
     CockpitFront_parts = []
     poles = []
     poles.append(Vector(0.0, 7.92, 0.0) * scaleFactor)
@@ -217,6 +217,7 @@ def drawCockpit(doc, scaleFactor, rib_material_height):
     CockpitFront.Links = CockpitFront_parts
     CockpitFront.Placement.Base = Vector(0.0, 0.0, 0.0) * scaleFactor
     CockpitFront.Placement.Rotation = Rotation (-0.7071067811865475, 0.0, 0.0, -0.7071067811865475)
+    CockpitFront.ViewObject.Visibility = False
     
     CockpitTop_parts = []
     poles = []
@@ -235,8 +236,13 @@ def drawCockpit(doc, scaleFactor, rib_material_height):
     CockpitTop_parts.append(bezier)
     CockpitTop = doc.addObject('Part::Compound', 'CockpitTop')
     CockpitTop.Links = CockpitTop_parts
-    CockpitTop.Placement.Base = Vector(0.0, 0.0, 4.0) * scaleFactor
+    CockpitTop.Placement.Base = Vector(0.0, 0.0, 5.3) * scaleFactor
     CockpitTop.Placement.Rotation = Rotation (0.0, 0.0, 0.0, 1.0)
+    
+    CockpitTopLeft = doc.addObject('Part::Mirroring', 'CockpitTopLeft')
+    CockpitTopLeft.Normal = Vector(1.0, 0.0, 0.0)
+    CockpitTopLeft.Source = CockpitTop
+    CockpitTopLeft.ViewObject.hide()
     
     CockpitSide_parts = []
     poles = []
@@ -255,27 +261,12 @@ def drawCockpit(doc, scaleFactor, rib_material_height):
     CockpitSide.Links = CockpitSide_parts
     CockpitSide.Placement.Base = Vector(0.0, 0.0, 0.0) * scaleFactor
     CockpitSide.Placement.Rotation = Rotation (0.5, 0.5, 0.5, 0.5)
+    CockpitSide.ViewObject.Visibility = False
     
     doc.recompute() 
-   
-    CockpitFront.ViewObject.Visibility = False
-    CockpitSide.ViewObject.Visibility = False
-    CockpitTop.ViewObject.Visibility = False
     
-    doc.recompute()
-    CockpitRight = CurvedShapes.makeCurvedArray(Base=CockpitFront, 
-                                             Hullcurves=[CockpitSide, CockpitTop], 
-                                             Axis=Vector(0,1,0), 
-                                             Items=16, 
-                                             OffsetStart=0, 
-                                             OffsetEnd=0,
-                                             Surface=False,
-                                             extract=False) 
-
-    CockpitTopLeft = doc.addObject('Part::Mirroring', 'CockpitTopLeft')
-    CockpitTopLeft.Normal = Vector(1.0, 0.0, 0.0)
-    CockpitTopLeft.Source = CockpitTop
-    CockpitTopLeft.ViewObject.hide()
+    CockpitRight = CurvedShapes.makeCurvedPathArray(CockpitFront, CockpitSide, [CockpitSide, CockpitTop], Items=24, OffsetStart=0, OffsetEnd=0, Surface=False, Solid=False)
+    CockpitRight.Label = "CockpitRight"
     
     CockpitFrontLeft = doc.addObject('Part::Mirroring', 'CockpitFrontLeft')
     CockpitFrontLeft.Normal = Vector(1.0, 0.0, 0.0)
@@ -283,14 +274,8 @@ def drawCockpit(doc, scaleFactor, rib_material_height):
     CockpitFrontLeft.ViewObject.hide()
     doc.recompute()
     
-    CockpitLeft = CurvedShapes.makeCurvedArray(Base=CockpitFrontLeft, 
-                                             Hullcurves=[CockpitSide, CockpitTopLeft], 
-                                             Axis=Vector(0,1,0), 
-                                             Items=16, 
-                                             OffsetStart=0, 
-                                             OffsetEnd=0,
-                                             Surface=True,
-                                             extract=False) 
+    CockpitLeft = CurvedShapes.makeCurvedPathArray(CockpitFrontLeft, CockpitSide, [CockpitSide, CockpitTopLeft], Items=24, OffsetStart=0, OffsetEnd=0, Surface=True, Solid=False)
+    CockpitLeft.Label = "CockpitLeft"
     CockpitLeft.ViewObject.Transparency = 50
     
     Cockpit = doc.addObject('Part::Compound', 'Cockpit')

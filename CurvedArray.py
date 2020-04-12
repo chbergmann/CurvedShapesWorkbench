@@ -38,7 +38,7 @@ class CurvedArrayWorker:
         obj.addProperty("App::PropertyQuantity", "Items", "CurvedArray",   "Nr. of array items").Items = items
         obj.addProperty("App::PropertyFloat", "OffsetStart","CurvedArray",  "Offset of the first part in Axis direction").OffsetStart = OffsetStart
         obj.addProperty("App::PropertyFloat", "OffsetEnd","CurvedArray",  "Offset of the last part from the end in opposite Axis direction").OffsetEnd = OffsetEnd
-        obj.addProperty("App::PropertyFloat", "Twist","CurvedArray",  "Offset of the last part from the end in opposite Axis direction").Twist = Twist
+        obj.addProperty("App::PropertyFloat", "Twist","CurvedArray",  "Rotate around Axis in degrees").Twist = Twist
         obj.addProperty("App::PropertyBool", "Surface","CurvedArray",  "Make a surface").Surface = Surface
         obj.addProperty("App::PropertyBool", "Solid","CurvedArray",  "Make a solid").Solid = Solid
         obj.addProperty("App::PropertyEnumeration", "Distribution", "CurvedArray",  "Algorithm for distance between elements")

@@ -263,6 +263,25 @@ def makeCurvedArray(Base = None,
     return obj
 
 
+def makeCurvedPathArray(Base = None, 
+                    Path = None,
+                    Hullcurves=[], 
+                    Items=2, 
+                    OffsetStart=0, 
+                    OffsetEnd=0, 
+                    Twist=0, 
+                    Surface=False, 
+                    Solid=False, 
+                    extract=False):
+    import CurvedPathArray
+    reload(CurvedPathArray)
+    obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedPathArray")
+    cs = CurvedPathArray.CurvedPathArrayWorker(obj, Base, Path, Hullcurves, Items, OffsetStart, OffsetEnd, Twist, Surface, Solid, extract)
+    CurvedPathArray.CurvedPathArrayViewProvider(obj.ViewObject)
+    FreeCAD.ActiveDocument.recompute()
+    return obj
+
+
 def makeCurvedSegment(Shape1 = None, 
                       Shape2 = None, 
                     Hullcurves=[], 
