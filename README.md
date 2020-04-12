@@ -131,6 +131,8 @@ A python script that creates the shape of a flying wing RC model.
   
 ![S800](Examples/S800.jpg)
 
+### Faster Better Corsair |JOKO ENGINEERING|
+[!["FreeCAD Curved Surfaces Workbench in Action: Faster Better Corsair |JOKO ENGINEERING|"](http://img.youtube.com/vi/tjT9gt0dArQ/0.jpg)](http://www.youtube.com/watch?v=tjT9gt0dArQ "FreeCAD Curved Surfaces Workbench in Action: Faster Better Corsair |JOKO ENGINEERING|") 
 
 ## Discussion
 Please offer feedback or connect with the developer via the [dedicated FreeCAD forum thread](https://forum.freecadweb.org/viewtopic.php?f=8&t=36989).

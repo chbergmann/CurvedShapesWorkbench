@@ -127,6 +127,9 @@ Ein Python Skript, dass einen Nurflügler generiert.
   
 ![S800](Examples/S800.jpg)
 
+### Faster Better Corsair |JOKO ENGINEERING|
+[!["FreeCAD Curved Surfaces Workbench in Action: Faster Better Corsair |JOKO ENGINEERING|"](http://img.youtube.com/vi/tjT9gt0dArQ/0.jpg)](http://www.youtube.com/watch?v=tjT9gt0dArQ "FreeCAD Curved Surfaces Workbench in Action: Faster Better Corsair |JOKO ENGINEERING|") 
+
 ## Diskussion
 [offizeller Thread im FreeCAD Forum (englisch)](https://forum.freecadweb.org/viewtopic.php?f=8&t=36989)  
 [Beitrag im FreeCAD Forum in Deutsch](https://forum.freecadweb.org/viewtopic.php?f=13&t=42684).
