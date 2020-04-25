@@ -105,7 +105,7 @@ class CurvedPathArrayWorker:
                     dolly.Placement.Base = posvec
                     if dolly: 
                         if not obj.Twist == 0 and n > 0:
-                            dolly.rotate(dolly.BoundBox.Center, direction, obj.Twist * n / int(obj.Items))
+                            dolly.rotate(posvec, direction, obj.Twist * n / int(obj.Items))
                             
                         if len(obj.Hullcurves) > 0:
                             bbox = CurvedShapes.boundbox_from_intersect(obj.Hullcurves, posvec, direction, self.doScaleXYZ)
