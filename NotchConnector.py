@@ -72,7 +72,7 @@ class NotchConnectorWorker:
     def extractCompounds(self, obj):
         extracted = []
         for o in obj:
-            if hasattr(o, 'Links'):
+            if o.TypeId == 'Part::Compound':
                 extracted += self.extractCompounds(o.Links)
             else:
                 extracted.append(o)
@@ -95,8 +95,7 @@ class NotchConnectorWorker:
         shapes = []
         halfsize = fp.CutDirection / 2
         for obj in self.extractCompounds([fp.Base]):
-            isExtrude = hasattr(obj, "LengthFwd") and hasattr(obj, "Base")
-            if isExtrude:
+            if obj.TypeId == 'Part::Extrusion':
                 bShapes = obj.Base
             else:
                 bShapes = obj
@@ -104,10 +103,11 @@ class NotchConnectorWorker:
             for bShape in self.extractShapes([bShapes]):    
                 cutcubes = []
                 for tool in self.extractShapes(fp.Tools):              
-                    tbox = tool.BoundBox
+                    tbox = tool.optimalBoundingBox()
                     common = tool.common(bShape)
                     cbox = common.BoundBox
                     if cbox.XLength + cbox.YLength + cbox.ZLength > epsilon:
+                        cbox = common.optimalBoundingBox()
                         vSize = Vector(cbox.XLength, cbox.YLength, cbox.ZLength)
                         vPlace = Vector(cbox.XMin, cbox.YMin, cbox.ZMin)
                         if vSize.x < epsilon or vSize.x > tbox.XLength: 
@@ -132,7 +132,7 @@ class NotchConnectorWorker:
                 else:
                     cutted = bShape
                 
-                if isExtrude:
+                if obj.TypeId == 'Part::Extrusion':
                     cutted.Placement.Base -= obj.Dir * float(obj.LengthRev)               
                     ext = cutted.extrude(obj.Dir * float(obj.LengthFwd + obj.LengthRev))
                     shapes.append(ext)
