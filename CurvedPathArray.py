@@ -30,6 +30,7 @@ class CurvedPathArrayWorker:
                  Twist=0.0, 
                  Surface=True, 
                  Solid = False,
+                 doScale = [],
                  extract=False):
         obj.addProperty("App::PropertyLink",  "Base",     "CurvedPathArray",   "The object to make an array from").Base = base
         obj.addProperty("App::PropertyLink",  "Path",     "CurvedPathArray",   "Sweep path").Path = path
@@ -40,9 +41,17 @@ class CurvedPathArrayWorker:
         obj.addProperty("App::PropertyFloat", "Twist","CurvedPathArray",  "Rotate in degrees around the sweep path").Twist = Twist
         obj.addProperty("App::PropertyBool", "Surface","CurvedPathArray",  "Make a surface").Surface = Surface
         obj.addProperty("App::PropertyBool", "Solid","CurvedPathArray",  "Make a solid").Solid = Solid
+        obj.addProperty("App::PropertyBool", "ScaleX","CurvedPathArray",  "Scale by hullcurves in X direction").ScaleX = True
+        obj.addProperty("App::PropertyBool", "ScaleY","CurvedPathArray",  "Scale by hullcurves in Y direction").ScaleY = True
+        obj.addProperty("App::PropertyBool", "ScaleZ","CurvedPathArray",  "Scale by hullcurves in Z direction").ScaleZ = True
+        self.doScaleXYZsum = [False, False, False]
+        if len(doScale) == 3:
+            obj.ScaleX = doScale[0]
+            obj.ScaleY = doScale[1]
+            obj.ScaleZ = doScale[2]
+            
         self.extract = extract
         self.doScaleXYZ = []
-        self.doScaleXYZsum = [False, False, False]
         obj.Proxy = self
        
 
@@ -108,6 +117,10 @@ class CurvedPathArrayWorker:
                             dolly.rotate(posvec, direction, obj.Twist * n / int(obj.Items))
                             
                         if len(obj.Hullcurves) > 0:
+                            if not obj.ScaleX: direction = Vector(1, 0, 0)
+                            if not obj.ScaleY: direction = Vector(0, 1, 0)
+                            if not obj.ScaleZ: direction = Vector(0, 0, 1)
+                            
                             bbox = CurvedShapes.boundbox_from_intersect(obj.Hullcurves, posvec, direction, self.doScaleXYZ)
                             if bbox:
                                 dolly = CurvedShapes.scaleByBoundbox(dolly, bbox, self.doScaleXYZsum, copy=True)
@@ -138,15 +151,15 @@ class CurvedPathArrayWorker:
             
             if bbox.XLength > epsilon: 
                 doScale[0] = True 
-                self.doScaleXYZsum[0] = True
+                self.doScaleXYZsum[0] = prop.ScaleX
         
             if bbox.YLength > epsilon: 
                 doScale[1] = True 
-                self.doScaleXYZsum[1] = True
+                self.doScaleXYZsum[1] = prop.ScaleY
         
             if bbox.ZLength > epsilon: 
                 doScale[2] = True 
-                self.doScaleXYZsum[2] = True
+                self.doScaleXYZsum[2] = prop.ScaleZ
         
             self.doScaleXYZ.append(doScale)
         
@@ -155,7 +168,7 @@ class CurvedPathArrayWorker:
             return
         
     def onChanged(self, fp, prop):
-        proplist = ["Base", "Hullcurves", "Path", "Items", "OffsetStart", "OffsetEnd", "Twist", "Surface", "Solid"]
+        proplist = ["Base", "Hullcurves", "Path", "Items", "OffsetStart", "OffsetEnd", "Twist", "Surface", "Solid", "ScaleX", "ScaleY", "ScaleZ"]
         for p in proplist:
             if not hasattr(fp, p):
                 return 
