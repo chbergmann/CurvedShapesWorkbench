@@ -47,9 +47,55 @@ The first curve that you select for CurvedArray creation will be the item that i
 - Distribution: Algorithm for distance between array elements. Default is 'linear'. Also selectable: parabolic (x²), x³, sinusoidal, elliptic
 - DistributionReverse: Reverses the direction of the Distribution algorithm
 
+Distribution Linear  
+![Linear](Examples/CurvedArrayLinear.jpg)  
+  
+Distribution parabolic  
+![parabolic](Examples/CurvedArrayX2.jpg)  
+  
+Distribution x³  
+![x³](Examples/CurvedArrayX3.jpg)  
+  
+Distribution sinusoidal  
+![sinusoidal](Examples/CurvedArraySinus.jpg) 
+   
+Distribution elliptic  
+![elliptic](Examples/CurvedArrayElliptic.jpg)  
+If you create a surface with the Curved Array, a different distribution may give you better results.
+
+If you create an elliptic wing, distribution elliptic would be the best solution.
+If you create the Curved Array inside a half circle, sinusoidal is best.
+If the hullcurves are created from simple spline curves, parabolic or x³ may give you the best results.
+If you are unsure, choose linear.
+
 If you create a surface or solid and it looks weird, this may be caused by very small items at the start and end of the CurvedArray. In this case, enter values bigger than 0 for Start Offset and End Offset. This will create bigger start and end items located not at the very end.
 
 To resolve a CurvedArray item to a compound of single objects, go to the Part workbench. In the [Part workbench](https://www.freecadweb.org/wiki/Part_Workbench), select **Part → Compound → [Explode compound](https://www.freecadweb.org/wiki/Part_ExplodeCompound)**
+  
+
+### ![curvedPathArrayIcon](./Resources/icons/CurvedPathArray.svg) Curved Path Array
+Creates an array, sweeps the elements around a path curve, and resizes the items in the bounds of optional hullcurves.  
+The items created will be perpendicular to the sweep path.  
+There is a twist parameter to let the items rotate around the sweep path.
+If you do not use hullcurves and twist, this tool is similar to the Path Array tool in the Draft workbench.
+
+![CurvedPathArray](Examples/CurvedPathArray.jpg)  
+
+#### Parameters
+- Base: The object to make an array from
+- Path: Sweep path
+- Hullcurves: List of one or more bounding curves   
+- Items: Nr. of array items
+- OffsetStart: Offset of the first part from the beginning of the sweep path
+- OffsetEnd: Offset of the last part from the end in opposite direction
+- Twist: Rotate in degrees around the sweep path
+- Surface: make a surface over the array items
+- Solid: make a solid if Base is a closed shape
+- ScaleX: Scale by hullcurves in X direction
+- ScaleY: Scale by hullcurves in Y direction
+- ScaleZ: Scale by hullcurves in Z direction
+
+The parameters ScaleX, ScaleY and ScaleZ have been added because you may want to rescale the items only in one direction, but the hullcurves normally cover 2 or three room directions.  
   
 ### ![curvedSegmentIcon](./Resources/icons/curvedSegment.svg) Curved Segment
 Interpolates between two 2D curves. The interpolated curves can be resized in the bounds of some hullcurves.  

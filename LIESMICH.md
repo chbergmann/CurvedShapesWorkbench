@@ -40,12 +40,59 @@ Zuerst das Basisobjekt auswählen, danach die Hüllkurven. Dann ein Curved Array
 - Twist: (Winkel in Grad) Lässt die Array Elemente rotieren
 - Surface: Eine Oberfläche erstellen
 - Solid: Einen Festkörper erstellen (funktioniert nur, wenn Base eine geschlossene Form ist)
+- Distribution: Algorithmus zur Berechnung der Distanz zwischen den Elementen. Default ist 'linear'. Weitere Möglichkeiten: parabolic (x²), x³, sinusoidal, elliptic
+- DistributionReverse: Kehrt die Richtung des Distrubution Algorithmus um
+
+Distribution Linear  
+![Linear](Examples/CurvedArrayLinear.jpg)  
+  
+Distribution parabolic  
+![parabolic](Examples/CurvedArrayX2.jpg)  
+  
+Distribution x³  
+![x³](Examples/CurvedArrayX3.jpg)  
+  
+Distribution sinusoidal  
+![sinusoidal](Examples/CurvedArraySinus.jpg) 
+   
+Distribution elliptic  
+![elliptic](Examples/CurvedArrayElliptic.jpg)  
+
+Wenn man eine Oberfläche erstellt (Surface = True), können mit Distribution evtl. bessere Ergebnisse erzielt werden.
+Für elliptische Flügel kann elliptic die beste Lösung sein.
+Bei einem CurvedArray in einem Halbkreis ist sinusoidal am Besten.
+Parabolic oder x³ sind evtl. bei spline curves die beste Wahl.
+Im Zweifelsfall linear wählen.
 
 Möglichkeiten zur Verbesserung der generierten Form:  
 Die erste Möglichkeit das Ergebnis zu verbessern ist den Parameter Items zu erhöhen auf z.B. 100. Das erhöht die Auflösung und macht die Rundungen runder, dauert aber länger bis es fertig berechnet ist.
 Zwite Möglichkeit: Für Offset Start und/oder Offset End größere Werte eingeben, z.B. 0,1. Damit wird die erste bzw. die letzte Scheibe nicht am äußersten Punkt der Hüllkurven generiert, sondern 0,1mm davon entfernt.
 
 Array Elemente aus Curved Array extrahieren (funktioniert nur, wenn Surface und Solid false sind): In der Part workbench, Menü Formteil -> Flächenverbund -> Verbundteile extrahieren 
+  
+### ![curvedPathArrayIcon](./Resources/icons/CurvedPathArray.svg) Curved Path Array
+Erstellt mehrere Kopien von einem Basisobject (Base) und ordnet diese rechwinklig zu einer Kurve (Path) an. Optional können Größe und Position innerhalb von einer oder mehreren Hüllkurven (Hullcurves) ausgerichtet werden.  
+Ein Twist Parameter lässt die Elemente um die Path Kurve rotieren.  
+Ohne Hullcurves und Twist ist dieses Tool ähnlich dem Sweep Path Tool aus der Draft workbench.
+
+![CurvedPathArray](Examples/CurvedPathArray.jpg)  
+
+#### Parameters
+- Base: Das Basisobjekt
+- Path: Basisobjekte werden an dieser Kurve ausgerichtet
+- Hullcurves: (optional) Eine oder mehrere Hüllkurven    
+- Items: Anzahl der Array Elemente
+- OffsetStart: Abstand des ersten Array Elements vom Anfang von Path
+- OffsetEnd: Abstand des letzten Array Elements vom Ende von Path
+- Twist: (Winkel in Grad) Lässt die Array Elemente um Path rotieren
+- Surface: Eine Oberfläche erstellen
+- Solid: Einen Festkörper erstellen (funktioniert nur, wenn Base eine geschlossene Form ist)
+- ScaleX: Hullcurves können in X Richtung skalieren
+- ScaleY: Hullcurves können in Y Richtung skalieren
+- ScaleZ: Hullcurves können in Z Richtung skalieren
+
+Wenn Hullcurves verwendet werden und die Objekte nicht rechtwinklig zum Path angeordnet sind, muss evtl. die Skaliereng in eine Raumrichtung ausgeschaltet werden, in dem ScaleX, ScaleY oder ScaleZ auf false gesetzt wird.
+
   
 ### ![](./Resources/icons/curvedSegment.svg) Curved Segment
 Interpoliert zwischen zwei 2D Kurven. Die interpolieren Kurven können innerhalb von Hüllkurven angeordnet werden.  
