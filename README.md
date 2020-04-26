@@ -81,6 +81,8 @@ If you do not use hullcurves and twist, this tool is similar to the Path Array t
 
 ![CurvedPathArray](Examples/CurvedPathArray.jpg)  
 
+The first curve that you select for Curved Path Array creation will be the base item. The second selected curve will become the path. All curves selected after that will be the hullcurves.
+
 #### Parameters
 - Base: The object to make an array from
 - Path: Sweep path

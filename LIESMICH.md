@@ -28,7 +28,7 @@ Base und Hullcurves brauchen nicht miteinanden verbunden sein und sollten in ein
 
 ![WingExample](Examples/WingExample.png)
   
-Zuerst das Basisobjekt auswählen, danach die Hüllkurven. Dann ein Curved Array objekt erstellen.
+Zuerst das Basisobjekt auswählen, danach die Hüllkurven. Dann ein Curved Array Objekt erstellen.
 
 #### Parameters
 - Base: Das Basisobjekt
@@ -75,7 +75,9 @@ Erstellt mehrere Kopien von einem Basisobject (Base) und ordnet diese rechwinkli
 Ein Twist Parameter lässt die Elemente um die Path Kurve rotieren.  
 Ohne Hullcurves und Twist ist dieses Tool ähnlich dem Sweep Path Tool aus der Draft workbench.
 
-![CurvedPathArray](Examples/CurvedPathArray.jpg)  
+![CurvedPathArray](Examples/CurvedPathArray.jpg) 
+
+Zuerst das Basisobjekt auswählen, danach den Pfad, und zum Schluss die Hüllkurven. Dann ein Curved Path Array Objekt erstellen.
 
 #### Parameters
 - Base: Das Basisobjekt
