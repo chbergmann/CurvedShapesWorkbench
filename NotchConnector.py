@@ -67,6 +67,7 @@ class NotchConnectorWorker:
             
         fp.Proxy = self
         self.cutNotches(fp)
+        fp.Base.ViewObject.hide()
           
     
     def extractCompounds(self, obj):
@@ -128,7 +129,10 @@ class NotchConnectorWorker:
                         cutcubes.append(cutcube) 
                         
                 if len(cutcubes) > 0:
-                    cutted = bShape.cut(cutcubes)
+                    try:
+                        cutted = bShape.cut(cutcubes)
+                    except:
+                        cutted = bShape
                 else:
                     cutted = bShape
                 
