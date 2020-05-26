@@ -87,8 +87,9 @@ class CurvedPathArrayWorker:
                 curvebox.ZMax = obj.Hullcurves[0].Shape.BoundBox.ZMax
          
         maxlen = 0   
-        edgelen = []     
-        for edge in obj.Path.Shape.Edges:
+        edgelen = []
+        edges = Part.__sortEdges__(obj.Path.Shape.Edges)
+        for edge in edges:
             maxlen += edge.Length
             edgelen.append(edge.Length)
         
@@ -97,7 +98,7 @@ class CurvedPathArrayWorker:
             if obj.Items > 1:
                 plen += (maxlen - obj.OffsetStart - obj.OffsetEnd) * n / (obj.Items - 1)
                 
-            for edge in obj.Path.Shape.Edges:
+            for edge in edges:
                 if plen > edge.Length: 
                     plen -= edge.Length
                 else:
@@ -110,7 +111,9 @@ class CurvedPathArrayWorker:
             
                     #dolly = self.makeRib(obj, posvec, direction)
                     dolly = obj.Base.Shape.copy()
-                    dolly.rotate(dolly.BoundBox.Center, rotaxis, angle)
+                    if rotaxis.Length > epsilon:
+                        dolly.rotate(dolly.BoundBox.Center, rotaxis, angle)
+
                     dolly.Placement.Base = posvec
                     if dolly: 
                         if not obj.Twist == 0 and n > 0:
