@@ -96,7 +96,7 @@ class CurvedPathArrayWorker:
         for n in range(0, int(obj.Items)):
             plen = obj.OffsetStart
             if obj.Items > 1:
-                plen += (maxlen - obj.OffsetStart - obj.OffsetEnd) * n / (obj.Items - 1)
+                plen += (maxlen - obj.OffsetStart - obj.OffsetEnd) * n / (float(obj.Items) - 1)
                 
             for edge in edges:
                 if plen > edge.Length: 
