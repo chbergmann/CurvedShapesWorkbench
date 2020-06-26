@@ -143,21 +143,33 @@ class CurvedArrayWorker:
         self.doScaleXYZsum = [False, False, False]
         for h in prop.Hullcurves:
             bbox = h.Shape.BoundBox
+            if h == prop.Hullcurves[0]:
+                sumbbox = bbox
+            else:
+                sumbbox.add(bbox)    
+                
             doScale = [False, False, False]
             
             if bbox.XLength > epsilon: 
                 doScale[0] = True 
-                self.doScaleXYZsum[0] = True
         
             if bbox.YLength > epsilon: 
                 doScale[1] = True 
-                self.doScaleXYZsum[1] = True
         
             if bbox.ZLength > epsilon: 
                 doScale[2] = True 
-                self.doScaleXYZsum[2] = True
         
             self.doScaleXYZ.append(doScale)
+            
+        if sumbbox:
+            if sumbbox.XLength > epsilon: 
+                self.doScaleXYZsum[0] = True 
+        
+            if sumbbox.YLength > epsilon: 
+                self.doScaleXYZsum[1] = True 
+        
+            if sumbbox.ZLength > epsilon: 
+                self.doScaleXYZsum[2] = True          
         
         if prop.Items > 0 and prop.Base and hasattr(prop.Base, "Shape") and len(prop.Hullcurves) > 0:
             self.makeRibs(prop)

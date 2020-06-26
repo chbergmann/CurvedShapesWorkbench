@@ -13,7 +13,7 @@ import Part
 import CurvedShapes
 
 global epsilon
-epsilon = CurvedShapes.epsilon
+epsilon = 1e-6
     
 class NotchConnectorWorker:
     def __init__(self, 
@@ -143,10 +143,7 @@ class NotchConnectorWorker:
                 else:
                     shapes.append(cutted)
                 
-        if len(shapes) == 1:
-            fp.Shape = shapes[0]
-        elif len(shapes) > 1:
-            fp.Shape = Part.makeCompound(shapes)
+        fp.Shape = Part.makeCompound(shapes)
         
         
 class NotchConnectorViewProvider:

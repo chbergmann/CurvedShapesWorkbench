@@ -119,9 +119,9 @@ def scaleByBoundbox(shape, boundbox, doScaleXYZ, copy=True):
     basebbox = shape.BoundBox   
       
     scalevec = Vector(1, 1, 1)
-    if basebbox.XLength > epsilon: scalevec.x = boundbox.XLength / basebbox.XLength
-    if basebbox.YLength > epsilon: scalevec.y = boundbox.YLength / basebbox.YLength
-    if basebbox.ZLength > epsilon: scalevec.z = boundbox.ZLength / basebbox.ZLength     
+    if doScaleXYZ[0] and basebbox.XLength > epsilon: scalevec.x = boundbox.XLength / basebbox.XLength
+    if doScaleXYZ[1] and basebbox.YLength > epsilon: scalevec.y = boundbox.YLength / basebbox.YLength
+    if doScaleXYZ[2] and basebbox.ZLength > epsilon: scalevec.z = boundbox.ZLength / basebbox.ZLength     
     if scalevec.x < epsilon: 
         if doScaleXYZ[0]:
             scalevec.x = epsilon   
