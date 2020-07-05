@@ -96,7 +96,8 @@ class NotchConnectorWorker:
         shapes = []
         halfsize = fp.CutDirection / 2
         for obj in self.extractCompounds([fp.Base]):
-            if obj.TypeId == 'Part::Extrusion':
+            useSubPart = obj.TypeId == 'Part::Extrusion' and len(obj.Base.Shape.Faces) > 0
+            if useSubPart:
                 bShapes = obj.Base
             else:
                 bShapes = obj
@@ -136,7 +137,7 @@ class NotchConnectorWorker:
                 else:
                     cutted = bShape
                 
-                if obj.TypeId == 'Part::Extrusion':
+                if useSubPart:
                     cutted.Placement.Base -= obj.Dir * float(obj.LengthRev)               
                     ext = cutted.extrude(obj.Dir * float(obj.LengthFwd + obj.LengthRev))
                     shapes.append(ext)
