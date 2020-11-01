@@ -2,8 +2,8 @@ import os
 import FreeCAD
 from FreeCAD import Vector
 import Part
-from importlib import reload
 import math
+import CompoundTools.Explode
 
 global epsilon
 epsilon = 1e-7
@@ -47,7 +47,7 @@ def PointVec(point):
     return Vector(point.X, point.Y, point.Z)
 
    
-def boundbox_from_intersect(curves, pos, normal, doScaleXYZ):        
+def boundbox_from_intersect(curves, pos, normal, doScaleXYZ, nearestpoints=True):        
     if len(curves) == 0:
         return None
     
@@ -71,15 +71,25 @@ def boundbox_from_intersect(curves, pos, normal, doScaleXYZ):
                         if len(ipoints) < 2: 
                             ipoints.append(p) 
                         else:    
-                            distp = (pos - PointVec(p)).Length
-                            dist0 = (pos - PointVec(ipoints[0])).Length
-                            dist1 = (pos - PointVec(ipoints[1])).Length
+                            if nearestpoints:
+                                distp = (pos - PointVec(p)).Length
+                                dist0 = (pos - PointVec(ipoints[0])).Length
+                                dist1 = (pos - PointVec(ipoints[1])).Length
                             
-                            if distp < dist0 or distp < dist1:
-                                if dist1 < dist0:
-                                    ipoints[0] = p
-                                else:
-                                    ipoints[1] = p
+                                if distp < dist0 or distp < dist1:
+                                    if dist1 < dist0:
+                                        ipoints[0] = p
+                                    else:
+                                        ipoints[1] = p
+                            else:
+                                distp = (PointVec(ipoints[0]) - PointVec(ipoints[1])).Length
+                                dist0 = (PointVec(p) - PointVec(ipoints[0])).Length
+                                dist1 = (PointVec(p) - PointVec(ipoints[1])).Length
+                                if distp < dist0 or distp < dist1:
+                                    if dist1 > dist0:
+                                        ipoints[0] = p
+                                    else:
+                                        ipoints[1] = p
                          
                         found = True
         
@@ -267,12 +277,16 @@ def makeCurvedArray(Base = None,
                     DistributionReverse = False,
                     extract=False):
     import CurvedArray
-    reload(CurvedArray)
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedArray")
-    cs = CurvedArray.CurvedArrayWorker(obj, Base, Hullcurves, Axis, Items, OffsetStart, OffsetEnd, Twist, Surface, Solid, Distribution, DistributionReverse, extract)
+    cs = CurvedArray.CurvedArrayWorker(obj, Base, Hullcurves, Axis, Items, OffsetStart, OffsetEnd, Twist, Surface, Solid, Distribution, DistributionReverse, False)
     CurvedArray.CurvedArrayViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
-    return obj
+    if not extract:     
+        return obj
+        
+    bang = CompoundTools.Explode.explodeCompound(obj)
+    obj.ViewObject.hide()
+    return bang[1]
 
 
 def makeCurvedPathArray(Base = None, 
@@ -287,7 +301,6 @@ def makeCurvedPathArray(Base = None,
                     doScale = [True, True, True],
                     extract=False):
     import CurvedPathArray
-    reload(CurvedPathArray)
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedPathArray")
     cs = CurvedPathArray.CurvedPathArrayWorker(obj, Base, Path, Hullcurves, Items, OffsetStart, OffsetEnd, Twist, Surface, Solid, doScale, extract)
     CurvedPathArray.CurvedPathArrayViewProvider(obj.ViewObject)
@@ -309,7 +322,6 @@ def makeCurvedSegment(Shape1 = None,
                     Distribution = 'linear',
                     DistributionReverse = False):
     import CurvedSegment
-    reload(CurvedSegment)
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedSegment")
     cs = CurvedSegment.CurvedSegmentWorker(obj, Shape1, Shape2, Hullcurves, NormalShape1, NormalShape2, Items, Surface, Solid, InterpolationPoints, Twist, TwistReverse, Distribution, DistributionReverse)
     CurvedSegment.CurvedSegmentViewProvider(obj.ViewObject)
@@ -327,7 +339,6 @@ def makeInterpolatedMiddle(Shape1 = None,
                     Twist = 0.0,
                     TwistReverse = False):
     import InterpolatedMiddle
-    reload(InterpolatedMiddle)
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","InterpolatedMiddle")
     cs = InterpolatedMiddle.InterpolatedMiddleWorker(obj, Shape1, Shape2, NormalShape1, NormalShape2, Surface, Solid, InterpolationPoints, Twist, TwistReverse)
     InterpolatedMiddle.InterpolatedMiddleViewProvider(obj.ViewObject)

@@ -121,7 +121,7 @@ class CurvedArrayWorker:
     def makeRib(self, obj, posvec):
         basebbox = obj.Base.Shape.BoundBox    
         basepl = obj.Base.Placement 
-        bbox = CurvedShapes.boundbox_from_intersect(obj.Hullcurves, posvec, obj.Axis, self.doScaleXYZ)
+        bbox = CurvedShapes.boundbox_from_intersect(obj.Hullcurves, posvec, obj.Axis, self.doScaleXYZ, False)
         if not bbox:
             return None
           

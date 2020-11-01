@@ -12,7 +12,6 @@ from FreeCAD import Vector
 import Part
 import CurvedShapes
 import CurvedSegment
-from importlib import reload
 
 global epsilon
 epsilon = CurvedShapes.epsilon
@@ -162,7 +161,6 @@ class InterpolatedMiddle():
         
     def Activated(self):
         FreeCADGui.doCommand("import CurvedShapes")
-        reload(CurvedShapes)
         
         selection = FreeCADGui.Selection.getSelectionEx()
         for sel in selection:

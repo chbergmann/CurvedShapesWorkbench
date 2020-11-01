@@ -11,7 +11,6 @@ from FreeCAD import Vector
 import Part
 import CurvedShapes
 import Draft
-from importlib import reload
     
 global epsilon
 epsilon = CurvedShapes.epsilon
@@ -158,7 +157,6 @@ class SurfaceCut():
     def Activated(self):
         import SurfaceCut
         FreeCADGui.doCommand("import CurvedShapes")
-        reload(SurfaceCut)
         
         selection = FreeCADGui.Selection.getSelectionEx()
         FreeCADGui.doCommand("curves = []")

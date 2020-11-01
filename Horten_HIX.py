@@ -7,16 +7,11 @@ import CurvedShapes
 import CurvedSegment
 import CurvedArray
 import BOPTools.JoinFeatures
-from importlib import reload
         
 global epsilon
 epsilon = CurvedShapes.epsilon
 
-def draw_HortenHIX():
-    reload(CurvedSegment)
-    reload(CurvedShapes)
-    reload(CurvedArray)
-    
+def draw_HortenHIX():    
     rib_material_height = 33.0
 
     length = 500
@@ -377,7 +372,6 @@ def makeTurbineCut(doc, scaleFactor = 1):
 class Horten_HIX():
     def Activated(self):
         import Horten_HIX
-        reload(Horten_HIX)
         draw_HortenHIX()
         
     def GetResources(self):

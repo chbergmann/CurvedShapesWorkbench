@@ -8,7 +8,6 @@ import CompoundTools.Explode
 import math
 import FreeCADGui
 import CurvedShapes
-from importlib import reload
 
 def draw_S800():
     sweep_offset = 210
@@ -341,7 +340,6 @@ def makeWingletProfile(doc):
 class FlyingWingS800():
     def Activated(self):
         import FlyingWingS800
-        reload(FlyingWingS800)
         draw_S800()
         
     def GetResources(self):
