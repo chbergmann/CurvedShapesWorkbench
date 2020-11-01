@@ -8,7 +8,7 @@ __doc__ = "Interpolates a 3D shape between two 2D curves and optional hullcurves
 import os
 import FreeCADGui
 import FreeCAD
-from FreeCAD import Vector
+from FreeCAD import Vector, Rotation
 import Part
 import CurvedShapes
 import Draft
@@ -134,7 +134,7 @@ class CurvedSegmentWorker:
         if fp.makeSurface or fp.makeSolid:
             fp.Shape = CurvedShapes.makeSurfaceSolid(ribs, fp.makeSolid)
         else:
-            fp.Shape = Part.makeCompound(ribs)
+            fp.Shape = Part.makeCompound(ribs)          
         
         
     def rescaleRibs(self, fp, ribs):
@@ -199,24 +199,29 @@ def getMidPlane(fp, fraction):
         
         
 def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
-    ribs = []        
+    ribs = []
+    twist = fp.Twist
+    if len(fp.Shape2.Shape.Edges) > 1:
+        twist = 0
+        
     for i in range(1, items + 1): 
         if hasattr(fp, "Distribution"):
             fraction = CurvedShapes.distribute(i / (items + 1), fp.Distribution, fp.DistributionReverse)
         else:
             fraction = i / (items + 1)
             
-        plane = getMidPlane(fp, fraction)
+        plane = getMidPlane(fp, fraction)        
         
         edges = []
         curves = []
+        edges2 = reorderEdges(fp.Shape2.Shape.Edges, fp.Twist, fp.TwistReverse)
         for e in range(0, len(fp.Shape1.Shape.Edges)):
             edge1 = fp.Shape1.Shape.Edges[e]
-            edge2 = fp.Shape2.Shape.Edges[e]
+            edge2 = edges2[e]
             curve1 = edge1.Curve.toBSpline(edge1.FirstParameter, edge1.LastParameter)
             curve2 = edge2.Curve.toBSpline(edge2.FirstParameter, edge2.LastParameter)
             poles1 = curve1.getPoles()
-            poles2 = reorderPoints(curve2.getPoles(), fp.Twist, fp.TwistReverse)
+            poles2 = reorderPoints(curve2.getPoles(), twist, fp.TwistReverse)
             
             newpoles = []
             for p in range(len(poles1)):
@@ -255,14 +260,18 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
     return ribs
                 
  
-def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
+def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):       
     len1 = len(fp.Shape1.Shape.Edges)
     len2 = len(fp.Shape2.Shape.Edges)
+    twist = fp.Twist
+    if len2 > 1:
+        twist = 0
     
     nr_edges = int(len1 * len2 / math.gcd(len1, len2))
 
+    edges2 = reorderEdges(fp.Shape2.Shape.Edges, fp.Twist, fp.TwistReverse)
     pointslist1 = EdgesToPoints(fp.Shape1.Shape, int(nr_edges / len1), int(fp.InterpolationPoints))
-    pointslist2 = EdgesToPoints(fp.Shape2.Shape, int(nr_edges / len2), int(fp.InterpolationPoints))
+    pointslist2 = EdgesToPoints(edges2, int(nr_edges / len2), int(fp.InterpolationPoints))
     origin = Vector(0,0,0)
             
     ribs = []
@@ -283,7 +292,7 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
         newshape = []
         for l in range(0, len(pointslist1)):
             points1 = pointslist1[l]
-            points2 = reorderPoints(pointslist2[l], fp.Twist, fp.TwistReverse)
+            points2 = reorderPoints(pointslist2[l], twist, fp.TwistReverse)
             newpoles = []
             for p in range(0, fp.InterpolationPoints):
                 if alongNormal:
@@ -341,6 +350,9 @@ def EdgesToPoints(shape, nr_frac, points_per_edge):
 
 
 def reorderPoints(points, twist, reverse):
+    if twist == 0 and not reverse:
+        return points
+        
     nr = len(points)
     start = int(nr * twist / 360)    
     closed = False
@@ -364,7 +376,29 @@ def reorderPoints(points, twist, reverse):
         newpoints.append(points[start])
         
     return newpoints 
+ 
+ 
+def reorderEdges(edges, twist, reverse):
+    nr = len(edges)
+    if nr == 1:
+        return edges
         
+    start = int(nr * twist / 360) % nr 
+    print(start)
+    newedges = []
+    if reverse:
+        for i in range(start, -1, -1):
+            newedges.append(edges[i])  
+        for i in range(nr - 1, start, -1):
+            newedges.append(edges[i]) 
+    else:        
+        for i in range(start, nr):
+            newedges.append(edges[i])  
+        for i in range(0, start):
+            newedges.append(edges[i]) 
+    
+    return newedges 
+       
 
 class CurvedSegmentViewProvider:
     def __init__(self, vfp):
