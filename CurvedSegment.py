@@ -269,9 +269,8 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
     
     nr_edges = int(len1 * len2 / math.gcd(len1, len2))
 
-    edges2 = reorderEdges(fp.Shape2.Shape.Edges, fp.Twist, fp.TwistReverse)
     pointslist1 = EdgesToPoints(fp.Shape1.Shape, int(nr_edges / len1), int(fp.InterpolationPoints))
-    pointslist2 = EdgesToPoints(edges2, int(nr_edges / len2), int(fp.InterpolationPoints))
+    pointslist2 = EdgesToPoints(fp.Shape2.Shape, int(nr_edges / len2), int(fp.InterpolationPoints), fp.Twist, fp.TwistReverse)
     origin = Vector(0,0,0)
             
     ribs = []
@@ -327,12 +326,13 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
     return ribs
 
 
-def EdgesToPoints(shape, nr_frac, points_per_edge):   
-    edges = []
+def EdgesToPoints(shape, nr_frac, points_per_edge, twist = 0, twistReverse = False):  
+    edges = [] 
+    redges = reorderEdges(shape.Edges, twist, twistReverse)
     if nr_frac == 1:
-        edges = shape.Edges
+        edges = redges
     else:
-        for edge in shape.Edges:
+        for edge in redges:
             edge1 = edge
             for f in range(0, nr_frac - 1):
                 wires1 = edge1.split(edge1.FirstParameter + (edge1.LastParameter - edge1.FirstParameter) / nr_frac)
@@ -384,7 +384,6 @@ def reorderEdges(edges, twist, reverse):
         return edges
         
     start = int(nr * twist / 360) % nr 
-    print(start)
     newedges = []
     if reverse:
         for i in range(start, -1, -1):
