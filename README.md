@@ -116,7 +116,7 @@ Select two 2D shapes first. The curved segment will be created between them. If 
 - Items: Nr. of items between the segments
 - makeSurface: make a surface over the array items
 - makeSolid: make a solid if Base is a closed shape
-- InterpolationPoints: ignored if Shape1 and Shape2 have the same number of edges and poles. Otherwise all edges will be splitted (discretized) into this number of points  
+- InterpolationPoints: ignored if Shape1 and Shape2 have the same number of edges and poles. Otherwise all edges will be split (discretized) into this number of points  
 - Twist: Compensates a rotation between Shape1 and Shape2
 - TwistReverse: Reverses the rotation of one Shape
 - Distribution: Algorithm for distance between array elements. Default is 'linear'. Also selectable: parabolic (x²), x³, sinusoidal, elliptic

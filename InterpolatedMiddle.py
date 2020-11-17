@@ -34,7 +34,7 @@ class InterpolatedMiddleWorker:
         fp.addProperty("App::PropertyVector", "NormalShape2",    "InterpolatedMiddle",   "Direction axis of Shape2").NormalShape1 = normalShape2
         fp.addProperty("App::PropertyBool", "makeSurface","InterpolatedMiddle",  "make a surface").makeSurface = surface
         fp.addProperty("App::PropertyBool", "makeSolid","InterpolatedMiddle",  "make a solid").makeSolid = solid
-        fp.addProperty("App::PropertyInteger", "InterpolationPoints", "InterpolatedMiddle",   "Unequal edges will be splitted into this number of points").InterpolationPoints = InterpolationPoints
+        fp.addProperty("App::PropertyInteger", "InterpolationPoints", "InterpolatedMiddle",   "Unequal edges will be split into this number of points").InterpolationPoints = InterpolationPoints
         fp.addProperty("App::PropertyFloat", "Twist","InterpolatedMiddle",  "Compensates a rotation between Shape1 and Shape2").Twist = Twist
         fp.addProperty("App::PropertyBool", "TwistReverse","InterpolatedMiddle",  "Reverses the rotation of one Shape").TwistReverse = TwistReverse
         self.update = True
