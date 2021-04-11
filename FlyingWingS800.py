@@ -291,7 +291,6 @@ def createSketch_MiddleProfile(doc):
     MiddleProfile.addConstraint(Sketcher.Constraint('Equal', 12, 14))
     MiddleProfile.addConstraint(Sketcher.Constraint('DistanceX', 12, 2, 12, 1, 45.0))
     MiddleProfile.addConstraint(Sketcher.Constraint('PointOnObject', 12, 2, -2))
-    MiddleProfile.addConstraint(Sketcher.Constraint('Equal', 11, 10))
     MiddleProfile.addConstraint(Sketcher.Constraint('DistanceX', 10, 1, 10, 2, 24.0))
     MiddleProfile.addConstraint(Sketcher.Constraint('Coincident', 13, 1, 12, 2))
     MiddleProfile.Placement = Placement(Vector(0.0, 0.0, 0.0), Rotation (0.7071067811865475, -0.0, -0.0, 0.7071067811865476))
