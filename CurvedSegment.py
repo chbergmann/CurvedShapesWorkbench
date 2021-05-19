@@ -39,9 +39,9 @@ class CurvedSegmentWorker:
         fp.addProperty("App::PropertyVector", "NormalShape1",    "CurvedSegment",   "Direction axis of Shape1").NormalShape1 = normalShape1 
         fp.addProperty("App::PropertyVector", "NormalShape2",    "CurvedSegment",   "Direction axis of Shape2").NormalShape1 = normalShape2
         fp.addProperty("App::PropertyInteger", "Items", "CurvedSegment",   "Nr. of items between the segments").Items = items
-        fp.addProperty("App::PropertyBool", "makeSurface","CurvedSegment",  "make a surface").makeSurface = surface
-        fp.addProperty("App::PropertyBool", "makeSolid","CurvedSegment",  "make a solid").makeSolid = solid
-        fp.addProperty("App::PropertyInteger", "InterpolationPoints", "CurvedSegment",   "Unequal edges will be splitted into this number of points").InterpolationPoints = InterpolationPoints
+        fp.addProperty("App::PropertyBool", "makeSurface","CurvedSegment",  "Make a surface").makeSurface = surface
+        fp.addProperty("App::PropertyBool", "makeSolid","CurvedSegment",  "Make a solid").makeSolid = solid
+        fp.addProperty("App::PropertyInteger", "InterpolationPoints", "CurvedSegment",   "Unequal edges will be split into this number of points").InterpolationPoints = InterpolationPoints
         fp.addProperty("App::PropertyFloat", "Twist","CurvedSegment",  "Compensates a rotation between Shape1 and Shape2").Twist = Twist
         fp.addProperty("App::PropertyBool", "TwistReverse","CurvedSegment",  "Reverses the rotation of one Shape").TwistReverse = TwistReverse
         fp.addProperty("App::PropertyEnumeration", "Distribution", "CurvedSegment",  "Algorithm for distance between elements")
