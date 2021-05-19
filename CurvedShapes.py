@@ -268,7 +268,8 @@ def distribute(x, distribution, reverse = False):
 def makeCurvedArray(Base = None, 
                     Hullcurves=[], 
                     Axis=Vector(0,0,0), 
-                    Items=2, 
+                    Items=2,
+                    Position=[],
                     OffsetStart=0, 
                     OffsetEnd=0, 
                     Twist=0, 
@@ -279,7 +280,7 @@ def makeCurvedArray(Base = None,
                     extract=False):
     import CurvedArray
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedArray")
-    cs = CurvedArray.CurvedArrayWorker(obj, Base, Hullcurves, Axis, Items, OffsetStart, OffsetEnd, Twist, Surface, Solid, Distribution, DistributionReverse, False)
+    cs = CurvedArray.CurvedArrayWorker(obj, Base, Hullcurves, Axis, Items, Position, OffsetStart, OffsetEnd, Twist, Surface, Solid, Distribution, DistributionReverse, False)
     CurvedArray.CurvedArrayViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     if not extract:     
