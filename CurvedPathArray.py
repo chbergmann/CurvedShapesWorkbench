@@ -5,18 +5,15 @@ __author__ = "Christian Bergmann"
 __license__ = "LGPL 2.1"
 __doc__ = "Create 3D shapes from 2D curves"
 
-import sys
 import os
 import FreeCADGui
 import FreeCAD
 from FreeCAD import Vector
 import Part
-import Draft
 import CompoundTools.Explode
 import CurvedShapes
 import math
 
-global epsilon
 epsilon = CurvedShapes.epsilon
     
 class CurvedPathArrayWorker:

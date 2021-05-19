@@ -6,7 +6,6 @@ import Part
 import math
 import CompoundTools.Explode
 
-global epsilon
 epsilon = 1e-7
 
 def get_module_path():
@@ -172,17 +171,21 @@ def makeSurfaceSolid(ribs, solid):
         else:
             try:
                 wiribs.append(Part.Wire(r.Edges))
-            except:
+            except Exception as ex:
                 FreeCAD.Console.PrintError("Cannot make a wire. Creation of surface is not possible !\n")
+                return
+            except:
                 return
           
     try: 
         loft = Part.makeLoft(wiribs)
         surfaces += loft.Faces
-    except:      
+    except Exception as ex:      
         FreeCAD.Console.PrintError("Creation of surface is not possible !\n")
         return Part.makeCompound(wiribs)
-                 
+    except:
+        return
+         
     if solid:  
         face1 = makeFace(ribs[0])
         if face1:
@@ -196,10 +199,15 @@ def makeSurfaceSolid(ribs, solid):
             if face1 and face2:
                 try:
                     return Part.makeSolid(shell)
-                except:
+                except Exception as ex:
                     FreeCAD.Console.PrintError("Creating solid failed !\n")
-        except:
+                except:
+                    return
+                    
+        except Exception as ex:
             FreeCAD.Console.PrintError("Creating shell failed !\n")
+        except:
+            return
                
     if len(surfaces) == 1:
         return surfaces[0]
@@ -217,8 +225,10 @@ def makeFace(rib):
     if wire.isClosed():
         try:
             return Part.makeFace(wire, "Part::FaceMakerSimple")
-        except:
+        except  Exception as ex:
             FreeCAD.Console.PrintError("Cannot make face from Base shape. Cannot draw solid\n") 
+        except:
+            pass
     else:
         FreeCAD.Console.PrintError("Base shape is not closed. Cannot draw solid\n")  
          
@@ -280,7 +290,7 @@ def makeCurvedArray(Base = None,
                     extract=False):
     import CurvedArray
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedArray")
-    cs = CurvedArray.CurvedArrayWorker(obj, Base, Hullcurves, Axis, Items, Position, OffsetStart, OffsetEnd, Twist, Surface, Solid, Distribution, DistributionReverse, False)
+    CurvedArray.CurvedArrayWorker(obj, Base, Hullcurves, Axis, Items, Position, OffsetStart, OffsetEnd, Twist, Surface, Solid, Distribution, DistributionReverse, False)
     CurvedArray.CurvedArrayViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     if not extract:     
@@ -304,7 +314,7 @@ def makeCurvedPathArray(Base = None,
                     extract=False):
     import CurvedPathArray
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedPathArray")
-    cs = CurvedPathArray.CurvedPathArrayWorker(obj, Base, Path, Hullcurves, Items, OffsetStart, OffsetEnd, Twist, Surface, Solid, doScale, extract)
+    CurvedPathArray.CurvedPathArrayWorker(obj, Base, Path, Hullcurves, Items, OffsetStart, OffsetEnd, Twist, Surface, Solid, doScale, extract)
     CurvedPathArray.CurvedPathArrayViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     return obj
@@ -325,7 +335,7 @@ def makeCurvedSegment(Shape1 = None,
                     DistributionReverse = False):
     import CurvedSegment
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedSegment")
-    cs = CurvedSegment.CurvedSegmentWorker(obj, Shape1, Shape2, Hullcurves, NormalShape1, NormalShape2, Items, Surface, Solid, InterpolationPoints, Twist, TwistReverse, Distribution, DistributionReverse)
+    CurvedSegment.CurvedSegmentWorker(obj, Shape1, Shape2, Hullcurves, NormalShape1, NormalShape2, Items, Surface, Solid, InterpolationPoints, Twist, TwistReverse, Distribution, DistributionReverse)
     CurvedSegment.CurvedSegmentViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     return obj
@@ -342,7 +352,7 @@ def makeInterpolatedMiddle(Shape1 = None,
                     TwistReverse = False):
     import InterpolatedMiddle
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","InterpolatedMiddle")
-    cs = InterpolatedMiddle.InterpolatedMiddleWorker(obj, Shape1, Shape2, NormalShape1, NormalShape2, Surface, Solid, InterpolationPoints, Twist, TwistReverse)
+    InterpolatedMiddle.InterpolatedMiddleWorker(obj, Shape1, Shape2, NormalShape1, NormalShape2, Surface, Solid, InterpolationPoints, Twist, TwistReverse)
     InterpolatedMiddle.InterpolatedMiddleViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     return obj     

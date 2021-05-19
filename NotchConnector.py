@@ -12,7 +12,6 @@ from FreeCAD import Vector
 import Part
 import CurvedShapes
 
-global epsilon
 epsilon = 1e-6
     
 class NotchConnectorWorker:
@@ -132,8 +131,10 @@ class NotchConnectorWorker:
                 if len(cutcubes) > 0:
                     try:
                         cutted = bShape.cut(cutcubes)
-                    except:
+                    except Exception as ex:
                         cutted = bShape
+                    except:
+                        return
                 else:
                     cutted = bShape
                 

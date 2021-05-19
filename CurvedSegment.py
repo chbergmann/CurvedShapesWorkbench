@@ -8,13 +8,11 @@ __doc__ = "Interpolates a 3D shape between two 2D curves and optional hullcurves
 import os
 import FreeCADGui
 import FreeCAD
-from FreeCAD import Vector, Rotation
+from FreeCAD import Vector
 import Part
 import CurvedShapes
-import Draft
 import math
 
-global epsilon
 epsilon = CurvedShapes.epsilon
     
 class CurvedSegmentWorker:
@@ -246,12 +244,13 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
         try:    
             wire = Part.Wire(edges)
             ribs.append(wire)
-        except:
+        except Exception as ex:
             if len(curves) == 1:
                 ribs.append(curves[0]) 
             else:
                 ribs.append(Part.makeCompound(curves))
-            
+        except:
+            pass
             
     if makeStartEnd:
         ribs.insert(0, fp.Shape1.Shape)
@@ -271,7 +270,6 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
 
     pointslist1 = EdgesToPoints(fp.Shape1.Shape, int(nr_edges / len1), int(fp.InterpolationPoints))
     pointslist2 = EdgesToPoints(fp.Shape2.Shape, int(nr_edges / len2), int(fp.InterpolationPoints), fp.Twist, fp.TwistReverse)
-    origin = Vector(0,0,0)
             
     ribs = []
     if makeStartEnd:
@@ -308,8 +306,10 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
             try:
                 wire = Part.Wire(sh.Edges)
                 ribs.append(wire)
-            except:
+            except Exception as ex:
                 ribs.append(sh)
+            except:
+                pass
         else:
             shapes = []
             for n in newshape:
@@ -320,8 +320,10 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
             try:
                 wire = Part.Wire(comp.Edges)
                 ribs.append(wire)
-            except:
+            except Exception as ex:
                 ribs.append(comp)
+            except:
+                pass
         
     return ribs
 

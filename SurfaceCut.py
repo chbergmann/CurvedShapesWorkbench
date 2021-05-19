@@ -10,9 +10,7 @@ import FreeCAD
 from FreeCAD import Vector
 import Part
 import CurvedShapes
-import Draft
     
-global epsilon
 epsilon = CurvedShapes.epsilon
 
 class SurfaceCutWorker:

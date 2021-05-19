@@ -1,36 +1,27 @@
-from FreeCAD import Vector, Placement, Rotation
+from FreeCAD import Vector, Rotation
 import FreeCAD
 import FreeCADGui
 import Part
 import Draft
 import CurvedShapes
-import CurvedSegment
-import CurvedArray
 import BOPTools.JoinFeatures
         
-global epsilon
 epsilon = CurvedShapes.epsilon
 
 def draw_HortenHIX():    
-    rib_material_height = 33.0
 
     length = 500
-    scaleFactor = 1#length / 85
+    scaleFactor = 1
+    twist = 3 
     
 
     if FreeCAD.ActiveDocument is not None and FreeCAD.ActiveDocument.Name == "Horten_HIX":
         FreeCAD.closeDocument(FreeCAD.ActiveDocument.Name)
         FreeCAD.setActiveDocument("")
-        ActiveDocument=None
         FreeCAD.ActiveDocument=None
         
     doc = FreeCAD.newDocument('Horten_HIX')
-
-    wing_sweep = 32.2
-    twist = 3
-    wing_ribs = 10
-    front_part_fraction = 0.97
-    
+   
     
     WingTop_parts = []
     line = Draft.makeWire([Vector(0.0, 73.39, 0.0) * scaleFactor, Vector(72.64, 27.65, 0.0) * scaleFactor])
@@ -150,7 +141,6 @@ def draw_HortenHIX():
     WingFrontLeft.ViewObject.hide()
     doc.recompute()
     
-    winglength = WingFrontLeft.Shape.BoundBox.XLength
     WingSurface = CurvedShapes.makeCurvedArray(Base=WingProfile, 
                                              Hullcurves=[WingTopLeft, WingFrontLeft], 
                                              Axis=Vector(-1,0,0), 

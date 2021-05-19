@@ -13,7 +13,6 @@ import Part
 import CurvedShapes
 import CurvedSegment
 
-global epsilon
 epsilon = CurvedShapes.epsilon
     
 class InterpolatedMiddleWorker:
@@ -117,10 +116,14 @@ class InterpolatedMiddleWorker:
                     if face1 and face2:
                         try:
                             shape = Part.makeSolid(shell)
+                        except Exception as ex:
+                            FreeCAD.Console.PrintError("Creating solid failed ! " + ex + "\n")
                         except:
-                            FreeCAD.Console.PrintError("Creating solid failed !\n")
+                            return
+                except Exception as ex:
+                    FreeCAD.Console.PrintError("Creating shell failed ! " + ex + "\n")
                 except:
-                    FreeCAD.Console.PrintError("Creating shell failed !\n")
+                    return
             
         else:
             shape = Part.makeCompound(ribs)

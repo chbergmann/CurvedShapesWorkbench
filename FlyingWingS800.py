@@ -29,8 +29,7 @@ def draw_S800():
     
     WingletTop_height_top = 3
     WingletTop_height_bot = 3
-    Winglet_angle_y = 10   
-    Winglet_angle_z = 10     
+    Winglet_angle_y = 10    
     WingletBottom_height_top = WingletTop_height_top
     WingletBottom_height_bot = WingletTop_height_bot
     WingletBottom_length = WingOutside_length
@@ -43,7 +42,6 @@ def draw_S800():
     if FreeCAD.ActiveDocument is not None and FreeCAD.ActiveDocument.Name == "S800":
         FreeCAD.closeDocument(FreeCAD.ActiveDocument.Name)
         FreeCAD.setActiveDocument("")
-        ActiveDocument=None
         FreeCAD.ActiveDocument=None
         
     doc = FreeCAD.newDocument('S800')
