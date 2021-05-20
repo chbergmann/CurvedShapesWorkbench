@@ -133,8 +133,7 @@ class NotchConnectorWorker:
                         cutted = bShape.cut(cutcubes)
                     except Exception as ex:
                         cutted = bShape
-                    except:
-                        return
+                        
                 else:
                     cutted = bShape
                 

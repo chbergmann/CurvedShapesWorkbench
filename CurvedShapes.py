@@ -174,8 +174,6 @@ def makeSurfaceSolid(ribs, solid):
             except Exception as ex:
                 FreeCAD.Console.PrintError("Cannot make a wire. Creation of surface is not possible !\n")
                 return
-            except:
-                return
           
     try: 
         loft = Part.makeLoft(wiribs)
@@ -183,8 +181,6 @@ def makeSurfaceSolid(ribs, solid):
     except Exception as ex:      
         FreeCAD.Console.PrintError("Creation of surface is not possible !\n")
         return Part.makeCompound(wiribs)
-    except:
-        return
          
     if solid:  
         face1 = makeFace(ribs[0])
@@ -201,13 +197,9 @@ def makeSurfaceSolid(ribs, solid):
                     return Part.makeSolid(shell)
                 except Exception as ex:
                     FreeCAD.Console.PrintError("Creating solid failed !\n")
-                except:
-                    return
                     
         except Exception as ex:
             FreeCAD.Console.PrintError("Creating shell failed !\n")
-        except:
-            return
                
     if len(surfaces) == 1:
         return surfaces[0]
@@ -227,8 +219,7 @@ def makeFace(rib):
             return Part.makeFace(wire, "Part::FaceMakerSimple")
         except  Exception as ex:
             FreeCAD.Console.PrintError("Cannot make face from Base shape. Cannot draw solid\n") 
-        except:
-            pass
+
     else:
         FreeCAD.Console.PrintError("Base shape is not closed. Cannot draw solid\n")  
          

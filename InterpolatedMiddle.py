@@ -118,12 +118,9 @@ class InterpolatedMiddleWorker:
                             shape = Part.makeSolid(shell)
                         except Exception as ex:
                             FreeCAD.Console.PrintError("Creating solid failed ! " + ex + "\n")
-                        except:
-                            return
+                            
                 except Exception as ex:
                     FreeCAD.Console.PrintError("Creating shell failed ! " + ex + "\n")
-                except:
-                    return
             
         else:
             shape = Part.makeCompound(ribs)

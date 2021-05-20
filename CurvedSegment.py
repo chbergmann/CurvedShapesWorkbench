@@ -249,8 +249,6 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
                 ribs.append(curves[0]) 
             else:
                 ribs.append(Part.makeCompound(curves))
-        except:
-            pass
             
     if makeStartEnd:
         ribs.insert(0, fp.Shape1.Shape)
@@ -308,8 +306,6 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
                 ribs.append(wire)
             except Exception as ex:
                 ribs.append(sh)
-            except:
-                pass
         else:
             shapes = []
             for n in newshape:
@@ -322,8 +318,6 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
                 ribs.append(wire)
             except Exception as ex:
                 ribs.append(comp)
-            except:
-                pass
         
     return ribs
 
