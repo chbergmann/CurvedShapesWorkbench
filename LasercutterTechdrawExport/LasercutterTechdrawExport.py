@@ -10,13 +10,11 @@ import FreeCADGui
 import FreeCAD as app
 from FreeCAD import Vector, Rotation
 import Part
-import Draft
 import math
 
 __dir__ = os.path.dirname(__file__)
-iconPath = os.path.join(__dir__, '../icons')
+iconPath = __dir__
 
-global epsilon
 epsilon = 1e-7
         
 class LasercutterTechdrawExportItem:
@@ -62,7 +60,7 @@ class LasercutterTechdrawExportItem:
             elif fp.Method == 'auto':
                 try:
                     outline = fp.Part.Shape.makeOffset2D(fp.BeamWidth / 2) 
-                except:
+                except Exception as ex::
                     outline = fp.Part.Shape.makeOffsetShape(fp.BeamWidth / 2, 1e-7)   
                     
                 fp.Normal = self.getNormal(fp.Part)   
@@ -158,9 +156,6 @@ class LasercutterTechdrawExportItemViewProvider:
         pass
         
     def setEdit(self, vobj=None, mode=0):
-#        if mode == 0:
-#            self.panel = LCTaskPanel(self.Object)
-#            FreeCADGui.Control.showDialog(self.panel)
         return False
         
     def __getstate__(self):
@@ -173,29 +168,6 @@ class LasercutterTechdrawExportItemViewProvider:
         '''When restoring the serialized object from document we have the chance to set some internals here.\
                 Since no data were serialized nothing needs to be done here.'''
         return None
-        
-      
-class LCTaskPanel:
-    def __init__(self, fp):
-        self.fp = fp
-        # this will create a Qt widget from our ui file
-        self.form = FreeCADGui.PySideUic.loadUi(os.path.join(__dir__, 'lasercuttersvg.ui'))
-        self.form.pushButtonAdd.pressed.connect(self.selectPart)
-        self.form.pushButtonRemove.pressed.connect(self.removePart)
-        self.form.pushButtonCreate.pressed.connect(self.action)
- 
-    def accept(self):
-        selected_to_techdraw(fp.Parts, fp.TechdrawPage, fp.BeamWidth)
-        FreeCADGui.Control.closeDialog()
-       
-    def selectPart(self):
-        selection = FreeCADGui.Selection.getSelectionEx()
-               
-    def removePart(self):
-        pass
-    
-    def action(self):
-        pass
         
         
 class LasercutterTechdrawExport():
@@ -267,8 +239,8 @@ def selected_to_techdraw(doc, offsets, techdraw, BeamWidth):
             view.X = x + bsize.x / 2
             view.Y = y + bsize.y - (bsize.y / 2)
             x = x + bsize.x + BeamWidth
-        except:
-            app.Console.PrintError("view for " + viewname + " cannot be created !")
+        except Exception as ex:
+            app.Console.PrintError("view for " + viewname + " cannot be created ! " + ex)
                   
 
 def makeLasercutterTechdrawExport(parts, BeamWidth = 0.2, doc = app.activeDocument(), method = 'auto'):       
