@@ -185,7 +185,7 @@ Do not add the laserbeam width into your design. This export tool will add the b
 ![alt text](LasercutterTechdrawExport/LasercutterTechdrawExport.png "Screenshot")
 
 The tool creates a folder LaserCutterExportObjects that contains an object for each selected part.  
-There are some parametes which can be changed:
+There are some parameters which can be changed:
 * Part: Selected part
 * Beam Width: The width of the laser beam in mm
 * Normal: A vector perpendicular to the object
