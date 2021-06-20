@@ -60,7 +60,7 @@ class LasercutterTechdrawExportItem:
             elif fp.Method == 'auto':
                 try:
                     outline = fp.Part.Shape.makeOffset2D(fp.BeamWidth / 2) 
-                except Exception as ex::
+                except Exception as ex:
                     outline = fp.Part.Shape.makeOffsetShape(fp.BeamWidth / 2, 1e-7)   
                     
                 fp.Normal = self.getNormal(fp.Part)   
