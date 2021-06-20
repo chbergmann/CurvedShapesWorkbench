@@ -175,16 +175,13 @@ class LasercutterTechdrawExport():
       
     def Activated(self):
         '''Will be called when the feature is executed.'''
-        # Generate commands in the FreeCAD python console to create LasercutterTechdrawExport
-        FreeCADGui.doCommand("from LasercutterTechdrawExport import LasercutterTechdrawExport")
-        
-        FreeCADGui.doCommand("parts = []")
-        selection = FreeCADGui.Selection.getSelectionEx()
-        for sel in selection:
-            FreeCADGui.doCommand("parts.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
-            
-        FreeCADGui.doCommand("LasercutterTechdrawExport.makeLasercutterTechdrawExport(parts, BeamWidth = 0.2, doc = App.activeDocument())")
-                  
+        self.ui_file = os.path.join(__dir__, 'lasercuttersvg.ui')
+        f, w = FreeCADGui.PySideUic.loadUiType(self.ui_file)
+        self.form = f()
+        self.widget = w()
+        self.form.setupUi(self.widget)
+        self.widget.show()
+        self.form.pushButton.pressed.connect(self.makeExport)          
 
     def IsActive(self):
         """Here you can define if the command must be active or not (greyed) if certain conditions
@@ -200,6 +197,19 @@ class LasercutterTechdrawExport():
                 'Accel' : "", # a default shortcut (optional)
                 'MenuText': "Lasercutter Techdraw Export",
                 'ToolTip' : __doc__ }
+                
+    def makeExport(self):          
+        # Generate commands in the FreeCAD python console to create LasercutterTechdrawExport
+        FreeCADGui.doCommand("from LasercutterTechdrawExport import LasercutterTechdrawExport")
+        
+        FreeCADGui.doCommand("parts = []")
+        selection = FreeCADGui.Selection.getSelectionEx()
+        for sel in selection:
+            FreeCADGui.doCommand("parts.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
+            
+        FreeCADGui.doCommand("LasercutterTechdrawExport.makeLasercutterTechdrawExport(parts, BeamWidth = %f, doc = App.activeDocument())"%self.form.doubleSpinBox.value())
+        self.widget.close()
+        
 
 FreeCADGui.addCommand('LasercutterTechdrawExport', LasercutterTechdrawExport())
 
