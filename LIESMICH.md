@@ -164,6 +164,7 @@ Zuerst zwei sich überlagende Objekte in FreeCAD auswählen, dann Notch Connecto
 - Tools: 		Zweites und optional noch mehrere Objekte 
 - CutDirection: Schnittrichtung (wird automatisch berechnet). Bitte ändern, wenn der Schnitt in die falsche Richtung gemacht wird.
 - CutDepth: 	Tiefe des Schnitts in Prozent
+- ShiftLength:	Verschiebt Tools um ShiftLength und schneidet das von Base. Wenn ShiftLength ungleich 0, wird CutDepth ignoriert. 
 
 ## Beispiele
 Beispiele zum Testen und zur Demonstration dieses Arbeitsbereichs. 

@@ -20,16 +20,18 @@ class NotchConnectorWorker:
                  Base,
                  Tools,
                  CutDirection=Vector(0,0,0),
-                 CutDepth=50.0):
+                 CutDepth=50.0,
+                 ShiftLength=0):
         fp.addProperty("App::PropertyLink",  "Base",   "NotchConnector",   "Object to cut").Base = Base  
         fp.addProperty("App::PropertyLinkList",  "Tools",   "NotchConnector",   "Object to cut").Tools = Tools        
         fp.addProperty("App::PropertyVector", "CutDirection", "NotchConnector",  "The direction of the cut").CutDirection = CutDirection     
         fp.addProperty("App::PropertyFloat", "CutDepth", "NotchConnector",  "Length of the cut in percent").CutDepth = CutDepth   
+        fp.addProperty("App::PropertyFloat", "ShiftLength", "NotchConnector", "Shift the tools, then cut. Overrides CutDepth if not zero").ShiftLength = ShiftLength
         fp.Proxy = self
         
         
     def onChanged(self, fp, prop):
-        proplist = ["Base", "Tools", "CutDirection"]
+        proplist = ["Base", "Tools", "CutDirection", "ShiftLength"]
         if prop in proplist:      
             self.execute(fp)
             
@@ -103,30 +105,37 @@ class NotchConnectorWorker:
             
             for bShape in self.extractShapes([bShapes]):    
                 cutcubes = []
-                for tool in self.extractShapes(fp.Tools):              
-                    tbox = tool.optimalBoundingBox()
-                    common = tool.common(bShape)
-                    cbox = common.BoundBox
-                    if cbox.XLength + cbox.YLength + cbox.ZLength > epsilon:
-                        cbox = common.optimalBoundingBox()
-                        vSize = Vector(cbox.XLength, cbox.YLength, cbox.ZLength)
-                        vPlace = Vector(cbox.XMin, cbox.YMin, cbox.ZMin)
-                        if vSize.x < epsilon or vSize.x > tbox.XLength: 
-                            vSize.x = tbox.XLength
-                            vPlace.x = tbox.XMin
-                        if vSize.y < epsilon or vSize.y > tbox.YLength: 
-                            vSize.y = tbox.YLength
-                            vPlace.y = tbox.YMin
-                        if vSize.z < epsilon or vSize.z > tbox.ZLength: 
-                            vSize.z = tbox.ZLength   
-                            vPlace.z = tbox.ZMin
+                
+                for tool in self.extractShapes(fp.Tools):  
+                    if fp.ShiftLength == 0:  
+                        tbox = tool.optimalBoundingBox()
+                        common = tool.common(bShape)
+                        cbox = common.BoundBox
+                        if cbox.XLength + cbox.YLength + cbox.ZLength > epsilon:
+                            cbox = common.optimalBoundingBox()
+                            vSize = Vector(cbox.XLength, cbox.YLength, cbox.ZLength)
+                            vPlace = Vector(cbox.XMin, cbox.YMin, cbox.ZMin)
+                            if vSize.x < epsilon or vSize.x > tbox.XLength: 
+                                vSize.x = tbox.XLength
+                                vPlace.x = tbox.XMin
+                            if vSize.y < epsilon or vSize.y > tbox.YLength: 
+                                vSize.y = tbox.YLength
+                                vPlace.y = tbox.YMin
+                            if vSize.z < epsilon or vSize.z > tbox.ZLength: 
+                                vSize.z = tbox.ZLength   
+                                vPlace.z = tbox.ZMin
+                                      
+                            cutcube = Part.makeBox(vSize.x, vSize.y, vSize.z)
+                            cutcube.Placement.Base = vPlace           
+                            cutcube.Placement.Base.x += cbox.XLength * halfsize.x
+                            cutcube.Placement.Base.y += cbox.YLength * halfsize.y
+                            cutcube.Placement.Base.z += cbox.ZLength * halfsize.z
                             
-                        cutcube = Part.makeBox(vSize.x, vSize.y, vSize.z)
-                        cutcube.Placement.Base = vPlace
-                        cutcube.Placement.Base.x += cbox.XLength * halfsize.x
-                        cutcube.Placement.Base.y += cbox.YLength * halfsize.y
-                        cutcube.Placement.Base.z += cbox.ZLength * halfsize.z
-                        cutcubes.append(cutcube) 
+                    else:
+                        cutcube = tool.copy()
+                        cutcube.Placement.Base = tool.Placement.Base + fp.CutDirection * fp.ShiftLength
+                        
+                    cutcubes.append(cutcube)                            
                         
                 if len(cutcubes) > 0:
                     try:

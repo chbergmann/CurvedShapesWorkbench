@@ -168,6 +168,7 @@ Select two objects, then select Notch Connector. Two NotchConnector objects will
 - Tools: 		The object that cuts Base   
 - CutDirection: The direction of the cut (autocomputed)    
 - CutDepth: 	The depth of the cut in percent
+- ShiftLength:	Shift the tools by ShiftLength, then cut. If ShiftLength is not zero, it overrides CutDepth and uses another algorithm. 
 
 
 ### ![alt text](LasercutterTechdrawExport/LasercutterTechdrawExport.svg) Lasercutter Techdraw Export
