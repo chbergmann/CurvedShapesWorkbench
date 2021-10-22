@@ -130,12 +130,11 @@ class NotchConnectorWorker:
                             cutcube.Placement.Base.x += cbox.XLength * halfsize.x
                             cutcube.Placement.Base.y += cbox.YLength * halfsize.y
                             cutcube.Placement.Base.z += cbox.ZLength * halfsize.z
-                            
+                            cutcubes.append(cutcube)
                     else:
                         cutcube = tool.copy()
-                        cutcube.Placement.Base = tool.Placement.Base + fp.CutDirection * fp.ShiftLength
-                        
-                    cutcubes.append(cutcube)                            
+                        cutcube.Placement.Base = tool.Placement.Base + fp.CutDirection * fp.ShiftLength                        
+                        cutcubes.append(cutcube)                            
                         
                 if len(cutcubes) > 0:
                     try:
