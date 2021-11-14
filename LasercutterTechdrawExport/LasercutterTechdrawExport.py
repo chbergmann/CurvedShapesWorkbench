@@ -23,12 +23,14 @@ class LasercutterTechdrawExportItem:
                  Part = None,
                  BeamWidth = 0.2,
                  Normal = Vector(0, 0, 1),
-                 method = 'auto'):
+                 method = 'auto',
+                 rotate = True):
         self.updating = False
         fp.addProperty("App::PropertyLink", "Part",  "LasercutterTechdrawExport",  "Selected part").Part = Part
         fp.addProperty("App::PropertyVector", "Normal",  "LasercutterTechdrawExport",  "What the heck is normal ?").Normal = Normal
         fp.addProperty("App::PropertyFloat", "BeamWidth", "LasercutterTechdrawExport",  "Laser beam width in mm").BeamWidth = BeamWidth
         fp.addProperty("App::PropertyEnumeration", "Method", "LasercutterTechdrawExport",  "How to create the outline").Method = ['auto', '2D', '3D', 'face']
+        fp.addProperty("App::PropertyBool", "AutoRotate", "LasercutterTechdrawExport",  "rotate the part that it fits best").AutoRotate = rotate
         fp.Method = method
         fp.Proxy = self
     
@@ -78,8 +80,10 @@ class LasercutterTechdrawExportItem:
         rotation_to_apply = Rotation(fp.Normal, Vector(0, 0, 1))    
         new_rotation = rotation_to_apply.multiply(fp.Placement.Rotation)
         fp.Placement.Rotation = new_rotation
-         
-        self.rotate_biggest_side_up(fp)
+        
+        if fp.AutoRotate: 
+            self.rotate_biggest_side_up(fp)
+            
         self.updating = False
         
     def get_biggest_face(self, part):
@@ -176,12 +180,9 @@ class LasercutterTechdrawExport():
     def Activated(self):
         '''Will be called when the feature is executed.'''
         self.ui_file = os.path.join(__dir__, 'lasercuttersvg.ui')
-        f, w = FreeCADGui.PySideUic.loadUiType(self.ui_file)
-        self.form = f()
-        self.widget = w()
-        self.form.setupUi(self.widget)
-        self.widget.show()
-        self.form.pushButton.pressed.connect(self.makeExport)          
+        self.form = FreeCADGui.PySideUic.loadUi(self.ui_file)
+        self.form.pushButton.pressed.connect(self.makeExport)
+        self.form.show()        
 
     def IsActive(self):
         """Here you can define if the command must be active or not (greyed) if certain conditions
@@ -208,7 +209,7 @@ class LasercutterTechdrawExport():
             FreeCADGui.doCommand("parts.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
             
         FreeCADGui.doCommand("LasercutterTechdrawExport.makeLasercutterTechdrawExport(parts, BeamWidth = %f, doc = App.activeDocument())"%self.form.doubleSpinBox.value())
-        self.widget.close()
+        self.form.close()
         
 
 FreeCADGui.addCommand('LasercutterTechdrawExport', LasercutterTechdrawExport())
@@ -250,14 +251,15 @@ def selected_to_techdraw(doc, offsets, techdraw, BeamWidth):
             view.Y = y + bsize.y - (bsize.y / 2)
             x = x + bsize.x + BeamWidth
         except Exception as ex:
-            app.Console.PrintError("view for " + viewname + " cannot be created ! " + ex)
+            app.Console.PrintError("view for " + viewname + " cannot be created ! ")
+            app.Console.PrintError(ex)
                   
 
-def makeLasercutterTechdrawExport(parts, BeamWidth = 0.2, doc = app.activeDocument(), method = 'auto'):       
+def makeLasercutterTechdrawExport(parts, BeamWidth = 0.2, doc = app.activeDocument(), method = 'auto', autoRotate=True):       
     contours = []
     for p in parts:  
         ifp = doc.addObject("Part::FeaturePython", "LasercutterTechdrawExport")
-        LasercutterTechdrawExportItem(ifp, p, BeamWidth, method=method)
+        LasercutterTechdrawExportItem(ifp, p, BeamWidth, method=method, rotate=autoRotate)
         LasercutterTechdrawExportItemViewProvider(ifp.ViewObject)  
         contours.append(ifp)  
         doc.recompute()
