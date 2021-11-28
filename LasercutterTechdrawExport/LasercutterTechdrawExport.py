@@ -22,15 +22,13 @@ class LasercutterTechdrawExportItem:
                  fp,    # an instance of Part::FeaturePython
                  Part = None,
                  BeamWidth = 0.2,
-                 Normal = Vector(0, 0, 1),
-                 method = 'auto',
-                 rotate = True):
+                 Normal = Vector(0, 0, 0),
+                 method = 'auto'):
         self.updating = False
         fp.addProperty("App::PropertyLink", "Part",  "LasercutterTechdrawExport",  "Selected part").Part = Part
-        fp.addProperty("App::PropertyVector", "Normal",  "LasercutterTechdrawExport",  "What the heck is normal ?").Normal = Normal
+        fp.addProperty("App::PropertyVector", "Normal", "LasercutterTechdrawExport",  "vertical vector. (0, 0, 0) = rotate the part that it fits best").Normal = Normal
         fp.addProperty("App::PropertyFloat", "BeamWidth", "LasercutterTechdrawExport",  "Laser beam width in mm").BeamWidth = BeamWidth
-        fp.addProperty("App::PropertyEnumeration", "Method", "LasercutterTechdrawExport",  "How to create the outline").Method = ['auto', '2D', '3D', 'face']
-        fp.addProperty("App::PropertyBool", "AutoRotate", "LasercutterTechdrawExport",  "rotate the part that it fits best").AutoRotate = rotate
+        fp.addProperty("App::PropertyEnumeration", "Method", "LasercutterTechdrawExport",  "How to create the outline").Method = ['auto', '2D', '3D', 'face', 'normal']
         fp.Method = method
         fp.Proxy = self
     
@@ -41,13 +39,16 @@ class LasercutterTechdrawExportItem:
         
     def onChanged(self, fp, prop):
         '''Do something when a property has changed'''
-        if prop == "Part" or prop == "BeamWidth" or prop == "Normal":
+        props = ["Part", "BeamWidth", "Normal", "Method"]
+        if prop in props:
             self.execute(fp)         
             
     def make_outline(self, fp): 
         self.updating = True 
         
-        if fp.Method == '2D':
+        if fp.Method == 'normal': 
+            outline = fp.Part.Shape.makeOffsetShape(fp.BeamWidth / 2, 1e-7)
+        elif fp.Method == '2D':
             outline = fp.Part.Shape.makeOffset2D(fp.BeamWidth / 2) 
             fp.Normal = self.getNormal(fp.Part) 
         elif fp.Method == '3D':
@@ -57,8 +58,7 @@ class LasercutterTechdrawExportItem:
             face = self.get_biggest_face(fp.Part)
             if face:
                 outline = face.makeOffset2D(fp.BeamWidth / 2)
-                if fp.Normal == Vector(0, 0, 1):
-                    fp.Normal = face.normalAt(0, 0)
+                fp.Normal = face.normalAt(0, 0)
             elif fp.Method == 'auto':
                 try:
                     outline = fp.Part.Shape.makeOffset2D(fp.BeamWidth / 2) 
@@ -73,15 +73,15 @@ class LasercutterTechdrawExportItem:
         
         if fp.Placement.Rotation.Axis.z < 0:
             fp.Placement.Rotation.Axis = fp.Placement.Rotation.Axis * -1
-            
-        if fp.Normal.z < 0:
-            fp.Normal = fp.Normal * -1
-            
-        rotation_to_apply = Rotation(fp.Normal, Vector(0, 0, 1))    
-        new_rotation = rotation_to_apply.multiply(fp.Placement.Rotation)
-        fp.Placement.Rotation = new_rotation
         
-        if fp.AutoRotate: 
+        if fp.Method != 'normal':      
+            if fp.Normal.z < 0:
+                fp.Normal = fp.Normal * -1
+                
+            rotation_to_apply = Rotation(fp.Normal, Vector(0, 0, 1))    
+            new_rotation = rotation_to_apply.multiply(fp.Placement.Rotation)
+            fp.Placement.Rotation = new_rotation
+        
             self.rotate_biggest_side_up(fp)
             
         self.updating = False
@@ -220,6 +220,27 @@ def selected_to_techdraw(doc, offsets, techdraw, BeamWidth):
     y = 0
     
     for offset in offsets:
+        viewname = offset.Label.replace("offset", "contour")
+        views = doc.getObjectsByLabel(viewname)
+        if len(views) > 0:
+            view = views[0]
+        else:
+            view = doc.addObject('TechDraw::DrawViewPart', viewname)
+            techdraw.addView(view)
+                   
+        try:
+            view.CoarseView = False
+            view.ViewObject.LineWidth = BeamWidth
+            view.Source = offset
+            view.Direction = Vector(0, 0, 1)
+            view.ScaleType = u"Custom"
+            view.Scale = 1.00
+        except Exception as ex:
+            app.Console.PrintError("\nview for " + viewname + " cannot be created ! ")
+            app.Console.PrintError(ex)
+    
+    for view in techdraw.Views:
+        offset = view.Source[0]
         bbox = offset.Shape.BoundBox
         bsize = Vector(bbox.XLength, bbox.YLength, bbox.ZLength)
         
@@ -231,49 +252,41 @@ def selected_to_techdraw(doc, offsets, techdraw, BeamWidth):
         maxwidth = x + bsize.x + BeamWidth
         if maxwidth > techdraw.Template.Width:
             techdraw.Template.Width = maxwidth
+                          
+        view.X = x + bsize.x / 2
+        view.Y = y + bsize.y - (bsize.y / 2)
+        x = x + bsize.x + BeamWidth
 
-        viewname = offset.Label.replace("offset", "contour")
-        views = doc.getObjectsByLabel(viewname)
-        if len(views) > 0:
-            view = views[0]
-        else:
-            view = doc.addObject('TechDraw::DrawViewPart', viewname)
-            techdraw.addView(view)
-            
-        try:
-            view.CoarseView = False
-            view.ViewObject.LineWidth = BeamWidth
-            view.Source = offset
-            view.Direction = Vector(0, 0, 1)
-            view.ScaleType = u"Custom"
-            view.Scale = 1.00
-            view.X = x + bsize.x / 2
-            view.Y = y + bsize.y - (bsize.y / 2)
-            x = x + bsize.x + BeamWidth
-        except Exception as ex:
-            app.Console.PrintError("view for " + viewname + " cannot be created ! ")
-            app.Console.PrintError(ex)
-                  
-
-def makeLasercutterTechdrawExport(parts, BeamWidth = 0.2, doc = app.activeDocument(), method = 'auto', autoRotate=True):       
-    contours = []
-    for p in parts:  
-        ifp = doc.addObject("Part::FeaturePython", "LasercutterTechdrawExport")
-        LasercutterTechdrawExportItem(ifp, p, BeamWidth, method=method, rotate=autoRotate)
-        LasercutterTechdrawExportItemViewProvider(ifp.ViewObject)  
-        contours.append(ifp)  
-        doc.recompute()
-        
-    if len(contours) == 0: return 
-        
+def makeLasercutterTechdrawExport(parts, BeamWidth = 0.2, doc = app.activeDocument(), method = 'auto', normal = Vector(0, 0, 0)):
+    if len(parts) == 0: return
+             
     techdraw = doc.addObject('TechDraw::DrawPage','LasercutterTechdraw')
     template = doc.addObject('TechDraw::DrawSVGTemplate','Template')
     techdraw.Template = template
-    LaserCutterExportObjects = doc.addObject('App::DocumentObjectGroup', 'LaserCutterExportObjects')
-    LaserCutterExportObjects.Group = contours
-    LaserCutterExportObjects.ViewObject.hide()
     doc.recompute()
-    selected_to_techdraw(doc, contours, techdraw, BeamWidth)
-    doc.recompute()
-    techdraw.ViewObject.show()
+    
+    for p in parts:  
+        addLasercutterTechdrawItem(techdraw, p, BeamWidth, doc, method, normal)
+        
+    doc.recompute() 
+    techdraw.ViewObject.show() 
     return techdraw
+    
+    
+def addLasercutterTechdrawItem(techdraw, part, BeamWidth = 0.2, doc = app.activeDocument(), method = 'auto', normal = Vector(0, 0, 0)):       
+    ifp = doc.addObject("Part::FeaturePython", "LasercutterTechdrawExport")
+    LasercutterTechdrawExportItem(ifp, part, BeamWidth, method=method, Normal=normal)
+    LasercutterTechdrawExportItemViewProvider(ifp.ViewObject)
+    doc.recompute()
+    selected_to_techdraw(doc, [ifp], techdraw, BeamWidth) 
+    
+    LaserCutterExportObjects = doc.getObjectsByLabel('LaserCutterExportObjects')
+    if len(LaserCutterExportObjects) == 0:
+        LaserCutterExportObjects = doc.addObject('App::DocumentObjectGroup', 'LaserCutterExportObjects')
+    else:
+        LaserCutterExportObjects = LaserCutterExportObjects[0]
+        
+    LaserCutterExportObjects.Group = LaserCutterExportObjects.Group + [ifp]
+    LaserCutterExportObjects.ViewObject.hide()
+    
+    return ifp
