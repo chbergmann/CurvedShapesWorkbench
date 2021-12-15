@@ -15,7 +15,7 @@ import math
 __dir__ = os.path.dirname(__file__)
 iconPath = __dir__
 
-epsilon = 1e-7
+epsilon = 1e-7      
         
 class LasercutterTechdrawExportItem:
     def __init__(self, 
@@ -265,8 +265,17 @@ def makeLasercutterTechdrawExport(parts, BeamWidth = 0.2, doc = app.activeDocume
     techdraw.Template = template
     doc.recompute()
     
-    for p in parts:  
-        addLasercutterTechdrawItem(techdraw, p, BeamWidth, doc, method, normal)
+    for p in parts:
+        if len(p.Shape.Solids) > 1:
+            for sol in p.Shape.Solids:
+                sfp = doc.addObject('Part::Feature', p.Label) 
+                sfp.Shape = Part.Shape(sol)
+                sfp.ViewObject.hide()
+                addToExportObjects(doc, sfp)
+                addLasercutterTechdrawItem(techdraw, sfp, BeamWidth, doc, method, normal)
+                
+        else:
+            addLasercutterTechdrawItem(techdraw, p, BeamWidth, doc, method, normal)
         
     doc.recompute() 
     techdraw.ViewObject.show() 
@@ -278,8 +287,11 @@ def addLasercutterTechdrawItem(techdraw, part, BeamWidth = 0.2, doc = app.active
     LasercutterTechdrawExportItem(ifp, part, BeamWidth, method=method, Normal=normal)
     LasercutterTechdrawExportItemViewProvider(ifp.ViewObject)
     doc.recompute()
-    selected_to_techdraw(doc, [ifp], techdraw, BeamWidth) 
+    selected_to_techdraw(doc, [ifp], techdraw, BeamWidth)
+    addToExportObjects(doc, ifp)
+    return ifp
     
+def addToExportObjects(doc, ifp):
     LaserCutterExportObjects = doc.getObjectsByLabel('LaserCutterExportObjects')
     if len(LaserCutterExportObjects) == 0:
         LaserCutterExportObjects = doc.addObject('App::DocumentObjectGroup', 'LaserCutterExportObjects')
@@ -289,4 +301,3 @@ def addLasercutterTechdrawItem(techdraw, part, BeamWidth = 0.2, doc = app.active
     LaserCutterExportObjects.Group = LaserCutterExportObjects.Group + [ifp]
     LaserCutterExportObjects.ViewObject.hide()
     
-    return ifp
