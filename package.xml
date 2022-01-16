@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<package format="1">
+  <name>CurvedShapes workbench</name>
+  <description>Creating 3D shapes from 2D curves</description>
+  <version></version>
+  <date></date>
+  <maintainer email="@chbergmann">chbergmann</maintainer>
+  <license file="LICENSE">LGPL-3</license>
+  <url type="repository" branch="master">https://github.com/chbergmann/CurvedShapesWorkbench</url>
+  <url type="documentation">https://wiki.freecad.org/CurvedShapes_Workbench</url>
+
+  <content>
+    <workbench>
+      <name>CurvedShapes workbench</name>
+      <classname>CurvesShapesWorkbench</classname>
+      <description>Creating 3D shapes from 2D curves</description>
+      <version></version>
+      <subdirectory>./</subdirectory>
+      <icon>Resources/icons/curvedArray.svg</icon>
+      <freecadmin>0.19.0</freecadmin>
+      <tag>curves</tag>
+      <tag>nurbs</tag>
+    </workbench>
+  </content>
+
+</package>
