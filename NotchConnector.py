@@ -47,22 +47,32 @@ class NotchConnectorWorker:
         
         fp.Proxy = None
         if fp.CutDirection == Vector(0.0,0.0,0.0):
-            bbox = self.extractCompounds([fp.Base])[0].Shape.BoundBox
+            bbox1 = self.extractCompounds([fp.Base])[0].Shape.BoundBox
+            bbox2 = self.extractCompounds(fp.Tools)[0].Shape.BoundBox
             v = Vector(1,1,1)
-            if bbox.XLength < bbox.YLength and bbox.XLength < bbox.ZLength:
+            
+            if abs(bbox1.XLength - bbox2.XLength) > epsilon:
                 v.x = 0
-            elif bbox.YLength <= bbox.XLength and bbox.YLength < bbox.ZLength:
+            if abs(bbox1.YLength - bbox2.YLength) > epsilon:
                 v.y = 0
-            else:
+            if abs(bbox1.ZLength - bbox2.ZLength) > epsilon:
                 v.z = 0
-                
-            bbox = self.extractCompounds(fp.Tools)[0].Shape.BoundBox
-            if bbox.XLength < bbox.YLength and bbox.XLength < bbox.ZLength:
-                v.x = 0
-            elif bbox.YLength <= bbox.XLength and bbox.YLength < bbox.ZLength:
-                v.y = 0
-            else:
-                v.z = 0            
+            
+            if v.Length < epsilon:
+                v = Vector(1,1,1)
+                if bbox1.XLength < bbox1.YLength and bbox1.XLength < bbox1.ZLength:
+                    v.x = 0
+                elif bbox1.YLength <= bbox1.XLength and bbox1.YLength < bbox1.ZLength:
+                    v.y = 0
+                else:
+                    v.z = 0
+                    
+                if bbox2.XLength < bbox2.YLength and bbox2.XLength < bbox2.ZLength:
+                    v.x = 0
+                elif bbox2.YLength <= bbox2.XLength and bbox2.YLength < bbox2.ZLength:
+                    v.y = 0
+                else:
+                    v.z = 0            
                 
             fp.CutDirection = v * fp.CutDepth / 50
             
