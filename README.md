@@ -170,6 +170,8 @@ Select two objects, then select Notch Connector. Two NotchConnector objects will
 - CutDepth: 	The depth of the cut in percent
 - ShiftLength:	Shift the tools by ShiftLength, then cut. If ShiftLength is not zero, it overrides CutDepth and uses another algorithm. 
 
+#### Troubleshooting
+If the notches are cut at the wrong place, edit the parameter CutDirection manually. Avoid the vaule 0,0,0 since this will autocompute new values.
 
 ### ![alt text](./Resources/icons/LasercutterTechdrawExport.svg) Lasercutter Techdraw Export
 
