@@ -104,7 +104,7 @@ The parameters ScaleX, ScaleY and ScaleZ have been added because you may want to
   
 ### ![curvedSegmentIcon](./Resources/icons/curvedSegment.svg) Curved Segment
 Interpolates between two 2D curves. The interpolated curves can be resized in the bounds of some hullcurves.  
- 
+
 ![CurvedSegment](Examples/CurvedSegment.jpg)
 ![CurvedSegment2](Examples/CurvedSegment2.jpg)
 
@@ -113,13 +113,13 @@ Select two 2D shapes first. The curved segment will be created between them. If 
 #### Parameters
 - Shape1: The first object of the segment
 - Shape2: The last object of the segment
-- Hullcurves: List of one or more bounding curves in XY, XZ or YZ plane (optional)       
+- Hullcurves: List of one or more bounding curves in XY, XZ or YZ plane (optional)
 - NormalShape1: Direction axis of Shape1 (auto computed)
 - NormalShape2: Direction axis of Shape2 (auto computed)
 - Items: Nr. of items between the segments
 - makeSurface: make a surface over the array items
 - makeSolid: make a solid if Base is a closed shape
-- InterpolationPoints: ignored if Shape1 and Shape2 have the same number of edges and poles. Otherwise all edges will be split (discretized) into this number of points  
+- InterpolationPoints: ignored if Shape1 and Shape2 have the same number of edges and poles. Otherwise all edges will be split (discretized) into this number of points
 - Twist: Compensates a rotation between Shape1 and Shape2
 - TwistReverse: Reverses the rotation of one Shape
 - Distribution: Algorithm for distance between array elements. Default is 'linear'. Also selectable: parabolic (x²), x³, sinusoidal, elliptic
@@ -173,14 +173,14 @@ Select two objects, then select Notch Connector. Two NotchConnector objects will
 - ShiftLength:	Shift the tools by ShiftLength, then cut. If ShiftLength is not zero, it overrides CutDepth and uses another algorithm. 
 
 #### Troubleshooting
-If the notches are cut at the wrong place, edit the parameter CutDirection manually. Avoid the vaule 0,0,0 since this will autocompute new values.
+If the notches are cut at the wrong place, edit the parameter CutDirection manually. Avoid the value `0,0,0` since this will autocompute new values.
 
 ### ![alt text](./Resources/icons/LasercutterTechdrawExport.svg) Lasercutter Techdraw Export
 
 This tool has been moved to the macro [LasercutterSVGExport](https://forum.freecadweb.org/viewtopic.php?f=35&t=31869)  
 Install it from the Macros tab in the resources manager.
   
-   
+  
 ## Examples
 Example designs in script format for testing and presenting this workbench.  
 
