@@ -181,6 +181,9 @@ class CurvedArrayWorker:
         
     def onChanged(self, fp, prop):
         proplist = ["Base", "Hullcurves", "Axis", "Items", "Positions", "OffsetStart", "OffsetEnd", "Twist", "Surface", "Solid", "Distribution", "DistributionReverse"]
+        for p in proplist:
+            if not hasattr(fp, p):
+                return
 
         if prop in proplist:                
             if "Positions" in prop and len(fp.Positions) != 0:
