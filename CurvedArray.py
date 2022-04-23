@@ -145,6 +145,7 @@ class CurvedArrayWorker:
         
         self.doScaleXYZ = []
         self.doScaleXYZsum = [False, False, False]
+        sumbbox=None   #Define the variable other wise it causes error 
         for h in prop.Hullcurves:
             bbox = h.Shape.BoundBox
             if h == prop.Hullcurves[0]:
