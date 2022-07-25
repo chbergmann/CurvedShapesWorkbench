@@ -44,10 +44,10 @@ class InterpolatedMiddleWorker:
         if not self.update:
             return 
         
-        if not fp.Shape1 or not hasattr(fp.Shape1, "Shape"):
+        if not fp.Shape1 or not hasattr(fp.Shape1, "Shape") or len(fp.Shape1.Shape.Edges) == 0:
             return
         
-        if not fp.Shape2 or not hasattr(fp.Shape2, "Shape"):
+        if not fp.Shape2 or not hasattr(fp.Shape2, "Shape") or len(fp.Shape2.Shape.Edges) == 0:
             return
             
         self.update = False
@@ -63,11 +63,11 @@ class InterpolatedMiddleWorker:
         
         
     def onChanged(self, fp, prop):
-        proplist = ["Shape1", "Shape2", "NormalShape1", "NormalShape2", "makeSurface", "makeSolid", "Twist", "TwistReverse"]
+        proplist = ["Shape1", "Shape2", "NormalShape1", "NormalShape2", "makeSurface", "makeSolid", "InterpolationPoints", "Twist", "TwistReverse"]
         for p in proplist:
             if not hasattr(fp, p):
                 return
-            
+         
         if prop in proplist:  
             self.execute(fp)
                       
