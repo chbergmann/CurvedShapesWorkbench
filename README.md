@@ -40,9 +40,11 @@ The first curve that you select for CurvedArray creation will be the item that i
 - Hullcurves: List of one or more bounding curves        
 - Axis: Direction axis of the Base shape
 - Items: Nr. of array items
+- Positions: Array of position for each rib (as floats from 0.0 to 1.0) -- overrides Items
 - OffsetStart: Offset of the first part in Axis direction
 - OffsetEnd: Offset of the last part from the end in opposite Axis direction
-- Twist: Applies a rotation around Axis to the array items. 
+- Twist: Applies a rotation around Axis to the array items. Only used if Twists is an empty array
+- Twists: Array of rotation angles for each rib. If empty, parameter Twist is used.
 - Surface: make a surface over the array items
 - Solid: make a solid if Base is a closed shape
 - Distribution: Algorithm for distance between array elements. Default is 'linear'. Also selectable: parabolic (x²), x³, sinusoidal, elliptic
