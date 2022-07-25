@@ -20,14 +20,17 @@ class CurvedArrayWorker:
                  obj,
                  base = None,
                  hullcurves=[], 
-                 axis=Vector(0.0,0.0,0.0), items=2, Positions = [],
+                 axis=Vector(0.0,0.0,0.0), 
+                 items=2, 
+                 Positions = [],
                  OffsetStart=0, OffsetEnd=0, 
                  Twist=0.0, 
                  Surface=True, 
                  Solid = False,
                  Distribution = 'linear',
                  DistributionReverse = False,
-                 extract=False):
+                 extract=False,
+                 Twists = []):
         obj.addProperty("App::PropertyLink",  "Base",     "CurvedArray",   "The object to make an array from").Base = base
         obj.addProperty("App::PropertyLinkList",  "Hullcurves",   "CurvedArray",   "Bounding curves").Hullcurves = hullcurves        
         obj.addProperty("App::PropertyVector", "Axis",    "CurvedArray",   "Direction axis").Axis = axis
@@ -36,6 +39,7 @@ class CurvedArrayWorker:
         obj.addProperty("App::PropertyFloat", "OffsetStart","CurvedArray",  "Offset of the first part in Axis direction").OffsetStart = OffsetStart
         obj.addProperty("App::PropertyFloat", "OffsetEnd","CurvedArray",  "Offset of the last part from the end in opposite Axis direction").OffsetEnd = OffsetEnd
         obj.addProperty("App::PropertyFloat", "Twist","CurvedArray",  "Rotate around Axis in degrees").Twist = Twist
+        obj.addProperty("App::PropertyFloatList","Twists", "CurvedArray","Rotate around Axis in degrees for each item -- overrides Twist").Twists = Twists
         obj.addProperty("App::PropertyBool", "Surface","CurvedArray",  "Make a surface").Surface = Surface
         obj.addProperty("App::PropertyBool", "Solid","CurvedArray",  "Make a solid").Solid = Solid
         obj.addProperty("App::PropertyEnumeration", "Distribution", "CurvedArray",  "Algorithm for distance between elements")
@@ -96,20 +100,15 @@ class CurvedArrayWorker:
                 else:
                     posvec = pos0
                 		
-                dolly = self.makeRib(obj, posvec)
-                if dolly: 
-                    if not obj.Twist == 0:
-                        dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twist * posvec.Length / areavec.Length)
-                    ribs.append(dolly)
+                rib = self.makeRibRotate(obj, posvec, x, areavec.Length, ribs)
         else:
+            x = 0
             for p in obj.Positions:
                 posvec = pos0 + (deltavec * p) 
-        
-                dolly = self.makeRib(obj, posvec)
-                if dolly: 
-                    if not obj.Twist == 0:
-                        dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twist * posvec.Length / areavec.Length)
-                    ribs.append(dolly)
+            
+                rib = self.makeRibRotate(obj, posvec, x, areavec.Length, ribs)
+                x = x + 1       
+
         
         if (obj.Surface or obj.Solid) and obj.Items > 1:
             obj.Shape = CurvedShapes.makeSurfaceSolid(ribs, obj.Solid)
@@ -121,8 +120,17 @@ class CurvedArrayWorker:
         if self.extract:
             CompoundTools.Explode.explodeCompound(obj)
             obj.ViewObject.hide()
-
     
+    
+    def makeRibRotate(self, obj, posvec, x, maxlen, ribs):
+        dolly = self.makeRib(obj, posvec)
+        if dolly:
+            if x < len(obj.Twists):
+                dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twists[x])
+            elif not obj.Twist == 0:
+                dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twist * posvec.Length / maxlen) 
+        
+            ribs.append(dolly)            
         
     def makeRib(self, obj, posvec):
         bbox = CurvedShapes.boundbox_from_intersect(obj.Hullcurves, posvec, obj.Axis, self.doScaleXYZ, False)

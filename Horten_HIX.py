@@ -114,16 +114,23 @@ def draw_HortenHIX():
     WingProfile.ViewObject.LineColorArray = [(1.0 ,0.33 ,0.0 ,0.0)]
     # Profiles ^^^
    
-    doc.recompute()       
+    doc.recompute()      
+    
+    twists = [] 
+    positions = []
+    for i in range(0, 10):
+        positions.append(i * 0.11)
+        twists.append(i)
   
     
     WingArray = CurvedShapes.makeCurvedArray(Base=WingProfile, 
                                          Hullcurves=[WingTop, WingFront], 
                                          Axis=Vector(1,0,0), 
-                                         Items=16, 
+                                         Items=len(positions),
+                                         Position = positions, 
                                          OffsetStart=0, 
                                          OffsetEnd=0,
-                                         Twist=twist,
+                                         Twists=twists,
                                          Surface=False,
                                          Solid=False,
                                          Distribution = 'parabolic',
