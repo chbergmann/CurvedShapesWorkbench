@@ -56,10 +56,10 @@ class CurvedSegmentWorker:
         if not self.update:
             return 
         
-        if not fp.Shape1 or not hasattr(fp.Shape1, "Shape"):
+        if not fp.Shape1 or not hasattr(fp.Shape1, "Shape") or len(fp.Shape1.Shape.Edges) == 0:
             return
         
-        if not fp.Shape2 or not hasattr(fp.Shape2, "Shape"):
+        if not fp.Shape2 or not hasattr(fp.Shape2, "Shape") or len(fp.Shape2.Shape.Edges) == 0:
             return
             
         self.update = False
