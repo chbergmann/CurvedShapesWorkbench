@@ -145,23 +145,34 @@ class CurvedPathArrayWorker:
     def execute(self, prop):        
         self.doScaleXYZ = []
         self.doScaleXYZsum = [False, False, False]
+        bbox = None
         for h in prop.Hullcurves:
             bbox = h.Shape.BoundBox
             doScale = [False, False, False]
             
             if bbox.XLength > epsilon: 
                 doScale[0] = True 
-                self.doScaleXYZsum[0] = prop.ScaleX
         
             if bbox.YLength > epsilon: 
                 doScale[1] = True 
-                self.doScaleXYZsum[1] = prop.ScaleY
         
             if bbox.ZLength > epsilon: 
                 doScale[2] = True 
-                self.doScaleXYZsum[2] = prop.ScaleZ
         
             self.doScaleXYZ.append(doScale)
+            
+        if bbox:    
+            for h in prop.Hullcurves:
+                bbox.add(h.Shape.BoundBox)
+                      
+            if bbox.XLength > epsilon: 
+                self.doScaleXYZsum[0] = prop.ScaleX
+        
+            if bbox.YLength > epsilon: 
+                self.doScaleXYZsum[1] = prop.ScaleY
+        
+            if bbox.ZLength > epsilon: 
+                self.doScaleXYZsum[2] = prop.ScaleZ
         
         if prop.Items > 0 and prop.Base and hasattr(prop.Base, "Shape") and prop.Path and hasattr(prop.Path, "Shape") and len(prop.Path.Shape.Edges) > 0:
             self.makeRibs(prop)
