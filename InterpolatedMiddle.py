@@ -50,6 +50,9 @@ class InterpolatedMiddleWorker:
         if not fp.Shape2 or not hasattr(fp.Shape2, "Shape") or len(fp.Shape2.Shape.Edges) == 0:
             return
             
+        if fp.InterpolationPoints <= 1:
+            return
+            
         self.update = False
         if fp.NormalShape1 == Vector(0,0,0):        
             fp.NormalShape1 = CurvedShapes.getNormal(fp.Shape1)
