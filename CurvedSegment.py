@@ -115,8 +115,8 @@ class CurvedSegmentWorker:
             for e in range(0, len(fp.Shape1.Shape.Edges)):
                 edge1 = fp.Shape1.Shape.Edges[e]
                 edge2 = fp.Shape2.Shape.Edges[e]
-                curve1 = edge1.Curve.toBSpline()
-                curve2 = edge2.Curve.toBSpline()
+                curve1 = edge1.Curve.toBSpline(edge1.FirstParameter, edge1.LastParameter)
+                curve2 = edge2.Curve.toBSpline(edge2.FirstParameter, edge2.LastParameter)
                 poles1 = curve1.getPoles()
                 poles2 = curve2.getPoles()
                 if len(poles1) != len(poles2):
