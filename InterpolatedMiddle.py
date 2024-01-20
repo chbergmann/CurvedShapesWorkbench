@@ -153,11 +153,19 @@ class InterpolatedMiddleViewProvider:
     def onChanged(self, fp, prop):
         pass
         
-    def __getstate__(self):
-        return None
- 
-    def __setstate__(self,state):
-        return None
+    if (FreeCAD.Version()[0]+'.'+FreeCAD.Version()[1]) >= '0.22':
+        def loads(self, state):
+            return None
+
+        def dumps(self):
+            return None
+
+    else:
+        def __getstate__(self):
+            return None
+
+        def __setstate__(self,state):
+            return None
         
 
 class InterpolatedMiddle():
