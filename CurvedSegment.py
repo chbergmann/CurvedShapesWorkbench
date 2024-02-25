@@ -44,7 +44,7 @@ class CurvedSegmentWorker:
         fp.addProperty("App::PropertyBool", "TwistReverse","CurvedSegment",  "Reverses the rotation of one Shape").TwistReverse = TwistReverse
         fp.addProperty("App::PropertyEnumeration", "Distribution", "CurvedSegment",  "Algorithm for distance between elements")
         fp.addProperty("App::PropertyBool", "DistributionReverse", "CurvedSegment",  "Reverses direction of Distribution algorithm").DistributionReverse = DistributionReverse
-        fp.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'elliptic']
+        fp.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'asinusoidal', 'elliptic']
         fp.Distribution = Distribution
         self.doScaleXYZ = []
         self.doScaleXYZsum = [False, False, False]

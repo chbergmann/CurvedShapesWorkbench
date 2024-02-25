@@ -255,8 +255,11 @@ def distribute(x, distribution, reverse = False):
         d = x*x*x
     
     if distribution == 'sinusoidal':
-        d = math.sin(x * math.pi / 2)
+        d = (math.cos(x * math.pi) + 1) / 2
     
+    if distribution == 'asinusoidal':
+        d = math.acos(x * 2 - 1) / math.pi
+        
     if distribution == 'elliptic':
         d = math.sqrt(1 - x*x)
     

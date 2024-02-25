@@ -47,7 +47,7 @@ The first curve that you select for CurvedArray creation will be the item that i
 - Twists: Array of rotation angles for each rib. If empty, parameter Twist is used.
 - Surface: make a surface over the array items
 - Solid: make a solid if Base is a closed shape
-- Distribution: Algorithm for distance between array elements. Default is 'linear'. Also selectable: parabolic (x²), x³, sinusoidal, elliptic
+- Distribution: Algorithm for distance between array elements. Default is 'linear'. Also selectable: parabolic (x²), x³, sinusoidal, asinusoidal, elliptic
 - DistributionReverse: Reverses the direction of the Distribution algorithm
 
 Distribution Linear  
@@ -62,6 +62,9 @@ Distribution x³
 Distribution sinusoidal  
 ![sinusoidal](Examples/CurvedArraySinus.jpg) 
    
+Distribution asinusoidal  
+![asinusoidal](Examples/CurvedArrayASinus.jpg) 
+
 Distribution elliptic  
 ![elliptic](Examples/CurvedArrayElliptic.jpg)  
 If you create a surface with the Curved Array, a different distribution may give you better results.

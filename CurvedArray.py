@@ -44,7 +44,7 @@ class CurvedArrayWorker:
         obj.addProperty("App::PropertyBool", "Solid","CurvedArray",  "Make a solid").Solid = Solid
         obj.addProperty("App::PropertyEnumeration", "Distribution", "CurvedArray",  "Algorithm for distance between elements")
         obj.addProperty("App::PropertyBool", "DistributionReverse", "CurvedArray",  "Reverses direction of Distribution algorithm").DistributionReverse = DistributionReverse
-        obj.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'elliptic']
+        obj.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'asinusoidal', 'elliptic']
         obj.Distribution = Distribution
         self.extract = extract
         self.doScaleXYZ = []

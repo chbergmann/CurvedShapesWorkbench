@@ -40,7 +40,7 @@ Zuerst das Basisobjekt auswählen, danach die Hüllkurven. Dann ein Curved Array
 - Twist: (Winkel in Grad) Lässt die Array Elemente rotieren
 - Surface: Eine Oberfläche erstellen
 - Solid: Einen Festkörper erstellen (funktioniert nur, wenn Base eine geschlossene Form ist)
-- Distribution: Algorithmus zur Berechnung der Distanz zwischen den Elementen. Default ist 'linear'. Weitere Möglichkeiten: parabolic (x²), x³, sinusoidal, elliptic
+- Distribution: Algorithmus zur Berechnung der Distanz zwischen den Elementen. Default ist 'linear'. Weitere Möglichkeiten: parabolic (x²), x³, sinusoidal, asinusoidal, elliptic
 - DistributionReverse: Kehrt die Richtung des Distrubution Algorithmus um
 
 Distribution Linear  
@@ -55,6 +55,9 @@ Distribution x³
 Distribution sinusoidal  
 ![sinusoidal](Examples/CurvedArraySinus.jpg) 
    
+Distribution asinusoidal  
+![asinusoidal](Examples/CurvedArrayASinus.jpg) 
+
 Distribution elliptic  
 ![elliptic](Examples/CurvedArrayElliptic.jpg)  
 

@@ -157,7 +157,8 @@ def draw_HortenHIX():
                                              Twist=-twist,
                                              Surface=True,
                                              Solid=True,
-                                             Distribution = 'sinusoidal') 
+                                             Distribution = 'parabolic',
+                                             DistributionReverse=True) 
     
     
     WingSurface.Label = "WingSurface"
