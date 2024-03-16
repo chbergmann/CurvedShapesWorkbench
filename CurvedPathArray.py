@@ -109,12 +109,12 @@ class CurvedPathArrayWorker:
                     #dolly = self.makeRib(obj, posvec, direction)
                     dolly = obj.Base.Shape.copy()
                     if rotaxis.Length > epsilon:
-                        dolly.rotate(dolly.BoundBox.Center, rotaxis, angle)
+                        dolly = dolly.rotate(dolly.BoundBox.Center, rotaxis, angle)
 
                     dolly.Placement.Base = posvec
                     if dolly: 
                         if not obj.Twist == 0 and n > 0:
-                            dolly.rotate(posvec, direction, obj.Twist * n / int(obj.Items))
+                            dolly = dolly.rotate(posvec, direction, obj.Twist * n / int(obj.Items))
                             
                         if len(obj.Hullcurves) > 0:
                             if not obj.ScaleX: direction = Vector(1, 0, 0)

@@ -126,9 +126,9 @@ class CurvedArrayWorker:
         dolly = self.makeRib(obj, posvec)
         if dolly:
             if x < len(obj.Twists):
-                dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twists[x])
+                dolly = dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twists[x])
             elif not obj.Twist == 0:
-                dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twist * posvec.Length / maxlen) 
+                dolly = dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twist * posvec.Length / maxlen) 
         
             ribs.append(dolly)            
         
