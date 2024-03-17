@@ -100,13 +100,13 @@ class CurvedArrayWorker:
                 else:
                     posvec = pos0
                 		
-                rib = self.makeRibRotate(obj, posvec, x, areavec.Length, ribs)
+                rib = self.makeRibRotate(obj, posvec, x, d, ribs)
         else:
             x = 0
             for p in obj.Positions:
                 posvec = pos0 + (deltavec * p) 
             
-                rib = self.makeRibRotate(obj, posvec, x, areavec.Length, ribs)
+                rib = self.makeRibRotate(obj, posvec, x, x / len(obj.Positions), ribs)
                 x = x + 1       
 
         
@@ -122,13 +122,13 @@ class CurvedArrayWorker:
             obj.ViewObject.hide()
     
     
-    def makeRibRotate(self, obj, posvec, x, maxlen, ribs):
+    def makeRibRotate(self, obj, posvec, x, d, ribs):
         dolly = self.makeRib(obj, posvec)
         if dolly:
             if x < len(obj.Twists):
                 dolly = dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twists[x])
             elif not obj.Twist == 0:
-                dolly = dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twist * posvec.Length / maxlen) 
+                dolly = dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twist * d)        
         
             ribs.append(dolly)            
         
