@@ -6,17 +6,18 @@ __license__ = "LGPL 2.1"
 __doc__ = "Create 3D shapes from 2D curves"
 
 import os
-import FreeCADGui
 import FreeCAD
 from FreeCAD import Vector
 import Part
 import CompoundTools.Explode
 import CurvedShapes
 import math
+if FreeCAD.GuiUp:
+    import FreeCADGui
 
 epsilon = CurvedShapes.epsilon
     
-class CurvedPathArrayWorker:
+class CurvedPathArray:
     def __init__(self, 
                  obj,
                  base = None,
@@ -187,6 +188,8 @@ class CurvedPathArrayWorker:
         if prop in proplist:      
             self.execute(fp)
 
+#background compatibility
+CurvedPathArrayWorker = CurvedPathArray
 
 class CurvedPathArrayViewProvider:
     def __init__(self, vobj):
@@ -209,56 +212,55 @@ class CurvedPathArrayViewProvider:
     def onChanged(self, fp, prop):
         pass
         
-    if (FreeCAD.Version()[0]+'.'+FreeCAD.Version()[1]) >= '0.22':
-        def loads(self, state):
-            return None
+    def loads(self, state):
+        return None
 
-        def dumps(self):
-            return None
+    def dumps(self):
+        return None
 
-    else:
-        def __getstate__(self):
-            return None
+    def __getstate__(self):
+        return None
 
-        def __setstate__(self,state):
-            return None
+    def __setstate__(self,state):
+        return None
 
-        
 
-class CurvedPathArray():
-        
-    def Activated(self):
-        FreeCADGui.doCommand("import CurvedShapes")
-        
-        selection = FreeCADGui.Selection.getSelectionEx()
-        options = ""
-        for sel in selection:
-            if sel == selection[0]:
-                options += "Base=base, "
-                FreeCADGui.doCommand("base = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
-            elif sel == selection[1]:
-                options += "Path=path, "
-                FreeCADGui.doCommand("path = FreeCAD.ActiveDocument.getObject('%s')"%(selection[1].ObjectName))
-                options += "Hullcurves=hullcurves, "
-                FreeCADGui.doCommand("hullcurves = []");
-            else:
-                FreeCADGui.doCommand("hullcurves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
-        
-        FreeCADGui.doCommand("CurvedShapes.makeCurvedPathArray(%sItems=4, OffsetStart=0, OffsetEnd=0, Surface=False, Solid=False)"%(options))
-        FreeCAD.ActiveDocument.recompute()        
+if FreeCAD.GuiUp:
 
-    def IsActive(self):
-        """Here you can define if the command must be active or not (greyed) if certain conditions
-        are met or not. This function is optional."""
-        #if FreeCAD.ActiveDocument:
-        return(True)
-        #else:
-        #    return(False)
-        
-    def GetResources(self):
-        return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "CurvedPathArray.svg"),
-                'Accel' : "", # a default shortcut (optional)
-                'MenuText': "Curved Path Array",
-                'ToolTip' : "Creates an array, sweeps the elements around a path curve, and resizes the items in the bounds of optional hullcurves." }
+    class CurvedPathArrayCommand():
+            
+        def Activated(self):
+            FreeCADGui.doCommand("import CurvedShapes")
+            
+            selection = FreeCADGui.Selection.getSelectionEx()
+            options = ""
+            for sel in selection:
+                if sel == selection[0]:
+                    options += "Base=base, "
+                    FreeCADGui.doCommand("base = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
+                elif sel == selection[1]:
+                    options += "Path=path, "
+                    FreeCADGui.doCommand("path = FreeCAD.ActiveDocument.getObject('%s')"%(selection[1].ObjectName))
+                    options += "Hullcurves=hullcurves, "
+                    FreeCADGui.doCommand("hullcurves = []");
+                else:
+                    FreeCADGui.doCommand("hullcurves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
+            
+            FreeCADGui.doCommand("CurvedShapes.makeCurvedPathArray(%sItems=4, OffsetStart=0, OffsetEnd=0, Surface=False, Solid=False)"%(options))
+            FreeCAD.ActiveDocument.recompute()        
 
-FreeCADGui.addCommand('CurvedPathArray', CurvedPathArray())
+        def IsActive(self):
+            """Here you can define if the command must be active or not (greyed) if certain conditions
+            are met or not. This function is optional."""
+            #if FreeCAD.ActiveDocument:
+            return(True)
+            #else:
+            #    return(False)
+            
+        def GetResources(self):
+            return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "CurvedPathArray.svg"),
+                    'Accel' : "", # a default shortcut (optional)
+                    'MenuText': "Curved Path Array",
+                    'ToolTip' : "Creates an array, sweeps the elements around a path curve, and resizes the items in the bounds of optional hullcurves." }
+
+    FreeCADGui.addCommand('CurvedPathArray', CurvedPathArrayCommand())

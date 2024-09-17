@@ -6,16 +6,17 @@ __license__ = "LGPL 2.1"
 __doc__ = "Interpolates a 2D shape into the middle between two 2D curves"
 
 import os
-import FreeCADGui
 import FreeCAD
 from FreeCAD import Vector
 import Part
 import CurvedShapes
 import CurvedSegment
+if FreeCAD.GuiUp:
+    import FreeCADGui
 
 epsilon = CurvedShapes.epsilon
     
-class InterpolatedMiddleWorker:
+class InterpolatedMiddle:
     def __init__(self, 
                  fp,    # FeaturePython
                  shape1 = None, 
@@ -131,6 +132,8 @@ class InterpolatedMiddleWorker:
         if shape:
             fp.Shape = shape
                             
+#background compatibility
+InterpolatedMiddleWorker = InterpolatedMiddle
 
 class InterpolatedMiddleViewProvider:
     def __init__(self, vfp):
@@ -153,48 +156,48 @@ class InterpolatedMiddleViewProvider:
     def onChanged(self, fp, prop):
         pass
         
-    if (FreeCAD.Version()[0]+'.'+FreeCAD.Version()[1]) >= '0.22':
-        def loads(self, state):
-            return None
+    def loads(self, state):
+        return None
 
-        def dumps(self):
-            return None
+    def dumps(self):
+        return None
 
-    else:
-        def __getstate__(self):
-            return None
+    def __getstate__(self):
+        return None
 
-        def __setstate__(self,state):
-            return None
-        
+    def __setstate__(self,state):
+        return None
 
-class InterpolatedMiddle():
-        
-    def Activated(self):
-        FreeCADGui.doCommand("import CurvedShapes")
-        
-        selection = FreeCADGui.Selection.getSelectionEx()
-        for sel in selection:
-            if sel == selection[0]:
-                FreeCADGui.doCommand("shape1 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
-            elif sel == selection[1]:
-                FreeCADGui.doCommand("shape2 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[1].ObjectName))
-        
-        FreeCADGui.doCommand("CurvedShapes.makeInterpolatedMiddle(shape1, shape2, Surface=True, Solid=False)")
-        FreeCAD.ActiveDocument.recompute()        
 
-    def IsActive(self):
-        """Here you can define if the command must be active or not (greyed) if certain conditions
-        are met or not. This function is optional."""
-        #if FreeCAD.ActiveDocument:
-        return(True)
-        #else:
-        #    return(False)
-        
-    def GetResources(self):
-        return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "CornerShape.svg"),
-                'Accel' : "", # a default shortcut (optional)
-                'MenuText': "Interpolated Middle",
-                'ToolTip' : __doc__ }
+if FreeCAD.GuiUp:
 
-FreeCADGui.addCommand('InterpolatedMiddle', InterpolatedMiddle())
+    class InterpolatedMiddleCommand():
+            
+        def Activated(self):
+            FreeCADGui.doCommand("import CurvedShapes")
+            
+            selection = FreeCADGui.Selection.getSelectionEx()
+            for sel in selection:
+                if sel == selection[0]:
+                    FreeCADGui.doCommand("shape1 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
+                elif sel == selection[1]:
+                    FreeCADGui.doCommand("shape2 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[1].ObjectName))
+            
+            FreeCADGui.doCommand("CurvedShapes.makeInterpolatedMiddle(shape1, shape2, Surface=True, Solid=False)")
+            FreeCAD.ActiveDocument.recompute()        
+
+        def IsActive(self):
+            """Here you can define if the command must be active or not (greyed) if certain conditions
+            are met or not. This function is optional."""
+            #if FreeCAD.ActiveDocument:
+            return(True)
+            #else:
+            #    return(False)
+            
+        def GetResources(self):
+            return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "CornerShape.svg"),
+                    'Accel' : "", # a default shortcut (optional)
+                    'MenuText': "Interpolated Middle",
+                    'ToolTip' : __doc__ }
+
+    FreeCADGui.addCommand('InterpolatedMiddle', InterpolatedMiddleCommand())

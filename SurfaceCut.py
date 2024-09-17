@@ -5,15 +5,16 @@ __license__ = "LGPL 2.1"
 __doc__ = "Create 3D shapes from 2D curves"
 
 import os
-import FreeCADGui
 import FreeCAD
 from FreeCAD import Vector
 import Part
 import CurvedShapes
+if FreeCAD.GuiUp:
+    import FreeCADGui
     
 epsilon = CurvedShapes.epsilon
 
-class SurfaceCutWorker:
+class SurfaceCut:
     def __init__(self, obj, Surfaces=[], Normal=Vector(0, 0, 1), Position=0, Face=False, Simplify=0): 
         obj.addProperty("App::PropertyLinkList",  "Surfaces",   "SurfaceCut",   "List of objects with a surface").Surfaces = Surfaces
         obj.addProperty("App::PropertyVector",  "Normal",   "SurfaceCut",   "Normal vector of the cut plane").Normal = Normal
@@ -127,7 +128,8 @@ class SurfaceCutWorker:
             
         return True
         
-        
+#background compatibility
+SurfaceCutWorker = SurfaceCut
 
 class SurfaceCutViewProvider:
     def __init__(self, vfp):
@@ -148,36 +150,37 @@ class SurfaceCutViewProvider:
     
     def onChanged(self, fp, prop):
         pass
-        
+            
+if FreeCAD.GuiUp:
 
-class SurfaceCut():
-        
-    def Activated(self):
-        import SurfaceCut
-        FreeCADGui.doCommand("import CurvedShapes")
-        
-        selection = FreeCADGui.Selection.getSelectionEx()
-        FreeCADGui.doCommand("curves = []")
-        for sel in selection:
-            FreeCADGui.doCommand("curves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
-        
-        FreeCADGui.doCommand("CurvedShapes.cutSurfaces(curves, Normal = FreeCAD.Vector(0, 0, 1), Position=FreeCAD.Vector(0,0,0), Face=False, Simplify=False)")
-        FreeCAD.ActiveDocument.recompute()        
+    class SurfaceCutCommand():
+            
+        def Activated(self):
+            import SurfaceCut
+            FreeCADGui.doCommand("import CurvedShapes")
+            
+            selection = FreeCADGui.Selection.getSelectionEx()
+            FreeCADGui.doCommand("curves = []")
+            for sel in selection:
+                FreeCADGui.doCommand("curves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
+            
+            FreeCADGui.doCommand("CurvedShapes.cutSurfaces(curves, Normal = FreeCAD.Vector(0, 0, 1), Position=FreeCAD.Vector(0,0,0), Face=False, Simplify=False)")
+            FreeCAD.ActiveDocument.recompute()        
 
-    def IsActive(self):
-        """Here you can define if the command must be active or not (greyed) if certain conditions
-        are met or not. This function is optional."""
-        if FreeCAD.ActiveDocument:
-            return(True)
-        else:
-            return(False)
-        
-    def GetResources(self):
-        return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "surfaceCut.svg"),
-                'Accel' : "", # a default shortcut (optional)
-                'MenuText': "Surface Cut",
-                'ToolTip' : "Creates a wire by cutting through surfaces" }
+        def IsActive(self):
+            """Here you can define if the command must be active or not (greyed) if certain conditions
+            are met or not. This function is optional."""
+            if FreeCAD.ActiveDocument:
+                return(True)
+            else:
+                return(False)
+            
+        def GetResources(self):
+            return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "surfaceCut.svg"),
+                    'Accel' : "", # a default shortcut (optional)
+                    'MenuText': "Surface Cut",
+                    'ToolTip' : "Creates a wire by cutting through surfaces" }
 
 
-FreeCADGui.addCommand('SurfaceCut', SurfaceCut())
+    FreeCADGui.addCommand('SurfaceCut', SurfaceCutCommand())
 

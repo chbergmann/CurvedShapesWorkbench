@@ -286,8 +286,9 @@ def makeCurvedArray(Base = None,
                     Twists = []):
     import CurvedArray
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedArray")
-    CurvedArray.CurvedArrayWorker(obj, Base, Hullcurves, Axis, Items, Position, OffsetStart, OffsetEnd, Twist, Surface, Solid, Distribution, DistributionReverse, False, Twists)
-    CurvedArray.CurvedArrayViewProvider(obj.ViewObject)
+    CurvedArray.CurvedArray(obj, Base, Hullcurves, Axis, Items, Position, OffsetStart, OffsetEnd, Twist, Surface, Solid, Distribution, DistributionReverse, False, Twists)
+    if FreeCAD.GuiUp:
+        CurvedArray.CurvedArrayViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     if not extract:     
         return obj
@@ -310,8 +311,9 @@ def makeCurvedPathArray(Base = None,
                     extract=False):
     import CurvedPathArray
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedPathArray")
-    CurvedPathArray.CurvedPathArrayWorker(obj, Base, Path, Hullcurves, Items, OffsetStart, OffsetEnd, Twist, Surface, Solid, doScale, extract)
-    CurvedPathArray.CurvedPathArrayViewProvider(obj.ViewObject)
+    CurvedPathArray.CurvedPathArray(obj, Base, Path, Hullcurves, Items, OffsetStart, OffsetEnd, Twist, Surface, Solid, doScale, extract)
+    if FreeCAD.GuiUp:
+        CurvedPathArray.CurvedPathArrayViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     return obj
 
@@ -331,8 +333,9 @@ def makeCurvedSegment(Shape1 = None,
                     DistributionReverse = False):
     import CurvedSegment
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedSegment")
-    CurvedSegment.CurvedSegmentWorker(obj, Shape1, Shape2, Hullcurves, NormalShape1, NormalShape2, Items, Surface, Solid, InterpolationPoints, Twist, TwistReverse, Distribution, DistributionReverse)
-    CurvedSegment.CurvedSegmentViewProvider(obj.ViewObject)
+    CurvedSegment.CurvedSegment(obj, Shape1, Shape2, Hullcurves, NormalShape1, NormalShape2, Items, Surface, Solid, InterpolationPoints, Twist, TwistReverse, Distribution, DistributionReverse)
+    if FreeCAD.GuiUp:
+        CurvedSegment.CurvedSegmentViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     return obj
 
@@ -348,16 +351,18 @@ def makeInterpolatedMiddle(Shape1 = None,
                     TwistReverse = False):
     import InterpolatedMiddle
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","InterpolatedMiddle")
-    InterpolatedMiddle.InterpolatedMiddleWorker(obj, Shape1, Shape2, NormalShape1, NormalShape2, Surface, Solid, InterpolationPoints, Twist, TwistReverse)
-    InterpolatedMiddle.InterpolatedMiddleViewProvider(obj.ViewObject)
+    InterpolatedMiddle.InterpolatedMiddle(obj, Shape1, Shape2, NormalShape1, NormalShape2, Surface, Solid, InterpolationPoints, Twist, TwistReverse)
+    if FreeCAD.GuiUp:
+        InterpolatedMiddle.InterpolatedMiddleViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     return obj     
 
 def cutSurfaces(Surfaces=[], Normal = Vector(1, 0, 0), Position=Vector(0,0,0), Face=False, Simplify=0):    
     import SurfaceCut                  
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","SurfaceCut")
-    SurfaceCut.SurfaceCutWorker(obj, Surfaces, Normal, Position, Face, Simplify)
-    SurfaceCut.SurfaceCutViewProvider(obj.ViewObject)
+    SurfaceCut.SurfaceCut(obj, Surfaces, Normal, Position, Face, Simplify)
+    if FreeCAD.GuiUp:
+        SurfaceCut.SurfaceCutViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     return obj
 
@@ -365,8 +370,9 @@ def cutSurfaces(Surfaces=[], Normal = Vector(1, 0, 0), Position=Vector(0,0,0), F
 def makeNotchConnector(Base, Tools, CutDirection=Vector(0,0,0), CutDepth=50.0, ShiftLength=0):
     import NotchConnector                  
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","NotchConnector")
-    NotchConnector.NotchConnectorWorker(obj, Base, Tools, CutDirection, CutDepth, ShiftLength)
-    NotchConnector.NotchConnectorViewProvider(obj.ViewObject)
+    NotchConnector.NotchConnector(obj, Base, Tools, CutDirection, CutDepth, ShiftLength)
+    if FreeCAD.GuiUp:
+        NotchConnector.NotchConnectorViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
     return obj
     

@@ -6,16 +6,17 @@ __license__ = "LGPL 2.1"
 __doc__ = "Create 3D shapes from 2D curves"
 
 import os
-import FreeCADGui
 import FreeCAD
 from FreeCAD import Vector
 import Part
 import CompoundTools.Explode
 import CurvedShapes
+if FreeCAD.GuiUp:
+    import FreeCADGui
 
 epsilon = CurvedShapes.epsilon
     
-class CurvedArrayWorker:
+class CurvedArray:
     def __init__(self, 
                  obj,
                  base = None,
@@ -207,6 +208,8 @@ class CurvedArrayWorker:
 
             self.execute(fp)
 
+#background compatibility
+CurvedArrayWorker = CurvedArray
 
 class CurvedArrayViewProvider:
     def __init__(self, vobj):
@@ -229,52 +232,51 @@ class CurvedArrayViewProvider:
     def onChanged(self, fp, prop):
         pass
 
-    if (FreeCAD.Version()[0]+'.'+FreeCAD.Version()[1]) >= '0.22':
-        def loads(self, state):
-            return None
+    def loads(self, state):
+        return None
 
-        def dumps(self):
-            return None
+    def dumps(self):
+        return None
 
-    else:
-        def __getstate__(self):
-            return None
+    def __getstate__(self):
+        return None
 
-        def __setstate__(self,state):
-            return None
-        
+    def __setstate__(self,state):
+        return None
+            
 
-class CurvedArray():
-        
-    def Activated(self):
-        FreeCADGui.doCommand("import CurvedShapes")
-        
-        selection = FreeCADGui.Selection.getSelectionEx()
-        options = ""
-        for sel in selection:
-            if sel == selection[0]:
-                options += "Base=base, "
-                FreeCADGui.doCommand("base = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
-                FreeCADGui.doCommand("hullcurves = []");
-                options += "Hullcurves=hullcurves, "
-            else:
-                FreeCADGui.doCommand("hullcurves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
-        
-        FreeCADGui.doCommand("CurvedShapes.makeCurvedArray(%sItems=4, OffsetStart=0, OffsetEnd=0, Surface=False)"%(options))
-        FreeCAD.ActiveDocument.recompute()        
+if FreeCAD.GuiUp:
+    class CurvedArrayCommand():
+            
+        def Activated(self):
+            FreeCADGui.doCommand("import CurvedShapes")
+            
+            selection = FreeCADGui.Selection.getSelectionEx()
+            options = ""
+            for sel in selection:
+                if sel == selection[0]:
+                    options += "Base=base, "
+                    FreeCADGui.doCommand("base = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
+                    FreeCADGui.doCommand("hullcurves = []");
+                    options += "Hullcurves=hullcurves, "
+                else:
+                    FreeCADGui.doCommand("hullcurves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
+            
+            FreeCADGui.doCommand("CurvedShapes.makeCurvedArray(%sItems=4, OffsetStart=0, OffsetEnd=0, Surface=False)"%(options))
+            FreeCAD.ActiveDocument.recompute()        
 
-    def IsActive(self):
-        """Here you can define if the command must be active or not (greyed) if certain conditions
-        are met or not. This function is optional."""
-        #if FreeCAD.ActiveDocument:
-        return(True)
-        #else:
-        #    return(False)
-        
-    def GetResources(self):
-        return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "curvedArray.svg"),
-                'Accel' : "", # a default shortcut (optional)
-                'MenuText': "Curved Array",
-                'ToolTip' : "Creates an array and resizes the items in the bounds of curves in the XY, XZ or YZ plane." }
+        def IsActive(self):
+            """Here you can define if the command must be active or not (greyed) if certain conditions
+            are met or not. This function is optional."""
+            #if FreeCAD.ActiveDocument:
+            return(True)
+            #else:
+            #    return(False)
+            
+        def GetResources(self):
+            return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "curvedArray.svg"),
+                    'Accel' : "", # a default shortcut (optional)
+                    'MenuText': "Curved Array",
+                    'ToolTip' : "Creates an array and resizes the items in the bounds of curves in the XY, XZ or YZ plane." }
 
-FreeCADGui.addCommand('CurvedArray', CurvedArray())
+    FreeCADGui.addCommand('CurvedArray', CurvedArrayCommand())
