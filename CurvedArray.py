@@ -32,7 +32,6 @@ class CurvedArrayWorker:
                  extract=False,
                  Twists = [],
                  LoftMaxDegree=5):
-        obj.Base = base
         CurvedShapes.addObjectProperty(obj, "App::PropertyLink",  "Base",     "CurvedArray",   "The object to make an array from").Base = base
         CurvedShapes.addObjectProperty(obj, "App::PropertyLinkList",  "Hullcurves",   "CurvedArray",   "Bounding curves").Hullcurves = hullcurves        
         CurvedShapes.addObjectProperty(obj, "App::PropertyVector", "Axis",    "CurvedArray",   "Direction axis").Axis = axis
