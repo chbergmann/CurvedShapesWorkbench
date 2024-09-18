@@ -29,19 +29,21 @@ class CurvedPathArray:
                  Surface=True, 
                  Solid = False,
                  doScale = [],
-                 extract=False):
-        obj.addProperty("App::PropertyLink",  "Base",     "CurvedPathArray",   "The object to make an array from").Base = base
-        obj.addProperty("App::PropertyLink",  "Path",     "CurvedPathArray",   "Sweep path").Path = path
-        obj.addProperty("App::PropertyLinkList",  "Hullcurves",   "CurvedPathArray",   "Bounding curves").Hullcurves = hullcurves   
-        obj.addProperty("App::PropertyQuantity", "Items", "CurvedPathArray",   "Nr. of array items").Items = items
-        obj.addProperty("App::PropertyFloat", "OffsetStart","CurvedPathArray",  "Offset of the first part").OffsetStart = OffsetStart
-        obj.addProperty("App::PropertyFloat", "OffsetEnd","CurvedPathArray",  "Offset of the last part from the end in opposite direction").OffsetEnd = OffsetEnd
-        obj.addProperty("App::PropertyFloat", "Twist","CurvedPathArray",  "Rotate in degrees around the sweep path").Twist = Twist
-        obj.addProperty("App::PropertyBool", "Surface","CurvedPathArray",  "Make a surface").Surface = Surface
-        obj.addProperty("App::PropertyBool", "Solid","CurvedPathArray",  "Make a solid").Solid = Solid
-        obj.addProperty("App::PropertyBool", "ScaleX","CurvedPathArray",  "Scale by hullcurves in X direction").ScaleX = True
-        obj.addProperty("App::PropertyBool", "ScaleY","CurvedPathArray",  "Scale by hullcurves in Y direction").ScaleY = True
-        obj.addProperty("App::PropertyBool", "ScaleZ","CurvedPathArray",  "Scale by hullcurves in Z direction").ScaleZ = True
+                 extract=False,
+                 LoftMaxDegree=5):
+        CurvedShapes.addObjectProperty(obj,"App::PropertyLink",  "Base",     "CurvedPathArray",   "The object to make an array from").Base = base
+        CurvedShapes.addObjectProperty(obj,"App::PropertyLink",  "Path",     "CurvedPathArray",   "Sweep path").Path = path
+        CurvedShapes.addObjectProperty(obj,"App::PropertyLinkList",  "Hullcurves",   "CurvedPathArray",   "Bounding curves").Hullcurves = hullcurves   
+        CurvedShapes.addObjectProperty(obj,"App::PropertyQuantity", "Items", "CurvedPathArray",   "Nr. of array items").Items = items
+        CurvedShapes.addObjectProperty(obj,"App::PropertyFloat", "OffsetStart","CurvedPathArray",  "Offset of the first part").OffsetStart = OffsetStart
+        CurvedShapes.addObjectProperty(obj,"App::PropertyFloat", "OffsetEnd","CurvedPathArray",  "Offset of the last part from the end in opposite direction").OffsetEnd = OffsetEnd
+        CurvedShapes.addObjectProperty(obj,"App::PropertyFloat", "Twist","CurvedPathArray",  "Rotate in degrees around the sweep path").Twist = Twist
+        CurvedShapes.addObjectProperty(obj,"App::PropertyBool", "Surface","CurvedPathArray",  "Make a surface").Surface = Surface
+        CurvedShapes.addObjectProperty(obj,"App::PropertyBool", "Solid","CurvedPathArray",  "Make a solid").Solid = Solid
+        CurvedShapes.addObjectProperty(obj,"App::PropertyBool", "ScaleX","CurvedPathArray",  "Scale by hullcurves in X direction").ScaleX = True
+        CurvedShapes.addObjectProperty(obj,"App::PropertyBool", "ScaleY","CurvedPathArray",  "Scale by hullcurves in Y direction").ScaleY = True
+        CurvedShapes.addObjectProperty(obj,"App::PropertyBool", "ScaleZ","CurvedPathArray",  "Scale by hullcurves in Z direction").ScaleZ = True
+        CurvedShapes.addObjectProperty(obj,"App::PropertyInteger", "LoftMaxDegree", "CurvedPathArray",   "Max Degree for Surface or Solid").LoftMaxDegree = LoftMaxDegree
         self.doScaleXYZsum = [False, False, False]
         if len(doScale) == 3:
             obj.ScaleX = doScale[0]
@@ -132,7 +134,7 @@ class CurvedPathArray:
         
         
         if (obj.Surface or obj.Solid) and obj.Items > 1:
-            obj.Shape = CurvedShapes.makeSurfaceSolid(ribs, obj.Solid)
+            obj.Shape = CurvedShapes.makeSurfaceSolid(ribs, obj.Solid, maxDegree=obj.LoftMaxDegree)
         else:
             obj.Shape = Part.makeCompound(ribs)
             
@@ -184,6 +186,7 @@ class CurvedPathArray:
         for p in proplist:
             if not hasattr(fp, p):
                 return 
+        CurvedShapes.addObjectProperty(obj,"App::PropertyInteger", "LoftMaxDegree", "CurvedPathArray",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
             
         if prop in proplist:      
             self.execute(fp)

@@ -31,27 +31,29 @@ class CurvedArray:
                  Distribution = 'linear',
                  DistributionReverse = False,
                  extract=False,
-                 Twists = []):
-        obj.addProperty("App::PropertyLink",  "Base",     "CurvedArray",   "The object to make an array from").Base = base
-        obj.addProperty("App::PropertyLinkList",  "Hullcurves",   "CurvedArray",   "Bounding curves").Hullcurves = hullcurves        
-        obj.addProperty("App::PropertyVector", "Axis",    "CurvedArray",   "Direction axis").Axis = axis
-        obj.addProperty("App::PropertyQuantity", "Items", "CurvedArray",   "Nr. of array items").Items = items
-        obj.addProperty("App::PropertyFloatList","Positions", "CurvedArray","Positions for ribs (as floats from 0.0 to 1.0) -- overrides Items").Positions = Positions
-        obj.addProperty("App::PropertyFloat", "OffsetStart","CurvedArray",  "Offset of the first part in Axis direction").OffsetStart = OffsetStart
-        obj.addProperty("App::PropertyFloat", "OffsetEnd","CurvedArray",  "Offset of the last part from the end in opposite Axis direction").OffsetEnd = OffsetEnd
-        obj.addProperty("App::PropertyFloat", "Twist","CurvedArray",  "Rotate around Axis in degrees").Twist = Twist
-        obj.addProperty("App::PropertyFloatList","Twists", "CurvedArray","Rotate around Axis in degrees for each item -- overrides Twist").Twists = Twists
-        obj.addProperty("App::PropertyBool", "Surface","CurvedArray",  "Make a surface").Surface = Surface
-        obj.addProperty("App::PropertyBool", "Solid","CurvedArray",  "Make a solid").Solid = Solid
-        obj.addProperty("App::PropertyEnumeration", "Distribution", "CurvedArray",  "Algorithm for distance between elements")
-        obj.addProperty("App::PropertyBool", "DistributionReverse", "CurvedArray",  "Reverses direction of Distribution algorithm").DistributionReverse = DistributionReverse
+                 Twists = [],
+                 LoftMaxDegree=5):
+        obj.Base = base
+        CurvedShapes.addObjectProperty(obj, "App::PropertyLink",  "Base",     "CurvedArray",   "The object to make an array from").Base = base
+        CurvedShapes.addObjectProperty(obj, "App::PropertyLinkList",  "Hullcurves",   "CurvedArray",   "Bounding curves").Hullcurves = hullcurves        
+        CurvedShapes.addObjectProperty(obj, "App::PropertyVector", "Axis",    "CurvedArray",   "Direction axis").Axis = axis
+        CurvedShapes.addObjectProperty(obj, "App::PropertyQuantity", "Items", "CurvedArray",   "Nr. of array items").Items = items
+        CurvedShapes.addObjectProperty(obj, "App::PropertyFloatList","Positions", "CurvedArray","Positions for ribs (as floats from 0.0 to 1.0) -- overrides Items").Positions = Positions
+        CurvedShapes.addObjectProperty(obj, "App::PropertyFloat", "OffsetStart","CurvedArray",  "Offset of the first part in Axis direction").OffsetStart = OffsetStart
+        CurvedShapes.addObjectProperty(obj, "App::PropertyFloat", "OffsetEnd","CurvedArray",  "Offset of the last part from the end in opposite Axis direction").OffsetEnd = OffsetEnd
+        CurvedShapes.addObjectProperty(obj, "App::PropertyFloat", "Twist","CurvedArray",  "Rotate around Axis in degrees").Twist = Twist
+        CurvedShapes.addObjectProperty(obj, "App::PropertyFloatList","Twists", "CurvedArray","Rotate around Axis in degrees for each item -- overrides Twist").Twists = Twists
+        CurvedShapes.addObjectProperty(obj, "App::PropertyBool", "Surface","CurvedArray",  "Make a surface").Surface = Surface
+        CurvedShapes.addObjectProperty(obj, "App::PropertyBool", "Solid","CurvedArray",  "Make a solid").Solid = Solid
+        CurvedShapes.addObjectProperty(obj, "App::PropertyEnumeration", "Distribution", "CurvedArray",  "Algorithm for distance between elements")
+        CurvedShapes.addObjectProperty(obj, "App::PropertyBool", "DistributionReverse", "CurvedArray",  "Reverses direction of Distribution algorithm").DistributionReverse = DistributionReverse
+        CurvedShapes.addObjectProperty(obj, "App::PropertyInteger", "LoftMaxDegree", "CurvedArray",   "Max Degree for Surface or Solid").LoftMaxDegree = LoftMaxDegree
         obj.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'asinusoidal', 'elliptic']
         obj.Distribution = Distribution
         self.extract = extract
         self.doScaleXYZ = []
         self.doScaleXYZsum = [False, False, False]
         obj.Proxy = self
-       
 
     def makeRibs(self, obj):
         pl = obj.Placement
@@ -112,7 +114,7 @@ class CurvedArray:
 
         
         if (obj.Surface or obj.Solid) and obj.Items > 1:
-            obj.Shape = CurvedShapes.makeSurfaceSolid(ribs, obj.Solid)
+            obj.Shape = CurvedShapes.makeSurfaceSolid(ribs, obj.Solid, maxDegree=obj.LoftMaxDegree)
         else:
             obj.Shape = Part.makeCompound(ribs)
             
@@ -194,6 +196,7 @@ class CurvedArray:
         for p in proplist:
             if not hasattr(fp, p):
                 return
+        CurvedShapes.addObjectProperty(fp, "App::PropertyInteger", "LoftMaxDegree", "CurvedArray",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
 
         if prop in proplist:                
             if "Positions" in prop and len(fp.Positions) != 0:

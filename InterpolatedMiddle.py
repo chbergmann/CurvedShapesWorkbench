@@ -27,16 +27,18 @@ class InterpolatedMiddle:
                  solid=False,
                  InterpolationPoints=16,
                  Twist = 0.0,
-                 TwistReverse = False):
-        fp.addProperty("App::PropertyLink",  "Shape1",     "InterpolatedMiddle",   "The first object of the segment").Shape1 = shape1
-        fp.addProperty("App::PropertyLink",  "Shape2",     "InterpolatedMiddle",   "The last object of the segment").Shape2 = shape2     
-        fp.addProperty("App::PropertyVector", "NormalShape1",    "InterpolatedMiddle",   "Direction axis of Shape1").NormalShape1 = normalShape1 
-        fp.addProperty("App::PropertyVector", "NormalShape2",    "InterpolatedMiddle",   "Direction axis of Shape2").NormalShape1 = normalShape2
-        fp.addProperty("App::PropertyBool", "makeSurface","InterpolatedMiddle",  "make a surface").makeSurface = surface
-        fp.addProperty("App::PropertyBool", "makeSolid","InterpolatedMiddle",  "make a solid").makeSolid = solid
-        fp.addProperty("App::PropertyInteger", "InterpolationPoints", "InterpolatedMiddle",   "Unequal edges will be split into this number of points").InterpolationPoints = InterpolationPoints
-        fp.addProperty("App::PropertyFloat", "Twist","InterpolatedMiddle",  "Compensates a rotation between Shape1 and Shape2").Twist = Twist
-        fp.addProperty("App::PropertyBool", "TwistReverse","InterpolatedMiddle",  "Reverses the rotation of one Shape").TwistReverse = TwistReverse
+                 TwistReverse = False,
+                 LoftMaxDegree=5):
+        CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape1",     "InterpolatedMiddle",   "The first object of the segment").Shape1 = shape1
+        CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape2",     "InterpolatedMiddle",   "The last object of the segment").Shape2 = shape2     
+        CurvedShapes.addObjectProperty(fp,"App::PropertyVector", "NormalShape1",    "InterpolatedMiddle",   "Direction axis of Shape1").NormalShape1 = normalShape1 
+        CurvedShapes.addObjectProperty(fp,"App::PropertyVector", "NormalShape2",    "InterpolatedMiddle",   "Direction axis of Shape2").NormalShape1 = normalShape2
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "makeSurface","InterpolatedMiddle",  "make a surface").makeSurface = surface
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "makeSolid","InterpolatedMiddle",  "make a solid").makeSolid = solid
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "InterpolationPoints", "InterpolatedMiddle",   "Unequal edges will be split into this number of points").InterpolationPoints = InterpolationPoints
+        CurvedShapes.addObjectProperty(fp,"App::PropertyFloat", "Twist","InterpolatedMiddle",  "Compensates a rotation between Shape1 and Shape2").Twist = Twist
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "TwistReverse","InterpolatedMiddle",  "Reverses the rotation of one Shape").TwistReverse = TwistReverse
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "InterpolatedMiddle",   "Max Degree for Surface or Solid").LoftMaxDegree = LoftMaxDegree
         self.update = True
         fp.Proxy = self
  
@@ -71,6 +73,7 @@ class InterpolatedMiddle:
         for p in proplist:
             if not hasattr(fp, p):
                 return
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "InterpolatedMiddle",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents)
          
         if prop in proplist:  
             self.execute(fp)
@@ -99,9 +102,9 @@ class InterpolatedMiddle:
             
         if (fp.makeSurface or fp.makeSolid) and len(ribs) == 1:
             rib1 = [fp.Shape1.Shape, ribs[0]]
-            shape1 = CurvedShapes.makeSurfaceSolid(rib1, False)
+            shape1 = CurvedShapes.makeSurfaceSolid(rib1, False, maxDegree=fp.LoftMaxDegree)
             rib2 = [ribs[0], fp.Shape2.Shape]
-            shape2 = CurvedShapes.makeSurfaceSolid(rib2, False)
+            shape2 = CurvedShapes.makeSurfaceSolid(rib2, False, maxDegree=fp.LoftMaxDegree)
             
             shape = Part.makeCompound([shape1, shape2])
             
