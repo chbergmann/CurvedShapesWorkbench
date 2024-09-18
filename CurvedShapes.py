@@ -8,6 +8,20 @@ import CompoundTools.Explode
 
 epsilon = 1e-7
 
+
+def addObjectProperty(obj, ptype, pname, *args, init_val=None):
+    """
+    Adds a property to the object if it does not exist yet - important for upgrading CAD files from older versions of the plugin
+    """
+    added = False
+    if pname not in obj.PropertiesList:
+        added = obj.addProperty(ptype, pname, *args)
+    if init_val is None:
+        return obj
+    if added:
+        setattr(obj, pname, init_val)
+    return obj
+
 def get_module_path():
     """ Returns the current module path.
     Determines where this file is running from, so works regardless of whether
@@ -161,7 +175,7 @@ def scaleByBoundbox(shape, boundbox, doScaleXYZ, copy=True):
     return dolly
     
             
-def makeSurfaceSolid(ribs, solid):
+def makeSurfaceSolid(ribs, solid, maxDegree=5):
     surfaces = []
 
     wiribs = []
@@ -175,8 +189,8 @@ def makeSurfaceSolid(ribs, solid):
                 FreeCAD.Console.PrintError("Cannot make a wire. Creation of surface is not possible !\n")
                 return
           
-    try: 
-        loft = Part.makeLoft(wiribs)
+    try:
+        loft = Part.makeLoft(wiribs,False,False,False,maxDegree)
         surfaces += loft.Faces
     except Exception as ex:      
         FreeCAD.Console.PrintError("Creation of surface is not possible !\n")

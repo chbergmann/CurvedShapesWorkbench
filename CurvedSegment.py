@@ -30,20 +30,22 @@ class CurvedSegmentWorker:
                  Twist = 0.0,
                  TwistReverse = False,
                  Distribution = 'linear',
-                 DistributionReverse = False):
-        fp.addProperty("App::PropertyLink",  "Shape1",     "CurvedSegment",   "The first object of the segment").Shape1 = shape1
-        fp.addProperty("App::PropertyLink",  "Shape2",     "CurvedSegment",   "The last object of the segment").Shape2 = shape2
-        fp.addProperty("App::PropertyLinkList",  "Hullcurves",   "CurvedSegment",   "Bounding curves").Hullcurves = hullcurves        
-        fp.addProperty("App::PropertyVector", "NormalShape1",    "CurvedSegment",   "Direction axis of Shape1").NormalShape1 = normalShape1 
-        fp.addProperty("App::PropertyVector", "NormalShape2",    "CurvedSegment",   "Direction axis of Shape2").NormalShape1 = normalShape2
-        fp.addProperty("App::PropertyInteger", "Items", "CurvedSegment",   "Nr. of items between the segments").Items = items
-        fp.addProperty("App::PropertyBool", "makeSurface","CurvedSegment",  "Make a surface").makeSurface = surface
-        fp.addProperty("App::PropertyBool", "makeSolid","CurvedSegment",  "Make a solid").makeSolid = solid
-        fp.addProperty("App::PropertyInteger", "InterpolationPoints", "CurvedSegment",   "Unequal edges will be split into this number of points").InterpolationPoints = InterpolationPoints
-        fp.addProperty("App::PropertyFloat", "Twist","CurvedSegment",  "Compensates a rotation between Shape1 and Shape2").Twist = Twist
-        fp.addProperty("App::PropertyBool", "TwistReverse","CurvedSegment",  "Reverses the rotation of one Shape").TwistReverse = TwistReverse
-        fp.addProperty("App::PropertyEnumeration", "Distribution", "CurvedSegment",  "Algorithm for distance between elements")
-        fp.addProperty("App::PropertyBool", "DistributionReverse", "CurvedSegment",  "Reverses direction of Distribution algorithm").DistributionReverse = DistributionReverse
+                 DistributionReverse = False,
+                 LoftMaxDegree=5):
+        CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape1",     "CurvedSegment",   "The first object of the segment").Shape1 = shape1
+        CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape2",     "CurvedSegment",   "The last object of the segment").Shape2 = shape2
+        CurvedShapes.addObjectProperty(fp,"App::PropertyLinkList",  "Hullcurves",   "CurvedSegment",   "Bounding curves").Hullcurves = hullcurves        
+        CurvedShapes.addObjectProperty(fp,"App::PropertyVector", "NormalShape1",    "CurvedSegment",   "Direction axis of Shape1").NormalShape1 = normalShape1 
+        CurvedShapes.addObjectProperty(fp,"App::PropertyVector", "NormalShape2",    "CurvedSegment",   "Direction axis of Shape2").NormalShape1 = normalShape2
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "Items", "CurvedSegment",   "Nr. of items between the segments").Items = items
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "makeSurface","CurvedSegment",  "Make a surface").makeSurface = surface
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "makeSolid","CurvedSegment",  "Make a solid").makeSolid = solid
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "InterpolationPoints", "CurvedSegment",   "Unequal edges will be split into this number of points").InterpolationPoints = InterpolationPoints
+        CurvedShapes.addObjectProperty(fp,"App::PropertyFloat", "Twist","CurvedSegment",  "Compensates a rotation between Shape1 and Shape2").Twist = Twist
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "TwistReverse","CurvedSegment",  "Reverses the rotation of one Shape").TwistReverse = TwistReverse
+        CurvedShapes.addObjectProperty(fp,"App::PropertyEnumeration", "Distribution", "CurvedSegment",  "Algorithm for distance between elements")
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "DistributionReverse", "CurvedSegment",  "Reverses direction of Distribution algorithm").DistributionReverse = DistributionReverse
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid").LoftMaxDegree = LoftMaxDegree
         fp.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'asinusoidal', 'elliptic']
         fp.Distribution = Distribution
         self.doScaleXYZ = []
@@ -103,6 +105,7 @@ class CurvedSegmentWorker:
         for p in proplist:
             if not hasattr(fp, p):
                 return
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
         if prop in proplist:      
             self.execute(fp)
             
@@ -133,7 +136,7 @@ class CurvedSegmentWorker:
             self.rescaleRibs(fp, ribs)
             
         if fp.makeSurface or fp.makeSolid:
-            fp.Shape = CurvedShapes.makeSurfaceSolid(ribs, fp.makeSolid)
+            fp.Shape = CurvedShapes.makeSurfaceSolid(ribs, fp.makeSolid, maxDegree=fp.LoftMaxDegree)
         else:
             fp.Shape = Part.makeCompound(ribs)          
         
