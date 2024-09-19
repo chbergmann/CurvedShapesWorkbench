@@ -33,14 +33,10 @@ class NotchConnector:
         
     def onChanged(self, fp, prop):
         proplist = ["Base", "Tools", "CutDirection", "ShiftLength"]
-        if prop in proplist:      
-            self.execute(fp)
             
         if prop == "CutDepth" and fp.CutDirection != Vector(0.0,0.0,0.0):
             cdep = 100 - abs(fp.CutDepth)
             fp.CutDirection = fp.CutDirection.normalize() * cdep / 50
-            self.execute(fp)
-            
             
     def execute(self, fp):
         if not fp.Base or not fp.Tools:

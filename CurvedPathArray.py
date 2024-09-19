@@ -188,9 +188,6 @@ class CurvedPathArray:
                 return 
         CurvedShapes.addObjectProperty(obj,"App::PropertyInteger", "LoftMaxDegree", "CurvedPathArray",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
             
-        if prop in proplist:      
-            self.execute(fp)
-
 #background compatibility
 CurvedPathArrayWorker = CurvedPathArray
 

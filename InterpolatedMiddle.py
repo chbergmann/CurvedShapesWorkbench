@@ -75,10 +75,6 @@ class InterpolatedMiddle:
                 return
         CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "InterpolatedMiddle",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents)
          
-        if prop in proplist:  
-            self.execute(fp)
-                      
-            
     def makeRibs(self, fp):
         interpolate = False
         if len(fp.Shape1.Shape.Edges) != len(fp.Shape2.Shape.Edges):

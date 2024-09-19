@@ -107,9 +107,6 @@ class CurvedSegment:
             if not hasattr(fp, p):
                 return
         CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
-        if prop in proplist:      
-            self.execute(fp)
-            
             
     def makeRibs(self, fp):
         interpolate = False

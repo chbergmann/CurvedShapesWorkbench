@@ -37,8 +37,6 @@ class SurfaceCut:
      
     def onChanged(self, fp, prop):
         props = ["Surfaces", "Position", "Normal", "Simplify"]
-        if prop in props:
-            self.execute(fp)  
             
         if prop == "Face":
             if fp.Face == True:
