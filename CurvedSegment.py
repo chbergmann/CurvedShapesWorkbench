@@ -103,9 +103,6 @@ class CurvedSegmentWorker:
         for p in proplist:
             if not hasattr(fp, p):
                 return
-        if prop in proplist:      
-            self.execute(fp)
-            
             
     def makeRibs(self, fp):
         interpolate = False

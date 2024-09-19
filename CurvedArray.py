@@ -205,8 +205,6 @@ class CurvedArrayWorker:
                 if outOfBounds:
                     FreeCAD.Console.PrintWarning("Some positions are out of bounds, should all be between 0.0 and 1.0, inclusive\n")
 
-            self.execute(fp)
-
 
 class CurvedArrayViewProvider:
     def __init__(self, vobj):

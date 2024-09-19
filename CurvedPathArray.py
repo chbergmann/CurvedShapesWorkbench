@@ -184,9 +184,6 @@ class CurvedPathArrayWorker:
             if not hasattr(fp, p):
                 return 
             
-        if prop in proplist:      
-            self.execute(fp)
-
 
 class CurvedPathArrayViewProvider:
     def __init__(self, vobj):
