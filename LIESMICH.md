@@ -42,6 +42,7 @@ Zuerst das Basisobjekt auswählen, danach die Hüllkurven. Dann ein Curved Array
 - Solid: Einen Festkörper erstellen (funktioniert nur, wenn Base eine geschlossene Form ist)
 - Distribution: Algorithmus zur Berechnung der Distanz zwischen den Elementen. Default ist 'linear'. Weitere Möglichkeiten: parabolic (x²), x³, sinusoidal, asinusoidal, elliptic
 - DistributionReverse: Kehrt die Richtung des Distrubution Algorithmus um
+- LoftMaxDegree: Gradzahl für die Erstellung von Oberflächen und Festkörpern. 
 
 Distribution Linear  
 ![Linear](Examples/CurvedArrayLinear.jpg)  
@@ -95,6 +96,7 @@ Zuerst das Basisobjekt auswählen, danach den Pfad, und zum Schluss die Hüllkur
 - ScaleX: Hullcurves können in X Richtung skalieren
 - ScaleY: Hullcurves können in Y Richtung skalieren
 - ScaleZ: Hullcurves können in Z Richtung skalieren
+- LoftMaxDegree: Gradzahl für die Erstellung von Oberflächen und Festkörpern. 
 
 Wenn Hullcurves verwendet werden und die Objekte nicht rechtwinklig zum Path angeordnet sind, muss evtl. die Skaliereng in eine Raumrichtung ausgeschaltet werden, in dem ScaleX, ScaleY oder ScaleZ auf false gesetzt wird.
 
@@ -121,6 +123,7 @@ Zuerst zwei 2D Kurven auswählen, dann optional noch eine oder mehrere Hüllkurv
 - TwistReverse: wenn True, wird die Drehrichtung geändert
 - Distribution: Algorithmus zur Berechnung der Distanz zwischen den Elementen. Default ist 'linear'. Weitere Möglichkeiten: parabolic (x²), x³, sinusoidal, elliptic
 - DistributionReverse: Kehrt die Richtung des Distrubution Algorithmus um
+- LoftMaxDegree: Gradzahl für die Erstellung von Oberflächen und Festkörpern. 
 
 ### ![](./Resources/icons/CornerShape.svg) Interpolated Middle
 Interpoliert eine 2D Kurve in der Mitte zwischen zwei 2D Kurven. Es kann ein Verbinder mit einem Knick zwischen den den Kurven generiert werden.
@@ -140,6 +143,7 @@ Interpoliert eine 2D Kurve in der Mitte zwischen zwei 2D Kurven. Es kann ein Ver
 - TwistReverse: wenn True, wird die Drehrichtung geändert
 - Distribution: Algorithmus zur Berechnung der Distanz zwischen den Elementen. Default ist 'linear'. Weitere Möglichkeiten: parabolic (x²), x³, sinusoidal, elliptic
 - DistributionReverse: Kehrt die Richtung des Distrubution Algorithmus um
+- LoftMaxDegree: Gradzahl für die Erstellung von Oberflächen und Festkörpern. 
   
   
 ### ![](./Resources/icons/surfaceCut.svg) Surface Cut

@@ -69,12 +69,10 @@ class InterpolatedMiddle:
         
         
     def onChanged(self, fp, prop):
-        proplist = ["Shape1", "Shape2", "NormalShape1", "NormalShape2", "makeSurface", "makeSolid", "InterpolationPoints", "Twist", "TwistReverse"]
-        for p in proplist:
-            if not hasattr(fp, p):
-                return
-        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "InterpolatedMiddle",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents)
-         
+        if not hasattr(fp, 'LoftMaxDegree'):
+            CurvedShapes.addObjectProperty(fp, "App::PropertyInteger", "LoftMaxDegree", "InterpolatedMiddle",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
+
+
     def makeRibs(self, fp):
         interpolate = False
         if len(fp.Shape1.Shape.Edges) != len(fp.Shape2.Shape.Edges):
@@ -176,11 +174,15 @@ if FreeCAD.GuiUp:
             FreeCADGui.doCommand("import CurvedShapes")
             
             selection = FreeCADGui.Selection.getSelectionEx()
-            for sel in selection:
-                if sel == selection[0]:
-                    FreeCADGui.doCommand("shape1 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
-                elif sel == selection[1]:
-                    FreeCADGui.doCommand("shape2 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[1].ObjectName))
+            if len(selection) < 1:
+                FreeCADGui.doCommand('shape1 = None')
+            else:
+                FreeCADGui.doCommand("shape1 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
+            
+            if len(selection) < 2:
+                FreeCADGui.doCommand('shape2 = None')
+            else:
+                FreeCADGui.doCommand("shape2 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[1].ObjectName))
             
             FreeCADGui.doCommand("CurvedShapes.makeInterpolatedMiddle(shape1, shape2, Surface=True, Solid=False)")
             FreeCAD.ActiveDocument.recompute()        

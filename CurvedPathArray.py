@@ -182,11 +182,8 @@ class CurvedPathArray:
             return
         
     def onChanged(self, fp, prop):
-        proplist = ["Base", "Hullcurves", "Path", "Items", "OffsetStart", "OffsetEnd", "Twist", "Surface", "Solid", "ScaleX", "ScaleY", "ScaleZ"]
-        for p in proplist:
-            if not hasattr(fp, p):
-                return 
-        CurvedShapes.addObjectProperty(obj,"App::PropertyInteger", "LoftMaxDegree", "CurvedPathArray",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
+        if not hasattr(fp, 'LoftMaxDegree'):
+            CurvedShapes.addObjectProperty(fp, "App::PropertyInteger", "LoftMaxDegree", "CurvedPathArray",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
             
 #background compatibility
 CurvedPathArrayWorker = CurvedPathArray

@@ -81,7 +81,7 @@ def draw_S800():
     MiddleProfile = createSketch_MiddleProfile(doc)
     MiddleProfile.ViewObject.Visibility = False
     
-    MiddlePart1 = CurvedShapes.makeCurvedSegment(SplineFoilMiddle, SplineFoilWingInside, [MiddleProfile], Items=4, Surface=True, Solid=True, Distribution='elliptic', DistributionReverse=True)
+    MiddlePart1 = CurvedShapes.makeCurvedSegment(SplineFoilMiddle, SplineFoilWingInside, [MiddleProfile], Items=8, Surface=True, Solid=True, Distribution='elliptic', DistributionReverse=True, LoftMaxDegree=3)
     MiddlePart1.Label = "MiddlePart1"
     MiddlePart1.ViewObject.Visibility = False
     
@@ -104,8 +104,8 @@ def draw_S800():
     doc.recompute()
     
     sketchCutout = doc.addObject('Sketcher::SketchObject', 'sketchCutout')
-    sketchCutout.addGeometry(Part.LineSegment(Vector (0.0, 400.0, 0.0), Vector (274.99999999950205, 400.0, 0.0)), False)
-    sketchCutout.addGeometry(Part.LineSegment(Vector (274.99999999950205, 400.0, 0.0), Vector (75.0, 200.0, 0.0)), False)
+    sketchCutout.addGeometry(Part.LineSegment(Vector (0.0, 400.0, 0.0), Vector (275, 400.0, 0.0)), False)
+    sketchCutout.addGeometry(Part.LineSegment(Vector (275, 400.0, 0.0), Vector (75.0, 200.0, 0.0)), False)
     sketchCutout.addGeometry(Part.LineSegment(Vector (75.0, 200.0, 0.0), Vector (0.0, 200.0, 0.0)), False)
     sketchCutout.addGeometry(Part.LineSegment(Vector (0.0, 200.0, 0.0), Vector (0.0, 400.0, 0.0)), False)
     sketchCutout.addConstraint(Sketcher.Constraint('PointOnObject', 0, 1, -2))
@@ -121,7 +121,7 @@ def draw_S800():
     sketchCutout.addConstraint(Sketcher.Constraint('DistanceY', 2, 2, midLength))
     sketchCutout.addConstraint(Sketcher.Constraint('DistanceY', 3, 1, 3, 2, midLength))
     sketchCutout.ViewObject.Visibility = False
-    
+    sketchCutout.Placement.Base.x = -1
     
     cutout = doc.addObject('Part::Extrusion', 'cutout')
     cutout.Base = sketchCutout
@@ -164,9 +164,9 @@ def draw_S800():
         obj.ViewObject.hide()
     
     WingAndElevon = CompoundTools.Explode.explodeCompound(WingSlice)
-    Wing1 = WingAndElevon[0].Group[0]
+    Wing1 = WingAndElevon[0].Group[1]
     Wing1.Label = "Wing1"
-    ElevonLeft = WingAndElevon[0].Group[1]
+    ElevonLeft = WingAndElevon[0].Group[0]
     ElevonLeft.Label = "ElevonLeft"
     
     

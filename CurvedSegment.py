@@ -101,12 +101,10 @@ class CurvedSegment:
         self.update = True
         
         
-    def onChanged(self, fp, prop):
-        proplist = ["Shape1", "Shape2", "Hullcurves", "NormalShape1", "NormalShape2", "Items", "makeSurface", "makeSolid", "InterpolationPoints", "Twist", "TwistReverse", "Distribution", "DistributionReverse"]
-        for p in proplist:
-            if not hasattr(fp, p):
-                return
-        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
+    def onChanged(self, fp, prop):   
+        if not hasattr(fp, 'LoftMaxDegree'):
+            CurvedShapes.addObjectProperty(fp, "App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
+
             
     def makeRibs(self, fp):
         interpolate = False

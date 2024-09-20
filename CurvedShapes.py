@@ -297,10 +297,11 @@ def makeCurvedArray(Base = None,
                     Distribution = 'linear',
                     DistributionReverse = False,
                     extract=False,
-                    Twists = []):
+                    Twists = [],
+                    LoftMaxDegree=5):
     import CurvedArray
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedArray")
-    CurvedArray.CurvedArray(obj, Base, Hullcurves, Axis, Items, Position, OffsetStart, OffsetEnd, Twist, Surface, Solid, Distribution, DistributionReverse, False, Twists)
+    CurvedArray.CurvedArray(obj, Base, Hullcurves, Axis, Items, Position, OffsetStart, OffsetEnd, Twist, Surface, Solid, Distribution, DistributionReverse, False, Twists, LoftMaxDegree)
     if FreeCAD.GuiUp:
         CurvedArray.CurvedArrayViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
@@ -322,10 +323,11 @@ def makeCurvedPathArray(Base = None,
                     Surface=False, 
                     Solid=False, 
                     doScale = [True, True, True],
-                    extract=False):
+                    extract=False,
+                    LoftMaxDegree=5):
     import CurvedPathArray
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedPathArray")
-    CurvedPathArray.CurvedPathArray(obj, Base, Path, Hullcurves, Items, OffsetStart, OffsetEnd, Twist, Surface, Solid, doScale, extract)
+    CurvedPathArray.CurvedPathArray(obj, Base, Path, Hullcurves, Items, OffsetStart, OffsetEnd, Twist, Surface, Solid, doScale, extract, LoftMaxDegree)
     if FreeCAD.GuiUp:
         CurvedPathArray.CurvedPathArrayViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
@@ -344,10 +346,11 @@ def makeCurvedSegment(Shape1 = None,
                     Twist = 0.0,
                     TwistReverse = False,
                     Distribution = 'linear',
-                    DistributionReverse = False):
+                    DistributionReverse = False,
+                    LoftMaxDegree=5):
     import CurvedSegment
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedSegment")
-    CurvedSegment.CurvedSegment(obj, Shape1, Shape2, Hullcurves, NormalShape1, NormalShape2, Items, Surface, Solid, InterpolationPoints, Twist, TwistReverse, Distribution, DistributionReverse)
+    CurvedSegment.CurvedSegment(obj, Shape1, Shape2, Hullcurves, NormalShape1, NormalShape2, Items, Surface, Solid, InterpolationPoints, Twist, TwistReverse, Distribution, DistributionReverse, LoftMaxDegree)
     if FreeCAD.GuiUp:
         CurvedSegment.CurvedSegmentViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()
@@ -362,10 +365,11 @@ def makeInterpolatedMiddle(Shape1 = None,
                     Solid=False,
                     InterpolationPoints=16,
                     Twist = 0.0,
-                    TwistReverse = False):
+                    TwistReverse = False,
+                    LoftMaxDegree=5):
     import InterpolatedMiddle
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","InterpolatedMiddle")
-    InterpolatedMiddle.InterpolatedMiddle(obj, Shape1, Shape2, NormalShape1, NormalShape2, Surface, Solid, InterpolationPoints, Twist, TwistReverse)
+    InterpolatedMiddle.InterpolatedMiddle(obj, Shape1, Shape2, NormalShape1, NormalShape2, Surface, Solid, InterpolationPoints, Twist, TwistReverse, LoftMaxDegree)
     if FreeCAD.GuiUp:
         InterpolatedMiddle.InterpolatedMiddleViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()

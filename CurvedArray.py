@@ -190,23 +190,19 @@ class CurvedArray:
             self.makeRibs(prop)
             return
         
-    def onChanged(self, fp, prop):
-        proplist = ["Base", "Hullcurves", "Axis", "Items", "Positions", "OffsetStart", "OffsetEnd", "Twist", "Surface", "Solid", "Distribution", "DistributionReverse"]
-        for p in proplist:
-            if not hasattr(fp, p):
-                return
-        CurvedShapes.addObjectProperty(fp, "App::PropertyInteger", "LoftMaxDegree", "CurvedArray",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
-
-        if prop in proplist:                
-            if "Positions" in prop and len(fp.Positions) != 0:
-                setattr(fp,"Items",str(len(fp.Positions)))
-                outOfBounds = False
-                for p in fp.Positions:
-                    if (p < 0.0 or p > 1.0):
-                        outOfBounds = True
-                        break
-                if outOfBounds:
-                    FreeCAD.Console.PrintWarning("Some positions are out of bounds, should all be between 0.0 and 1.0, inclusive\n")
+    def onChanged(self, fp, prop):            
+        if not hasattr(fp, 'LoftMaxDegree'):
+            CurvedShapes.addObjectProperty(fp, "App::PropertyInteger", "LoftMaxDegree", "CurvedPathArray",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
+           
+        if "Positions" in prop and len(fp.Positions) != 0:
+            setattr(fp,"Items",str(len(fp.Positions)))
+            outOfBounds = False
+            for p in fp.Positions:
+                if (p < 0.0 or p > 1.0):
+                    outOfBounds = True
+                    break
+            if outOfBounds:
+                FreeCAD.Console.PrintWarning("Some positions are out of bounds, should all be between 0.0 and 1.0, inclusive\n")
 
 #background compatibility
 CurvedArrayWorker = CurvedArray
