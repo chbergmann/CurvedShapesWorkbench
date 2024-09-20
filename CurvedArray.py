@@ -192,7 +192,7 @@ class CurvedArray:
         
     def onChanged(self, fp, prop):            
         if not hasattr(fp, 'LoftMaxDegree'):
-            CurvedShapes.addObjectProperty(fp, "App::PropertyInteger", "LoftMaxDegree", "CurvedPathArray",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
+            CurvedShapes.addObjectProperty(fp, "App::PropertyInteger", "LoftMaxDegree", "CurvedArray",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
            
         if "Positions" in prop and len(fp.Positions) != 0:
             setattr(fp,"Items",str(len(fp.Positions)))
