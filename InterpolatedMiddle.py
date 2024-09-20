@@ -6,16 +6,17 @@ __license__ = "LGPL 2.1"
 __doc__ = "Interpolates a 2D shape into the middle between two 2D curves"
 
 import os
-import FreeCADGui
 import FreeCAD
 from FreeCAD import Vector
 import Part
 import CurvedShapes
 import CurvedSegment
+if FreeCAD.GuiUp:
+    import FreeCADGui
 
 epsilon = CurvedShapes.epsilon
     
-class InterpolatedMiddleWorker:
+class InterpolatedMiddle:
     def __init__(self, 
                  fp,    # FeaturePython
                  shape1 = None, 
@@ -26,16 +27,18 @@ class InterpolatedMiddleWorker:
                  solid=False,
                  InterpolationPoints=16,
                  Twist = 0.0,
-                 TwistReverse = False):
-        fp.addProperty("App::PropertyLink",  "Shape1",     "InterpolatedMiddle",   "The first object of the segment").Shape1 = shape1
-        fp.addProperty("App::PropertyLink",  "Shape2",     "InterpolatedMiddle",   "The last object of the segment").Shape2 = shape2     
-        fp.addProperty("App::PropertyVector", "NormalShape1",    "InterpolatedMiddle",   "Direction axis of Shape1").NormalShape1 = normalShape1 
-        fp.addProperty("App::PropertyVector", "NormalShape2",    "InterpolatedMiddle",   "Direction axis of Shape2").NormalShape1 = normalShape2
-        fp.addProperty("App::PropertyBool", "makeSurface","InterpolatedMiddle",  "make a surface").makeSurface = surface
-        fp.addProperty("App::PropertyBool", "makeSolid","InterpolatedMiddle",  "make a solid").makeSolid = solid
-        fp.addProperty("App::PropertyInteger", "InterpolationPoints", "InterpolatedMiddle",   "Unequal edges will be split into this number of points").InterpolationPoints = InterpolationPoints
-        fp.addProperty("App::PropertyFloat", "Twist","InterpolatedMiddle",  "Compensates a rotation between Shape1 and Shape2").Twist = Twist
-        fp.addProperty("App::PropertyBool", "TwistReverse","InterpolatedMiddle",  "Reverses the rotation of one Shape").TwistReverse = TwistReverse
+                 TwistReverse = False,
+                 LoftMaxDegree=5):
+        CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape1",     "InterpolatedMiddle",   "The first object of the segment").Shape1 = shape1
+        CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape2",     "InterpolatedMiddle",   "The last object of the segment").Shape2 = shape2     
+        CurvedShapes.addObjectProperty(fp,"App::PropertyVector", "NormalShape1",    "InterpolatedMiddle",   "Direction axis of Shape1").NormalShape1 = normalShape1 
+        CurvedShapes.addObjectProperty(fp,"App::PropertyVector", "NormalShape2",    "InterpolatedMiddle",   "Direction axis of Shape2").NormalShape1 = normalShape2
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "makeSurface","InterpolatedMiddle",  "make a surface").makeSurface = surface
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "makeSolid","InterpolatedMiddle",  "make a solid").makeSolid = solid
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "InterpolationPoints", "InterpolatedMiddle",   "Unequal edges will be split into this number of points").InterpolationPoints = InterpolationPoints
+        CurvedShapes.addObjectProperty(fp,"App::PropertyFloat", "Twist","InterpolatedMiddle",  "Compensates a rotation between Shape1 and Shape2").Twist = Twist
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "TwistReverse","InterpolatedMiddle",  "Reverses the rotation of one Shape").TwistReverse = TwistReverse
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "InterpolatedMiddle",   "Max Degree for Surface or Solid").LoftMaxDegree = LoftMaxDegree
         self.update = True
         fp.Proxy = self
  
@@ -70,11 +73,8 @@ class InterpolatedMiddleWorker:
         for p in proplist:
             if not hasattr(fp, p):
                 return
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "InterpolatedMiddle",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents)
          
-        if prop in proplist:  
-            self.execute(fp)
-                      
-            
     def makeRibs(self, fp):
         interpolate = False
         if len(fp.Shape1.Shape.Edges) != len(fp.Shape2.Shape.Edges):
@@ -98,9 +98,9 @@ class InterpolatedMiddleWorker:
             
         if (fp.makeSurface or fp.makeSolid) and len(ribs) == 1:
             rib1 = [fp.Shape1.Shape, ribs[0]]
-            shape1 = CurvedShapes.makeSurfaceSolid(rib1, False)
+            shape1 = CurvedShapes.makeSurfaceSolid(rib1, False, maxDegree=fp.LoftMaxDegree)
             rib2 = [ribs[0], fp.Shape2.Shape]
-            shape2 = CurvedShapes.makeSurfaceSolid(rib2, False)
+            shape2 = CurvedShapes.makeSurfaceSolid(rib2, False, maxDegree=fp.LoftMaxDegree)
             
             shape = Part.makeCompound([shape1, shape2])
             
@@ -131,6 +131,8 @@ class InterpolatedMiddleWorker:
         if shape:
             fp.Shape = shape
                             
+#background compatibility
+InterpolatedMiddleWorker = InterpolatedMiddle
 
 class InterpolatedMiddleViewProvider:
     def __init__(self, vfp):
@@ -153,48 +155,48 @@ class InterpolatedMiddleViewProvider:
     def onChanged(self, fp, prop):
         pass
         
-    if (FreeCAD.Version()[0]+'.'+FreeCAD.Version()[1]) >= '0.22':
-        def loads(self, state):
-            return None
+    def loads(self, state):
+        return None
 
-        def dumps(self):
-            return None
+    def dumps(self):
+        return None
 
-    else:
-        def __getstate__(self):
-            return None
+    def __getstate__(self):
+        return None
 
-        def __setstate__(self,state):
-            return None
-        
+    def __setstate__(self,state):
+        return None
 
-class InterpolatedMiddle():
-        
-    def Activated(self):
-        FreeCADGui.doCommand("import CurvedShapes")
-        
-        selection = FreeCADGui.Selection.getSelectionEx()
-        for sel in selection:
-            if sel == selection[0]:
-                FreeCADGui.doCommand("shape1 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
-            elif sel == selection[1]:
-                FreeCADGui.doCommand("shape2 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[1].ObjectName))
-        
-        FreeCADGui.doCommand("CurvedShapes.makeInterpolatedMiddle(shape1, shape2, Surface=True, Solid=False)")
-        FreeCAD.ActiveDocument.recompute()        
 
-    def IsActive(self):
-        """Here you can define if the command must be active or not (greyed) if certain conditions
-        are met or not. This function is optional."""
-        #if FreeCAD.ActiveDocument:
-        return(True)
-        #else:
-        #    return(False)
-        
-    def GetResources(self):
-        return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "CornerShape.svg"),
-                'Accel' : "", # a default shortcut (optional)
-                'MenuText': "Interpolated Middle",
-                'ToolTip' : __doc__ }
+if FreeCAD.GuiUp:
 
-FreeCADGui.addCommand('InterpolatedMiddle', InterpolatedMiddle())
+    class InterpolatedMiddleCommand():
+            
+        def Activated(self):
+            FreeCADGui.doCommand("import CurvedShapes")
+            
+            selection = FreeCADGui.Selection.getSelectionEx()
+            for sel in selection:
+                if sel == selection[0]:
+                    FreeCADGui.doCommand("shape1 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
+                elif sel == selection[1]:
+                    FreeCADGui.doCommand("shape2 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[1].ObjectName))
+            
+            FreeCADGui.doCommand("CurvedShapes.makeInterpolatedMiddle(shape1, shape2, Surface=True, Solid=False)")
+            FreeCAD.ActiveDocument.recompute()        
+
+        def IsActive(self):
+            """Here you can define if the command must be active or not (greyed) if certain conditions
+            are met or not. This function is optional."""
+            #if FreeCAD.ActiveDocument:
+            return(True)
+            #else:
+            #    return(False)
+            
+        def GetResources(self):
+            return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "CornerShape.svg"),
+                    'Accel' : "", # a default shortcut (optional)
+                    'MenuText': "Interpolated Middle",
+                    'ToolTip' : __doc__ }
+
+    FreeCADGui.addCommand('InterpolatedMiddle', InterpolatedMiddleCommand())

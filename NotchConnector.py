@@ -6,15 +6,16 @@ __license__ = "LGPL 2.1"
 __doc__ = "Cuts notches into an object to make it connectable other objects with a notch"
 
 import os
-import FreeCADGui
 import FreeCAD
 from FreeCAD import Vector
 import Part
 import CurvedShapes
+if FreeCAD.GuiUp:
+    import FreeCADGui
 
 epsilon = 1e-6
     
-class NotchConnectorWorker:
+class NotchConnector:
     def __init__(self, 
                  fp,    # FeaturePython
                  Base,
@@ -32,14 +33,10 @@ class NotchConnectorWorker:
         
     def onChanged(self, fp, prop):
         proplist = ["Base", "Tools", "CutDirection", "ShiftLength"]
-        if prop in proplist:      
-            self.execute(fp)
             
         if prop == "CutDepth" and fp.CutDirection != Vector(0.0,0.0,0.0):
             cdep = 100 - abs(fp.CutDepth)
             fp.CutDirection = fp.CutDirection.normalize() * cdep / 50
-            self.execute(fp)
-            
             
     def execute(self, fp):
         if not fp.Base or not fp.Tools:
@@ -164,6 +161,8 @@ class NotchConnectorWorker:
                 
         fp.Shape = Part.makeCompound(shapes)
         
+#background compatibility
+NotchConnectorWorker = NotchConnector
         
 class NotchConnectorViewProvider:
     def __init__(self, vobj):
@@ -189,57 +188,56 @@ class NotchConnectorViewProvider:
     def onChanged(self, fp, prop):
         pass
         
-    if (FreeCAD.Version()[0]+'.'+FreeCAD.Version()[1]) >= '0.22':
-        def loads(self, state):
-            return None
+    def loads(self, state):
+        return None
 
-        def dumps(self):
-            return None
+    def dumps(self):
+        return None
 
-    else:
-        def __getstate__(self):
-            return None
+    def __getstate__(self):
+        return None
 
-        def __setstate__(self,state):
-            return None
-        
-
-class NotchConnector():
-        
-    def Activated(self):
-        FreeCADGui.doCommand("import CurvedShapes")
-        FreeCADGui.doCommand("import NotchConnector")
-        
-        selection = FreeCADGui.Selection.getSelection()
-        if len(selection) < 2:
-            return;
-        
-        for sel in selection:
-            if sel == selection[0]:
-                FreeCADGui.doCommand("base = FreeCAD.ActiveDocument.getObject('%s')"%(sel.Name))
-            elif sel == selection[1]:
-                FreeCADGui.doCommand("tools = [FreeCAD.ActiveDocument.getObject('%s')]"%(sel.Name))
-            else:
-                FreeCADGui.doCommand("tools.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.Name))
-        
-        FreeCADGui.doCommand("CurvedShapes.makeNotchConnector(base, tools, CutDepth=50.0)")
-        if len(selection) == 2:
-            FreeCADGui.doCommand("CurvedShapes.makeNotchConnector(tools[0], [base], CutDepth=-50.0)")            
+    def __setstate__(self,state):
+        return None
             
-        FreeCAD.ActiveDocument.recompute()        
+if FreeCAD.GuiUp:
 
-    def IsActive(self):
-        """Here you can define if the command must be active or not (greyed) if certain conditions
-        are met or not. This function is optional."""
-        if FreeCAD.ActiveDocument:
-            return(True)
-        else:
-            return(False)
-        
-    def GetResources(self):
-        return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "NotchConnector.svg"),
-                'Accel' : "", # a default shortcut (optional)
-                'MenuText': "Notch Connector",
-                'ToolTip' : __doc__ }
+    class NotchConnectorCommand():
+            
+        def Activated(self):
+            FreeCADGui.doCommand("import CurvedShapes")
+            FreeCADGui.doCommand("import NotchConnector")
+            
+            selection = FreeCADGui.Selection.getSelection()
+            if len(selection) < 2:
+                return;
+            
+            for sel in selection:
+                if sel == selection[0]:
+                    FreeCADGui.doCommand("base = FreeCAD.ActiveDocument.getObject('%s')"%(sel.Name))
+                elif sel == selection[1]:
+                    FreeCADGui.doCommand("tools = [FreeCAD.ActiveDocument.getObject('%s')]"%(sel.Name))
+                else:
+                    FreeCADGui.doCommand("tools.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.Name))
+            
+            FreeCADGui.doCommand("CurvedShapes.makeNotchConnector(base, tools, CutDepth=50.0)")
+            if len(selection) == 2:
+                FreeCADGui.doCommand("CurvedShapes.makeNotchConnector(tools[0], [base], CutDepth=-50.0)")            
+                
+            FreeCAD.ActiveDocument.recompute()        
 
-FreeCADGui.addCommand('NotchConnector', NotchConnector())
+        def IsActive(self):
+            """Here you can define if the command must be active or not (greyed) if certain conditions
+            are met or not. This function is optional."""
+            if FreeCAD.ActiveDocument:
+                return(True)
+            else:
+                return(False)
+            
+        def GetResources(self):
+            return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "NotchConnector.svg"),
+                    'Accel' : "", # a default shortcut (optional)
+                    'MenuText': "Notch Connector",
+                    'ToolTip' : __doc__ }
+
+    FreeCADGui.addCommand('NotchConnector', NotchConnectorCommand())

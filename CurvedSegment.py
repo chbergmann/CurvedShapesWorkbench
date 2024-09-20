@@ -6,16 +6,17 @@ __license__ = "LGPL 2.1"
 __doc__ = "Interpolates a 3D shape between two 2D curves and optional hullcurves"
 
 import os
-import FreeCADGui
 import FreeCAD
 from FreeCAD import Vector
 import Part
 import CurvedShapes
 import math
+if FreeCAD.GuiUp:
+    import FreeCADGui
 
 epsilon = CurvedShapes.epsilon
     
-class CurvedSegmentWorker:
+class CurvedSegment:
     def __init__(self, 
                  fp,    # FeaturePython
                  shape1 = None, 
@@ -30,20 +31,22 @@ class CurvedSegmentWorker:
                  Twist = 0.0,
                  TwistReverse = False,
                  Distribution = 'linear',
-                 DistributionReverse = False):
-        fp.addProperty("App::PropertyLink",  "Shape1",     "CurvedSegment",   "The first object of the segment").Shape1 = shape1
-        fp.addProperty("App::PropertyLink",  "Shape2",     "CurvedSegment",   "The last object of the segment").Shape2 = shape2
-        fp.addProperty("App::PropertyLinkList",  "Hullcurves",   "CurvedSegment",   "Bounding curves").Hullcurves = hullcurves        
-        fp.addProperty("App::PropertyVector", "NormalShape1",    "CurvedSegment",   "Direction axis of Shape1").NormalShape1 = normalShape1 
-        fp.addProperty("App::PropertyVector", "NormalShape2",    "CurvedSegment",   "Direction axis of Shape2").NormalShape1 = normalShape2
-        fp.addProperty("App::PropertyInteger", "Items", "CurvedSegment",   "Nr. of items between the segments").Items = items
-        fp.addProperty("App::PropertyBool", "makeSurface","CurvedSegment",  "Make a surface").makeSurface = surface
-        fp.addProperty("App::PropertyBool", "makeSolid","CurvedSegment",  "Make a solid").makeSolid = solid
-        fp.addProperty("App::PropertyInteger", "InterpolationPoints", "CurvedSegment",   "Unequal edges will be split into this number of points").InterpolationPoints = InterpolationPoints
-        fp.addProperty("App::PropertyFloat", "Twist","CurvedSegment",  "Compensates a rotation between Shape1 and Shape2").Twist = Twist
-        fp.addProperty("App::PropertyBool", "TwistReverse","CurvedSegment",  "Reverses the rotation of one Shape").TwistReverse = TwistReverse
-        fp.addProperty("App::PropertyEnumeration", "Distribution", "CurvedSegment",  "Algorithm for distance between elements")
-        fp.addProperty("App::PropertyBool", "DistributionReverse", "CurvedSegment",  "Reverses direction of Distribution algorithm").DistributionReverse = DistributionReverse
+                 DistributionReverse = False,
+                 LoftMaxDegree=5):
+        CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape1",     "CurvedSegment",   "The first object of the segment").Shape1 = shape1
+        CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape2",     "CurvedSegment",   "The last object of the segment").Shape2 = shape2
+        CurvedShapes.addObjectProperty(fp,"App::PropertyLinkList",  "Hullcurves",   "CurvedSegment",   "Bounding curves").Hullcurves = hullcurves        
+        CurvedShapes.addObjectProperty(fp,"App::PropertyVector", "NormalShape1",    "CurvedSegment",   "Direction axis of Shape1").NormalShape1 = normalShape1 
+        CurvedShapes.addObjectProperty(fp,"App::PropertyVector", "NormalShape2",    "CurvedSegment",   "Direction axis of Shape2").NormalShape1 = normalShape2
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "Items", "CurvedSegment",   "Nr. of items between the segments").Items = items
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "makeSurface","CurvedSegment",  "Make a surface").makeSurface = surface
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "makeSolid","CurvedSegment",  "Make a solid").makeSolid = solid
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "InterpolationPoints", "CurvedSegment",   "Unequal edges will be split into this number of points").InterpolationPoints = InterpolationPoints
+        CurvedShapes.addObjectProperty(fp,"App::PropertyFloat", "Twist","CurvedSegment",  "Compensates a rotation between Shape1 and Shape2").Twist = Twist
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "TwistReverse","CurvedSegment",  "Reverses the rotation of one Shape").TwistReverse = TwistReverse
+        CurvedShapes.addObjectProperty(fp,"App::PropertyEnumeration", "Distribution", "CurvedSegment",  "Algorithm for distance between elements")
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "DistributionReverse", "CurvedSegment",  "Reverses direction of Distribution algorithm").DistributionReverse = DistributionReverse
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid").LoftMaxDegree = LoftMaxDegree
         fp.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'asinusoidal', 'elliptic']
         fp.Distribution = Distribution
         self.doScaleXYZ = []
@@ -103,9 +106,7 @@ class CurvedSegmentWorker:
         for p in proplist:
             if not hasattr(fp, p):
                 return
-        if prop in proplist:      
-            self.execute(fp)
-            
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
             
     def makeRibs(self, fp):
         interpolate = False
@@ -133,7 +134,7 @@ class CurvedSegmentWorker:
             self.rescaleRibs(fp, ribs)
             
         if fp.makeSurface or fp.makeSolid:
-            fp.Shape = CurvedShapes.makeSurfaceSolid(ribs, fp.makeSolid)
+            fp.Shape = CurvedShapes.makeSurfaceSolid(ribs, fp.makeSolid, maxDegree=fp.LoftMaxDegree)
         else:
             fp.Shape = Part.makeCompound(ribs)          
         
@@ -155,10 +156,10 @@ class CurvedSegmentWorker:
             bbox = CurvedShapes.boundbox_from_intersect(fp.Hullcurves, ribs[i].BoundBox.Center, normal, self.doScaleXYZ)
             if bbox:              
                 ribs[i] = CurvedShapes.scaleByBoundbox(ribs[i], bbox, self.doScaleXYZsum, copy=False)
-           
-             
-             
-             
+
+#background compatibility
+CurvedSegmentWorker = CurvedSegment
+
 def vectorMiddlePlane(vec1, vec2, fraction, plane):
     line = Part.makeLine(vec1, vec2)
         
@@ -419,55 +420,55 @@ class CurvedSegmentViewProvider:
     def onChanged(self, fp, prop):
         pass
         
-    if (FreeCAD.Version()[0]+'.'+FreeCAD.Version()[1]) >= '0.22':
-        def loads(self, state):
-            return None
+    def loads(self, state):
+        return None
 
-        def dumps(self):
-            return None
+    def dumps(self):
+        return None
 
-    else:
-        def __getstate__(self):
-            return None
+    def __getstate__(self):
+        return None
 
-        def __setstate__(self,state):
-            return None
-        
+    def __setstate__(self,state):
+        return None
 
-class CurvedSegment():
-        
-    def Activated(self):
-        FreeCADGui.doCommand("import CurvedShapes")
-        
-        selection = FreeCADGui.Selection.getSelectionEx()
-        options = ""
-        for sel in selection:
-            if sel == selection[0]:
-                FreeCADGui.doCommand("shape1 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
-                options += "Shape1=shape1, "
-            elif sel == selection[1]:
-                FreeCADGui.doCommand("shape2 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[1].ObjectName))
-                options += "Shape2=shape2, "
-                FreeCADGui.doCommand("hullcurves = []");
-                options += "Hullcurves=hullcurves, "
-            else:
-                FreeCADGui.doCommand("hullcurves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
-        
-        FreeCADGui.doCommand("CurvedShapes.makeCurvedSegment(%sItems=4, Surface=False, Solid=False)"%(options))
-        FreeCAD.ActiveDocument.recompute()        
 
-    def IsActive(self):
-        """Here you can define if the command must be active or not (greyed) if certain conditions
-        are met or not. This function is optional."""
-        #if FreeCAD.ActiveDocument:
-        return(True)
-        #else:
-        #    return(False)
-        
-    def GetResources(self):
-        return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "curvedSegment.svg"),
-                'Accel' : "", # a default shortcut (optional)
-                'MenuText': "Curved Segment",
-                'ToolTip' : __doc__ }
+if FreeCAD.GuiUp:
 
-FreeCADGui.addCommand('CurvedSegment', CurvedSegment())
+    class CurvedSegmentCommand():
+            
+        def Activated(self):
+            FreeCADGui.doCommand("import CurvedShapes")
+            
+            selection = FreeCADGui.Selection.getSelectionEx()
+            options = ""
+            for sel in selection:
+                if sel == selection[0]:
+                    FreeCADGui.doCommand("shape1 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
+                    options += "Shape1=shape1, "
+                elif sel == selection[1]:
+                    FreeCADGui.doCommand("shape2 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[1].ObjectName))
+                    options += "Shape2=shape2, "
+                    FreeCADGui.doCommand("hullcurves = []");
+                    options += "Hullcurves=hullcurves, "
+                else:
+                    FreeCADGui.doCommand("hullcurves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
+            
+            FreeCADGui.doCommand("CurvedShapes.makeCurvedSegment(%sItems=4, Surface=False, Solid=False)"%(options))
+            FreeCAD.ActiveDocument.recompute()        
+
+        def IsActive(self):
+            """Here you can define if the command must be active or not (greyed) if certain conditions
+            are met or not. This function is optional."""
+            #if FreeCAD.ActiveDocument:
+            return(True)
+            #else:
+            #    return(False)
+            
+        def GetResources(self):
+            return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "curvedSegment.svg"),
+                    'Accel' : "", # a default shortcut (optional)
+                    'MenuText': "Curved Segment",
+                    'ToolTip' : __doc__ }
+
+    FreeCADGui.addCommand('CurvedSegment', CurvedSegmentCommand())

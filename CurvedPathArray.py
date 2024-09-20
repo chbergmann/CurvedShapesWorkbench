@@ -6,17 +6,18 @@ __license__ = "LGPL 2.1"
 __doc__ = "Create 3D shapes from 2D curves"
 
 import os
-import FreeCADGui
 import FreeCAD
 from FreeCAD import Vector
 import Part
 import CompoundTools.Explode
 import CurvedShapes
 import math
+if FreeCAD.GuiUp:
+    import FreeCADGui
 
 epsilon = CurvedShapes.epsilon
     
-class CurvedPathArrayWorker:
+class CurvedPathArray:
     def __init__(self, 
                  obj,
                  base = None,
@@ -28,19 +29,21 @@ class CurvedPathArrayWorker:
                  Surface=True, 
                  Solid = False,
                  doScale = [],
-                 extract=False):
-        obj.addProperty("App::PropertyLink",  "Base",     "CurvedPathArray",   "The object to make an array from").Base = base
-        obj.addProperty("App::PropertyLink",  "Path",     "CurvedPathArray",   "Sweep path").Path = path
-        obj.addProperty("App::PropertyLinkList",  "Hullcurves",   "CurvedPathArray",   "Bounding curves").Hullcurves = hullcurves   
-        obj.addProperty("App::PropertyQuantity", "Items", "CurvedPathArray",   "Nr. of array items").Items = items
-        obj.addProperty("App::PropertyFloat", "OffsetStart","CurvedPathArray",  "Offset of the first part").OffsetStart = OffsetStart
-        obj.addProperty("App::PropertyFloat", "OffsetEnd","CurvedPathArray",  "Offset of the last part from the end in opposite direction").OffsetEnd = OffsetEnd
-        obj.addProperty("App::PropertyFloat", "Twist","CurvedPathArray",  "Rotate in degrees around the sweep path").Twist = Twist
-        obj.addProperty("App::PropertyBool", "Surface","CurvedPathArray",  "Make a surface").Surface = Surface
-        obj.addProperty("App::PropertyBool", "Solid","CurvedPathArray",  "Make a solid").Solid = Solid
-        obj.addProperty("App::PropertyBool", "ScaleX","CurvedPathArray",  "Scale by hullcurves in X direction").ScaleX = True
-        obj.addProperty("App::PropertyBool", "ScaleY","CurvedPathArray",  "Scale by hullcurves in Y direction").ScaleY = True
-        obj.addProperty("App::PropertyBool", "ScaleZ","CurvedPathArray",  "Scale by hullcurves in Z direction").ScaleZ = True
+                 extract=False,
+                 LoftMaxDegree=5):
+        CurvedShapes.addObjectProperty(obj,"App::PropertyLink",  "Base",     "CurvedPathArray",   "The object to make an array from").Base = base
+        CurvedShapes.addObjectProperty(obj,"App::PropertyLink",  "Path",     "CurvedPathArray",   "Sweep path").Path = path
+        CurvedShapes.addObjectProperty(obj,"App::PropertyLinkList",  "Hullcurves",   "CurvedPathArray",   "Bounding curves").Hullcurves = hullcurves   
+        CurvedShapes.addObjectProperty(obj,"App::PropertyQuantity", "Items", "CurvedPathArray",   "Nr. of array items").Items = items
+        CurvedShapes.addObjectProperty(obj,"App::PropertyFloat", "OffsetStart","CurvedPathArray",  "Offset of the first part").OffsetStart = OffsetStart
+        CurvedShapes.addObjectProperty(obj,"App::PropertyFloat", "OffsetEnd","CurvedPathArray",  "Offset of the last part from the end in opposite direction").OffsetEnd = OffsetEnd
+        CurvedShapes.addObjectProperty(obj,"App::PropertyFloat", "Twist","CurvedPathArray",  "Rotate in degrees around the sweep path").Twist = Twist
+        CurvedShapes.addObjectProperty(obj,"App::PropertyBool", "Surface","CurvedPathArray",  "Make a surface").Surface = Surface
+        CurvedShapes.addObjectProperty(obj,"App::PropertyBool", "Solid","CurvedPathArray",  "Make a solid").Solid = Solid
+        CurvedShapes.addObjectProperty(obj,"App::PropertyBool", "ScaleX","CurvedPathArray",  "Scale by hullcurves in X direction").ScaleX = True
+        CurvedShapes.addObjectProperty(obj,"App::PropertyBool", "ScaleY","CurvedPathArray",  "Scale by hullcurves in Y direction").ScaleY = True
+        CurvedShapes.addObjectProperty(obj,"App::PropertyBool", "ScaleZ","CurvedPathArray",  "Scale by hullcurves in Z direction").ScaleZ = True
+        CurvedShapes.addObjectProperty(obj,"App::PropertyInteger", "LoftMaxDegree", "CurvedPathArray",   "Max Degree for Surface or Solid").LoftMaxDegree = LoftMaxDegree
         self.doScaleXYZsum = [False, False, False]
         if len(doScale) == 3:
             obj.ScaleX = doScale[0]
@@ -131,7 +134,7 @@ class CurvedPathArrayWorker:
         
         
         if (obj.Surface or obj.Solid) and obj.Items > 1:
-            obj.Shape = CurvedShapes.makeSurfaceSolid(ribs, obj.Solid)
+            obj.Shape = CurvedShapes.makeSurfaceSolid(ribs, obj.Solid, maxDegree=obj.LoftMaxDegree)
         else:
             obj.Shape = Part.makeCompound(ribs)
             
@@ -183,10 +186,10 @@ class CurvedPathArrayWorker:
         for p in proplist:
             if not hasattr(fp, p):
                 return 
+        CurvedShapes.addObjectProperty(obj,"App::PropertyInteger", "LoftMaxDegree", "CurvedPathArray",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
             
-        if prop in proplist:      
-            self.execute(fp)
-
+#background compatibility
+CurvedPathArrayWorker = CurvedPathArray
 
 class CurvedPathArrayViewProvider:
     def __init__(self, vobj):
@@ -209,56 +212,55 @@ class CurvedPathArrayViewProvider:
     def onChanged(self, fp, prop):
         pass
         
-    if (FreeCAD.Version()[0]+'.'+FreeCAD.Version()[1]) >= '0.22':
-        def loads(self, state):
-            return None
+    def loads(self, state):
+        return None
 
-        def dumps(self):
-            return None
+    def dumps(self):
+        return None
 
-    else:
-        def __getstate__(self):
-            return None
+    def __getstate__(self):
+        return None
 
-        def __setstate__(self,state):
-            return None
+    def __setstate__(self,state):
+        return None
 
-        
 
-class CurvedPathArray():
-        
-    def Activated(self):
-        FreeCADGui.doCommand("import CurvedShapes")
-        
-        selection = FreeCADGui.Selection.getSelectionEx()
-        options = ""
-        for sel in selection:
-            if sel == selection[0]:
-                options += "Base=base, "
-                FreeCADGui.doCommand("base = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
-            elif sel == selection[1]:
-                options += "Path=path, "
-                FreeCADGui.doCommand("path = FreeCAD.ActiveDocument.getObject('%s')"%(selection[1].ObjectName))
-                options += "Hullcurves=hullcurves, "
-                FreeCADGui.doCommand("hullcurves = []");
-            else:
-                FreeCADGui.doCommand("hullcurves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
-        
-        FreeCADGui.doCommand("CurvedShapes.makeCurvedPathArray(%sItems=4, OffsetStart=0, OffsetEnd=0, Surface=False, Solid=False)"%(options))
-        FreeCAD.ActiveDocument.recompute()        
+if FreeCAD.GuiUp:
 
-    def IsActive(self):
-        """Here you can define if the command must be active or not (greyed) if certain conditions
-        are met or not. This function is optional."""
-        #if FreeCAD.ActiveDocument:
-        return(True)
-        #else:
-        #    return(False)
-        
-    def GetResources(self):
-        return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "CurvedPathArray.svg"),
-                'Accel' : "", # a default shortcut (optional)
-                'MenuText': "Curved Path Array",
-                'ToolTip' : "Creates an array, sweeps the elements around a path curve, and resizes the items in the bounds of optional hullcurves." }
+    class CurvedPathArrayCommand():
+            
+        def Activated(self):
+            FreeCADGui.doCommand("import CurvedShapes")
+            
+            selection = FreeCADGui.Selection.getSelectionEx()
+            options = ""
+            for sel in selection:
+                if sel == selection[0]:
+                    options += "Base=base, "
+                    FreeCADGui.doCommand("base = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
+                elif sel == selection[1]:
+                    options += "Path=path, "
+                    FreeCADGui.doCommand("path = FreeCAD.ActiveDocument.getObject('%s')"%(selection[1].ObjectName))
+                    options += "Hullcurves=hullcurves, "
+                    FreeCADGui.doCommand("hullcurves = []");
+                else:
+                    FreeCADGui.doCommand("hullcurves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
+            
+            FreeCADGui.doCommand("CurvedShapes.makeCurvedPathArray(%sItems=4, OffsetStart=0, OffsetEnd=0, Surface=False, Solid=False)"%(options))
+            FreeCAD.ActiveDocument.recompute()        
 
-FreeCADGui.addCommand('CurvedPathArray', CurvedPathArray())
+        def IsActive(self):
+            """Here you can define if the command must be active or not (greyed) if certain conditions
+            are met or not. This function is optional."""
+            #if FreeCAD.ActiveDocument:
+            return(True)
+            #else:
+            #    return(False)
+            
+        def GetResources(self):
+            return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "CurvedPathArray.svg"),
+                    'Accel' : "", # a default shortcut (optional)
+                    'MenuText': "Curved Path Array",
+                    'ToolTip' : "Creates an array, sweeps the elements around a path curve, and resizes the items in the bounds of optional hullcurves." }
+
+    FreeCADGui.addCommand('CurvedPathArray', CurvedPathArrayCommand())
