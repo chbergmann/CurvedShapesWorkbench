@@ -32,7 +32,8 @@ class CurvedSegment:
                  TwistReverse = False,
                  Distribution = 'linear',
                  DistributionReverse = False,
-                 LoftMaxDegree=5):
+                 LoftMaxDegree=5,
+                 MaxLoftSize=16):
         CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape1",     "CurvedSegment",   "The first object of the segment").Shape1 = shape1
         CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape2",     "CurvedSegment",   "The last object of the segment").Shape2 = shape2
         CurvedShapes.addObjectProperty(fp,"App::PropertyLinkList",  "Hullcurves",   "CurvedSegment",   "Bounding curves").Hullcurves = hullcurves        
@@ -47,6 +48,7 @@ class CurvedSegment:
         CurvedShapes.addObjectProperty(fp,"App::PropertyEnumeration", "Distribution", "CurvedSegment",  "Algorithm for distance between elements")
         CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "DistributionReverse", "CurvedSegment",  "Reverses direction of Distribution algorithm").DistributionReverse = DistributionReverse
         CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid").LoftMaxDegree = LoftMaxDegree
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "MaxLoftSize", "CurvedSegment",   "Max Size of a Loft in Segments.").MaxLoftSize = MaxLoftSize
         fp.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'asinusoidal', 'elliptic']
         fp.Distribution = Distribution
         self.doScaleXYZ = []
@@ -104,6 +106,8 @@ class CurvedSegment:
     def onChanged(self, fp, prop):   
         if not hasattr(fp, 'LoftMaxDegree'):
             CurvedShapes.addObjectProperty(fp, "App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
+        if not hasattr(fp, 'MaxLoftSize'):
+            CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "MaxLoftSize", "CurvedSegment",   "Max Size of a Loft in Segments.", init_val=-1) # backwards compatibility - this upgrades older documents
 
             
     def makeRibs(self, fp):
@@ -132,7 +136,7 @@ class CurvedSegment:
             self.rescaleRibs(fp, ribs)
             
         if fp.makeSurface or fp.makeSolid:
-            fp.Shape = CurvedShapes.makeSurfaceSolid(ribs, fp.makeSolid, maxDegree=fp.LoftMaxDegree)
+            fp.Shape = CurvedShapes.makeSurfaceSolid(ribs, fp.makeSolid, maxDegree=fp.LoftMaxDegree, maxLoftSize=fp.MaxLoftSize)
         else:
             fp.Shape = Part.makeCompound(ribs)          
         
