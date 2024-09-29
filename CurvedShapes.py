@@ -176,7 +176,7 @@ def scaleByBoundbox(shape, boundbox, doScaleXYZ, copy=True):
     return dolly
     
             
-def makeSurfaceSolid(ribs, solid, maxDegree=5):
+def makeSurfaceSolid(ribs, solid, maxDegree=5, maxLoftSize=16):
     surfaces = []
 
     wiribs = []
@@ -191,7 +191,46 @@ def makeSurfaceSolid(ribs, solid, maxDegree=5):
                 return
           
     try:
-        loft = Part.makeLoft(wiribs,False,False,False,maxDegree)
+        # OCCT has issues with lofts over large number of segments.
+        # Lofts take very long to compute and end up very very broken in shape.
+        # To prevent this, we split the loft into finite segments of no more than maxLoftSize ribs
+        # after an initial set of sm sections of length maxLoftSize, there are one or two final sections
+        # with less then maxLoftSize of roughly equal length.
+        # this avoids introducing very small sections, which might not smooth out nicely
+        # while ensuring no section has more than maxLoftSize
+        # si (segment iterator) is the default number of ribs per loft
+        # st (segment total) is the number of segments
+        # sm (segment maximum) is the number of full lofts of size si
+        # s0 is the first rib of the final shorter segment(s)
+        # s2 is the size of the final segment area
+        # s1 is the mid-point between s0 and s2 for the final two segments if s2>maxLoftSize
+        # or equal to s0 in case there is only one final segment
+        # if s2<maxLoftSize, then the final segment is the only segment
+        st = len(wiribs)-1
+        si = st
+        sm = 0
+        if maxLoftSize>0:
+            sm = (st // maxLoftSize)-1
+            si = maxLoftSize
+        s0 = sm * si
+        if (s0 < 0):
+            s0 = 0
+        s2 = st-s0
+        s1 = s0
+        if (s2 > maxLoftSize and maxLoftSize > 0):
+            s1 = s0 + (s2 // 2)
+        #FreeCAD.Console.PrintWarning("total segments: %i \n"%st)
+        #FreeCAD.Console.PrintWarning("total sections: %i of max %i\n"%(max(0,sm)+1+(1 if s1>s0 else 0),si))
+        for s in range(0,sm):
+            #FreeCAD.Console.PrintWarning("full section %i  from %i to %i\n"%(s,s*si,(s+1)*si))
+            loft = Part.makeLoft(wiribs[s*si:(s+1)*si+1],False,False,False,maxDegree)
+            surfaces += loft.Faces
+        if (s1 > s0):
+            #FreeCAD.Console.PrintWarning("partial section from %i to %i\n"%(s0,s1))
+            loft = Part.makeLoft(wiribs[s0:s1+1],False,False,False,maxDegree)
+            surfaces += loft.Faces
+        #FreeCAD.Console.PrintWarning("final section from %i to %i\n"%(s1,st))
+        loft = Part.makeLoft(wiribs[s1:st+1],False,False,False,maxDegree)
         surfaces += loft.Faces
     except Exception as ex:      
         FreeCAD.Console.PrintError("Creation of surface is not possible !\n")
