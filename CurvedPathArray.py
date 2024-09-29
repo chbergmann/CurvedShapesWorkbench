@@ -30,7 +30,8 @@ class CurvedPathArray:
                  Solid = False,
                  doScale = [],
                  extract=False,
-                 LoftMaxDegree=5):
+                 LoftMaxDegree=5,
+                 MaxLoftSize=16):
         CurvedShapes.addObjectProperty(obj,"App::PropertyLink",  "Base",     "CurvedPathArray",   "The object to make an array from").Base = base
         CurvedShapes.addObjectProperty(obj,"App::PropertyLink",  "Path",     "CurvedPathArray",   "Sweep path").Path = path
         CurvedShapes.addObjectProperty(obj,"App::PropertyLinkList",  "Hullcurves",   "CurvedPathArray",   "Bounding curves").Hullcurves = hullcurves   
@@ -44,6 +45,7 @@ class CurvedPathArray:
         CurvedShapes.addObjectProperty(obj,"App::PropertyBool", "ScaleY","CurvedPathArray",  "Scale by hullcurves in Y direction").ScaleY = True
         CurvedShapes.addObjectProperty(obj,"App::PropertyBool", "ScaleZ","CurvedPathArray",  "Scale by hullcurves in Z direction").ScaleZ = True
         CurvedShapes.addObjectProperty(obj,"App::PropertyInteger", "LoftMaxDegree", "CurvedPathArray",   "Max Degree for Surface or Solid").LoftMaxDegree = LoftMaxDegree
+        CurvedShapes.addObjectProperty(obj,"App::PropertyInteger", "MaxLoftSize", "CurvedPathArray",   "Max Size of a Loft in Segments.").MaxLoftSize = MaxLoftSize
         self.doScaleXYZsum = [False, False, False]
         if len(doScale) == 3:
             obj.ScaleX = doScale[0]
@@ -134,7 +136,7 @@ class CurvedPathArray:
         
         
         if (obj.Surface or obj.Solid) and obj.Items > 1:
-            obj.Shape = CurvedShapes.makeSurfaceSolid(ribs, obj.Solid, maxDegree=obj.LoftMaxDegree)
+            obj.Shape = CurvedShapes.makeSurfaceSolid(ribs, obj.Solid, maxDegree=obj.LoftMaxDegree, maxLoftSize=obj.MaxLoftSize)
         else:
             obj.Shape = Part.makeCompound(ribs)
             
@@ -184,6 +186,8 @@ class CurvedPathArray:
     def onChanged(self, fp, prop):
         if not hasattr(fp, 'LoftMaxDegree'):
             CurvedShapes.addObjectProperty(fp, "App::PropertyInteger", "LoftMaxDegree", "CurvedPathArray",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
+        if not hasattr(fp, 'MaxLoftSize'):
+            CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "MaxLoftSize", "CurvedPathArray",   "Max Size of a Loft in Segments.", init_val=-1) # backwards compatibility - this upgrades older documents
             
 #background compatibility
 CurvedPathArrayWorker = CurvedPathArray
