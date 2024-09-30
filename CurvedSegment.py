@@ -111,7 +111,7 @@ class CurvedSegment:
         if not hasattr(fp, 'MaxLoftSize'):
             CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "MaxLoftSize", "CurvedSegment",   "Max Size of a Loft in Segments.", init_val=-1) # backwards compatibility - this upgrades older documents
         if not hasattr(fp, 'ActualTwist'):
-            CurvedShapes.addObjectProperty(fp,"App::PropertyFloat", "ActualTwist","CurvedSegment",  "Twists the curve by this much.", init_val=1.0) # backwards compatibility - this upgrades older documents
+            CurvedShapes.addObjectProperty(fp,"App::PropertyFloat", "ActualTwist","CurvedSegment",  "Twists the curve by this much.", init_val=0.0) # backwards compatibility - this upgrades older documents
 
 
             
