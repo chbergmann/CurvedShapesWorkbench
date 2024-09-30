@@ -172,6 +172,7 @@ class CurvedSegment:
             normal = CurvedShapes.vectorMiddle(fp.NormalShape1, fp.NormalShape2, d)
             #Draft.makeLine(ribs[i].BoundBox.Center, ribs[i].BoundBox.Center + normal)
             ribs[i] = ribs[i].rotate(bc0+d*(bc1-bc0), normal, fp.ActualTwist * d)
+            direction = normal
             if maxlen>0:
                 plen = d * maxlen
                 for edge in edges:
@@ -188,7 +189,7 @@ class CurvedSegment:
                         ribs[i].Placement.Base = posvec
 
             if len(fp.Hullcurves) > 0:
-                bbox = CurvedShapes.boundbox_from_intersect(fp.Hullcurves, ribs[i].BoundBox.Center, normal, self.doScaleXYZ)
+                bbox = CurvedShapes.boundbox_from_intersect(fp.Hullcurves, ribs[i].BoundBox.Center, direction, self.doScaleXYZ)
                 if bbox:              
                     ribs[i] = CurvedShapes.scaleByBoundbox(ribs[i], bbox, self.doScaleXYZsum, copy=False)
 
