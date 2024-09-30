@@ -50,6 +50,7 @@ The first curve that you select for CurvedArray creation will be the item that i
 - Distribution: Algorithm for distance between array elements. Default is 'linear'. Also selectable: parabolic (x²), x³, sinusoidal, asinusoidal, elliptic
 - DistributionReverse: Reverses the direction of the Distribution algorithm
 - LoftMaxDegree: degree for surface or solid creation. Play with this parameter if your surface or solid looks distorted
+- MaxLoftSize: Maximum size of a loft segment. The surface is created by creating a loft over many array items, however OpenCascade gets very slow and produces artefacts towards the end of the loft when the array gets too large. Therefore the array gets split up intp sub-arrays of up to MaxLoftSize items. Play with this value if a split between segements ends up in a inconvenient spot. Sensible values are between 10 and 50.
 
 Distribution Linear  
 ![Linear](Examples/CurvedArrayLinear.jpg)  
@@ -104,6 +105,7 @@ The first curve that you select for Curved Path Array creation will be the base 
 - ScaleY: Scale by hullcurves in Y direction
 - ScaleZ: Scale by hullcurves in Z direction
 - LoftMaxDegree: degree for surface or solid creation. Play with this parameter if your surface or solid looks distorted
+- MaxLoftSize: Maximum size of a loft segment. The surface is created by creating a loft over many array items, however OpenCascade gets very slow and produces artefacts towards the end of the loft when the array gets too large. Therefore the array gets split up intp sub-arrays of up to MaxLoftSize items. Play with this value if a split between segements ends up in a inconvenient spot. Sensible values are between 10 and 50.
 
 The parameters ScaleX, ScaleY and ScaleZ have been added because you may want to rescale the items only in one direction, but the hullcurves normally cover 2 or three room directions.  
   
@@ -125,11 +127,14 @@ Select two 2D shapes first. The curved segment will be created between them. If 
 - makeSurface: make a surface over the array items
 - makeSolid: make a solid if Base is a closed shape
 - InterpolationPoints: ignored if Shape1 and Shape2 have the same number of edges and poles. Otherwise all edges will be split (discretized) into this number of points
-- Twist: Compensates a rotation between Shape1 and Shape2
-- TwistReverse: Reverses the rotation of one Shape
+- Twist: Compensates a rotation between Shape1 and Shape2. This is for correcting misalignment between the shapes, use this if the segments to not match up.
+- TwistReverse: Reverses the rotation of one Shape. This is for correcting misalignment between the shapes, use this if the entire shape is inversed on itself (wasp-tail)
+- ActualTwist: Introduce a deliberate twist into the shape around the profiles normal axis, similar to "Twist" in CurvedArray and CurvedPathArray. Useful for example for threaded parts.
+- Path: Sweep path - similar to "Path" in CurvedPathArray. If a path is specified, it supersedes the position and orientation of Shape1 and Shape2. CurvedSegment then behaves like CurvedPathArray but with a blend between a beginning and end profile.
 - Distribution: Algorithm for distance between array elements. Default is 'linear'. Also selectable: parabolic (x²), x³, sinusoidal, elliptic
 - DistributionReverse: Reverses the direction of the Distribution algorithm
 - LoftMaxDegree: degree for surface or solid creation. Play with this parameter if your surface or solid looks distorted
+- MaxLoftSize: Maximum size of a loft segment. The surface is created by creating a loft over many array items, however OpenCascade gets very slow and produces artefacts towards the end of the loft when the array gets too large. Therefore the array gets split up intp sub-arrays of up to MaxLoftSize items. Play with this value if a split between segements ends up in a inconvenient spot. Sensible values are between 10 and 50.
 
 ### ![CornerShapeIcon](./Resources/icons/CornerShape.svg) Interpolated Middle
 Interpolates a 2D shape into the middle between two 2D curves. The base shapes can be connected to a shape with a sharp corner.
@@ -148,6 +153,7 @@ Interpolates a 2D shape into the middle between two 2D curves. The base shapes c
 - Twist: Compensates a rotation between Shape1 and Shape2
 - TwistReverse: Reverses the rotation of one Shape
 - LoftMaxDegree: degree for surface or solid creation. Play with this parameter if your surface or solid looks distorted
+- MaxLoftSize: Maximum size of a loft segment. The surface is created by creating a loft over many array items, however OpenCascade gets very slow and produces artefacts towards the end of the loft when the array gets too large. Therefore the array gets split up intp sub-arrays of up to MaxLoftSize items. Play with this value if a split between segements ends up in a inconvenient spot. Sensible values are between 10 and 50.
   
   
 ### ![surfaceCutIcon](./Resources/icons/surfaceCut.svg) Surface Cut
