@@ -33,7 +33,8 @@ class CurvedSegment:
                  Distribution = 'linear',
                  DistributionReverse = False,
                  LoftMaxDegree=5,
-                 MaxLoftSize=16):
+                 MaxLoftSize=16,
+                 ActualTwist=0.0):
         CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape1",     "CurvedSegment",   "The first object of the segment").Shape1 = shape1
         CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape2",     "CurvedSegment",   "The last object of the segment").Shape2 = shape2
         CurvedShapes.addObjectProperty(fp,"App::PropertyLinkList",  "Hullcurves",   "CurvedSegment",   "Bounding curves").Hullcurves = hullcurves        
@@ -49,6 +50,7 @@ class CurvedSegment:
         CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "DistributionReverse", "CurvedSegment",  "Reverses direction of Distribution algorithm").DistributionReverse = DistributionReverse
         CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid").LoftMaxDegree = LoftMaxDegree
         CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "MaxLoftSize", "CurvedSegment",   "Max Size of a Loft in Segments.").MaxLoftSize = MaxLoftSize
+        CurvedShapes.addObjectProperty(fp,"App::PropertyFloat", "ActualTwist","CurvedSegment",  "Twists the curve by this much.").ActualTwist = ActualTwist
         fp.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'asinusoidal', 'elliptic']
         fp.Distribution = Distribution
         self.doScaleXYZ = []
@@ -108,6 +110,9 @@ class CurvedSegment:
             CurvedShapes.addObjectProperty(fp, "App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
         if not hasattr(fp, 'MaxLoftSize'):
             CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "MaxLoftSize", "CurvedSegment",   "Max Size of a Loft in Segments.", init_val=-1) # backwards compatibility - this upgrades older documents
+        if not hasattr(fp, 'ActualTwist'):
+            CurvedShapes.addObjectProperty(fp,"App::PropertyFloat", "ActualTwist","CurvedSegment",  "Twists the curve by this much.", init_val=1.0) # backwards compatibility - this upgrades older documents
+
 
             
     def makeRibs(self, fp):
@@ -132,8 +137,7 @@ class CurvedSegment:
         else:
             ribs = makeRibsSameShape(fp, fp.Items, False, makeStartEnd)
             
-        if len(fp.Hullcurves) > 0:
-            self.rescaleRibs(fp, ribs)
+        self.rescaleRibs(fp, ribs)
             
         if fp.makeSurface or fp.makeSolid:
             fp.Shape = CurvedShapes.makeSurfaceSolid(ribs, fp.makeSolid, maxDegree=fp.LoftMaxDegree, maxLoftSize=fp.MaxLoftSize)
@@ -150,14 +154,18 @@ class CurvedSegment:
             start = 0
             end = len(ribs) 
             items = fp.Items + 1
-            
+        
+        bc0=fp.Shape1.Shape.BoundBox.Center
+        bc1=fp.Shape2.Shape.BoundBox.Center
         for i in range(start, end):
             d = CurvedShapes.distribute((i + 1) / items, fp.Distribution, fp.DistributionReverse)
             normal = CurvedShapes.vectorMiddle(fp.NormalShape1, fp.NormalShape2, d)
             #Draft.makeLine(ribs[i].BoundBox.Center, ribs[i].BoundBox.Center + normal)
-            bbox = CurvedShapes.boundbox_from_intersect(fp.Hullcurves, ribs[i].BoundBox.Center, normal, self.doScaleXYZ)
-            if bbox:              
-                ribs[i] = CurvedShapes.scaleByBoundbox(ribs[i], bbox, self.doScaleXYZsum, copy=False)
+            ribs[i] = ribs[i].rotate(bc0+d*(bc1-bc0), normal, fp.ActualTwist * d)
+            if len(fp.Hullcurves) > 0:
+                bbox = CurvedShapes.boundbox_from_intersect(fp.Hullcurves, ribs[i].BoundBox.Center, normal, self.doScaleXYZ)
+                if bbox:              
+                    ribs[i] = CurvedShapes.scaleByBoundbox(ribs[i], bbox, self.doScaleXYZsum, copy=False)
 
 #background compatibility
 CurvedSegmentWorker = CurvedSegment
