@@ -148,7 +148,7 @@ class CurvedSegment:
         
         
     def rescaleRibs(self, fp, ribs):
-        if (fp.makeSurface or fp.makeSolid) and fp.Path is None:
+        if (fp.makeSurface or fp.makeSolid) and fp.Path is None and abs(fp.ActualTwist)<=epsilon:
             start = 1
             end = len(ribs) - 1
             items = fp.Items + 3
@@ -245,7 +245,7 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
     base1=fp.Shape1.Placement.Base
     base2=fp.Shape2.Placement.Base
     offset=base2-base1
-    if makeStartEnd and (fp.Path is not None):
+    if makeStartEnd and ((fp.Path is not None) or (abs(fp.ActualTwist)>epsilon)):
         start=0
         end=items+2
     else:
@@ -301,7 +301,7 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
                 ribs.append(Part.makeCompound(curves))
         ribs[-1].Placement.Base=fraction*offset #place the whole rib in the right place instead
             
-    if makeStartEnd and fp.Path is None:
+    if makeStartEnd and fp.Path is None and abs(fp.ActualTwist)<=epsilon:
         ribs.insert(0, fp.Shape1.Shape)
         ribs.append(fp.Shape2.Shape)
         
