@@ -35,7 +35,8 @@ class CurvedSegment:
                  LoftMaxDegree=5,
                  MaxLoftSize=16,
                  ActualTwist=0.0,
-                 Path=None):
+                 Path=None,
+                 ForceInterpolated = False):
         CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape1",     "CurvedSegment",   "The first object of the segment").Shape1 = shape1
         CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape2",     "CurvedSegment",   "The last object of the segment").Shape2 = shape2
         CurvedShapes.addObjectProperty(fp,"App::PropertyLinkList",  "Hullcurves",   "CurvedSegment",   "Bounding curves").Hullcurves = hullcurves        
@@ -53,6 +54,7 @@ class CurvedSegment:
         CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "MaxLoftSize", "CurvedSegment",   "Max Size of a Loft in Segments.").MaxLoftSize = MaxLoftSize
         CurvedShapes.addObjectProperty(fp,"App::PropertyFloat", "ActualTwist","CurvedSegment",  "Twists the curve by this much.").ActualTwist = ActualTwist
         CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Path",     "CurvedSegment",   "Sweep path").Path = Path
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "ForceInterpolated","CurvedSegment",  "Force Interpolation of sketches").ForceInterpolated = ForceInterpolated
         fp.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'asinusoidal', 'elliptic']
         fp.Distribution = Distribution
         self.doScaleXYZ = []
@@ -119,10 +121,13 @@ class CurvedSegment:
             CurvedShapes.addObjectProperty(fp,"App::PropertyFloat", "ActualTwist","CurvedSegment",  "Twists the curve by this much.", init_val=0.0) # backwards compatibility - this upgrades older documents
         if not hasattr(fp, 'Path'):
             CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Path",     "CurvedSegment",   "Sweep path", init_val=None) # backwards compatibility - this upgrades older documents
- 
+        if not hasattr(fp, 'ForceInterpolated'):
+            CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "ForceInterpolated","CurvedSegment",  "Force Interpolation of sketches", init_val=False) # backwards compatibility - this upgrades older documents
+
+            
     def makeRibs(self, fp):
         interpolate = False
-        if len(fp.Shape1.Shape.Edges) != len(fp.Shape2.Shape.Edges):
+        if fp.ForceInterpolated or len(fp.Shape1.Shape.Edges) != len(fp.Shape2.Shape.Edges):
             interpolate = True
         else:
             for e in range(0, len(fp.Shape1.Shape.Edges)):
