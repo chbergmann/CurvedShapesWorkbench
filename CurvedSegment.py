@@ -316,17 +316,19 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
     return ribs
                 
  
-def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):       
-    len1 = len(fp.Shape1.Shape.Edges)
-    len2 = len(fp.Shape2.Shape.Edges)
+def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
+    s1=fp.Shape1.Shape.toNurbs()
+    s2=fp.Shape2.Shape.toNurbs()
+    len1 = len(s1.Edges)
+    len2 = len(s2.Edges)
     twist = fp.Twist
     if len2 > 1:
         twist = 0
     
     nr_edges = int(len1 * len2 / math.gcd(len1, len2))
 
-    pointslist1 = EdgesToPoints(fp.Shape1.Shape, int(nr_edges / len1), int(fp.InterpolationPoints))
-    pointslist2 = EdgesToPoints(fp.Shape2.Shape, int(nr_edges / len2), int(fp.InterpolationPoints), fp.Twist, fp.TwistReverse)
+    pointslist1 = EdgesToPoints(s1, int(nr_edges / len1), int(fp.InterpolationPoints))
+    pointslist2 = EdgesToPoints(s2, int(nr_edges / len2), int(fp.InterpolationPoints), fp.Twist, fp.TwistReverse)
             
     ribs = []
     if makeStartEnd:
@@ -336,8 +338,8 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
         start = 1
         end = items + 1 
         
-    base1=fp.Shape1.Placement.Base
-    base2=fp.Shape2.Placement.Base
+    base1=s1.Placement.Base
+    base2=s2.Placement.Base
     offset=base2-base1
     for i in range(start, end):
         if hasattr(fp, "Distribution"):
@@ -387,7 +389,8 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
 
 def EdgesToPoints(shape, nr_frac, points_per_edge, twist = 0, twistReverse = False):  
     edges = [] 
-    redges = reorderEdges(shape.Edges, twist, twistReverse)
+    sortedEdges=Part.sortEdges(shape.Edges)[0]
+    redges = reorderEdges(sortedEdges, twist, twistReverse)
     if nr_frac == 1:
         edges = redges
     else:
