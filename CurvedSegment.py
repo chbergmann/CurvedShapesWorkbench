@@ -32,7 +32,11 @@ class CurvedSegment:
                  TwistReverse = False,
                  Distribution = 'linear',
                  DistributionReverse = False,
-                 LoftMaxDegree=5):
+                 LoftMaxDegree=5,
+                 MaxLoftSize=16,
+                 ActualTwist=0.0,
+                 Path=None,
+                 ForceInterpolated = False):
         CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape1",     "CurvedSegment",   "The first object of the segment").Shape1 = shape1
         CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape2",     "CurvedSegment",   "The last object of the segment").Shape2 = shape2
         CurvedShapes.addObjectProperty(fp,"App::PropertyLinkList",  "Hullcurves",   "CurvedSegment",   "Bounding curves").Hullcurves = hullcurves        
@@ -47,6 +51,10 @@ class CurvedSegment:
         CurvedShapes.addObjectProperty(fp,"App::PropertyEnumeration", "Distribution", "CurvedSegment",  "Algorithm for distance between elements")
         CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "DistributionReverse", "CurvedSegment",  "Reverses direction of Distribution algorithm").DistributionReverse = DistributionReverse
         CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid").LoftMaxDegree = LoftMaxDegree
+        CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "MaxLoftSize", "CurvedSegment",   "Max Size of a Loft in Segments.").MaxLoftSize = MaxLoftSize
+        CurvedShapes.addObjectProperty(fp,"App::PropertyFloat", "ActualTwist","CurvedSegment",  "Twists the curve by this much.").ActualTwist = ActualTwist
+        CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Path",     "CurvedSegment",   "Sweep path").Path = Path
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "ForceInterpolated","CurvedSegment",  "Force Interpolation of sketches").ForceInterpolated = ForceInterpolated
         fp.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'asinusoidal', 'elliptic']
         fp.Distribution = Distribution
         self.doScaleXYZ = []
@@ -67,48 +75,59 @@ class CurvedSegment:
                    
         if fp.InterpolationPoints <= 1:
             return
+
+        try:
+            self.update = False
+            if fp.NormalShape1 == Vector(0,0,0):        
+                fp.NormalShape1 = CurvedShapes.getNormal(fp.Shape1)
             
-        self.update = False
-        if fp.NormalShape1 == Vector(0,0,0):        
-            fp.NormalShape1 = CurvedShapes.getNormal(fp.Shape1)
-        
-        if fp.NormalShape2 == Vector(0,0,0):    
-            fp.NormalShape2 = CurvedShapes.getNormal(fp.Shape2)
-        
-        self.doScaleXYZ = []
-        self.doScaleXYZsum = [False, False, False]
-        for h in fp.Hullcurves:
-            bbox = h.Shape.BoundBox
-            doScale = [False, False, False]
+            if fp.NormalShape2 == Vector(0,0,0):    
+                fp.NormalShape2 = CurvedShapes.getNormal(fp.Shape2)
             
-            if bbox.XLength > epsilon: 
-                doScale[0] = True 
-                self.doScaleXYZsum[0] = True
-        
-            if bbox.YLength > epsilon: 
-                doScale[1] = True 
-                self.doScaleXYZsum[1] = True
-        
-            if bbox.ZLength > epsilon: 
-                doScale[2] = True 
-                self.doScaleXYZsum[2] = True
-        
-            self.doScaleXYZ.append(doScale)
-        
-        if fp.Items > 0:
-            self.makeRibs(fp)
-        
-        self.update = True
+            self.doScaleXYZ = []
+            self.doScaleXYZsum = [False, False, False]
+            for h in fp.Hullcurves:
+                bbox = h.Shape.BoundBox
+                doScale = [False, False, False]
+                
+                if bbox.XLength > epsilon: 
+                    doScale[0] = True 
+                    self.doScaleXYZsum[0] = True
+            
+                if bbox.YLength > epsilon: 
+                    doScale[1] = True 
+                    self.doScaleXYZsum[1] = True
+            
+                if bbox.ZLength > epsilon: 
+                    doScale[2] = True 
+                    self.doScaleXYZsum[2] = True
+            
+                self.doScaleXYZ.append(doScale)
+            
+            if fp.Items > 0:
+                self.makeRibs(fp)
+            self.update = True
+        except Exception as ex:
+            self.update = True
+            raise ex
         
         
     def onChanged(self, fp, prop):   
         if not hasattr(fp, 'LoftMaxDegree'):
             CurvedShapes.addObjectProperty(fp, "App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
+        if not hasattr(fp, 'MaxLoftSize'):
+            CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "MaxLoftSize", "CurvedSegment",   "Max Size of a Loft in Segments.", init_val=-1) # backwards compatibility - this upgrades older documents
+        if not hasattr(fp, 'ActualTwist'):
+            CurvedShapes.addObjectProperty(fp,"App::PropertyFloat", "ActualTwist","CurvedSegment",  "Twists the curve by this much.", init_val=0.0) # backwards compatibility - this upgrades older documents
+        if not hasattr(fp, 'Path'):
+            CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Path",     "CurvedSegment",   "Sweep path", init_val=None) # backwards compatibility - this upgrades older documents
+        if not hasattr(fp, 'ForceInterpolated'):
+            CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "ForceInterpolated","CurvedSegment",  "Force Interpolation of sketches", init_val=False) # backwards compatibility - this upgrades older documents
 
             
     def makeRibs(self, fp):
         interpolate = False
-        if len(fp.Shape1.Shape.Edges) != len(fp.Shape2.Shape.Edges):
+        if fp.ForceInterpolated or len(fp.Shape1.Shape.Edges) != len(fp.Shape2.Shape.Edges):
             interpolate = True
         else:
             for e in range(0, len(fp.Shape1.Shape.Edges)):
@@ -128,17 +147,16 @@ class CurvedSegment:
         else:
             ribs = makeRibsSameShape(fp, fp.Items, False, makeStartEnd)
             
-        if len(fp.Hullcurves) > 0:
-            self.rescaleRibs(fp, ribs)
+        self.rescaleRibs(fp, ribs)
             
         if fp.makeSurface or fp.makeSolid:
-            fp.Shape = CurvedShapes.makeSurfaceSolid(ribs, fp.makeSolid, maxDegree=fp.LoftMaxDegree)
+            fp.Shape = CurvedShapes.makeSurfaceSolid(ribs, fp.makeSolid, maxDegree=fp.LoftMaxDegree, maxLoftSize=fp.MaxLoftSize)
         else:
             fp.Shape = Part.makeCompound(ribs)          
         
         
     def rescaleRibs(self, fp, ribs):
-        if fp.makeSurface or fp.makeSolid:
+        if (fp.makeSurface or fp.makeSolid) and fp.Path is None and abs(fp.ActualTwist)<=epsilon:
             start = 1
             end = len(ribs) - 1
             items = fp.Items + 3
@@ -146,14 +164,42 @@ class CurvedSegment:
             start = 0
             end = len(ribs) 
             items = fp.Items + 1
-            
+        
+        maxlen = 0   
+        edgelen = []
+        if fp.Path is not None:
+            edges = Part.__sortEdges__(fp.Path.Shape.Edges)
+            for edge in edges:
+                maxlen += edge.Length
+                edgelen.append(edge.Length)
+
+        bc0=fp.Shape1.Shape.Placement.Base
+        bc1=fp.Shape2.Shape.Placement.Base # makes rotating assymetric shapes easier - taking sketch origin into account
         for i in range(start, end):
-            d = CurvedShapes.distribute((i + 1) / items, fp.Distribution, fp.DistributionReverse)
+            d = CurvedShapes.distribute(i / items, fp.Distribution, fp.DistributionReverse)
             normal = CurvedShapes.vectorMiddle(fp.NormalShape1, fp.NormalShape2, d)
             #Draft.makeLine(ribs[i].BoundBox.Center, ribs[i].BoundBox.Center + normal)
-            bbox = CurvedShapes.boundbox_from_intersect(fp.Hullcurves, ribs[i].BoundBox.Center, normal, self.doScaleXYZ)
-            if bbox:              
-                ribs[i] = CurvedShapes.scaleByBoundbox(ribs[i], bbox, self.doScaleXYZsum, copy=False)
+            ribs[i] = ribs[i].rotate(bc0+d*(bc1-bc0), normal, fp.ActualTwist * d)
+            direction = normal
+            if maxlen>0:
+                plen = d * maxlen
+                for edge in edges:
+                    if plen > edge.Length: 
+                        plen -= edge.Length
+                    else:
+                        param = edge.getParameterByLength(plen)
+                        direction = edge.tangentAt(param) 
+                        posvec = edge.valueAt(param) 
+                        rotaxis = normal.cross(direction)
+                        angle = math.degrees(normal.getAngle(direction))
+                        if rotaxis.Length>epsilon:
+                            ribs[i] = ribs[i].rotate(bc0+d*(bc1-bc0), rotaxis, angle)
+                        ribs[i].Placement.Base = posvec
+
+            if len(fp.Hullcurves) > 0:
+                bbox = CurvedShapes.boundbox_from_intersect(fp.Hullcurves, ribs[i].BoundBox.Center, direction, self.doScaleXYZ)
+                if bbox:              
+                    ribs[i] = CurvedShapes.scaleByBoundbox(ribs[i], bbox, self.doScaleXYZsum, copy=False)
 
 #background compatibility
 CurvedSegmentWorker = CurvedSegment
@@ -204,7 +250,16 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
     if len(fp.Shape2.Shape.Edges) > 1:
         twist = 0
         
-    for i in range(1, items + 1): 
+    base1=fp.Shape1.Placement.Base
+    base2=fp.Shape2.Placement.Base
+    offset=base2-base1
+    if makeStartEnd and ((fp.Path is not None) or (abs(fp.ActualTwist)>epsilon)):
+        start=0
+        end=items+2
+    else:
+        start=1
+        end=items+1
+    for i in range(start, end): 
         if hasattr(fp, "Distribution"):
             fraction = CurvedShapes.distribute(i / (items + 1), fp.Distribution, fp.DistributionReverse)
         else:
@@ -226,9 +281,10 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
             newpoles = []
             for p in range(len(poles1)):
                 if alongNormal:
-                    newpoles.append(vectorMiddlePlaneNormal(poles1[p], poles2[p], fraction, fp.NormalShape1, fp.NormalShape2))
+                    newpoles.append(vectorMiddlePlaneNormal(poles1[p], poles2[p], fraction, fp.NormalShape1, fp.NormalShape2)-fraction*offset)
                 else:
-                    newpoles.append(vectorMiddlePlane(poles1[p], poles2[p], fraction, plane))
+                    newpoles.append(vectorMiddlePlane(poles1[p], poles2[p], fraction, plane)-fraction*offset)
+                # coordinate has fraction*offset substracted to force the shape to be centered on itself, important for later rotation on path
                            
             newcurve = Part.BSplineCurve()
             newcurve.buildFromPolesMultsKnots(newpoles, 
@@ -251,25 +307,28 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
                 ribs.append(curves[0]) 
             else:
                 ribs.append(Part.makeCompound(curves))
+        ribs[-1].Placement.Base=fraction*offset #place the whole rib in the right place instead
             
-    if makeStartEnd:
+    if makeStartEnd and fp.Path is None and abs(fp.ActualTwist)<=epsilon:
         ribs.insert(0, fp.Shape1.Shape)
         ribs.append(fp.Shape2.Shape)
         
     return ribs
                 
  
-def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):       
-    len1 = len(fp.Shape1.Shape.Edges)
-    len2 = len(fp.Shape2.Shape.Edges)
+def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
+    s1=fp.Shape1.Shape.toNurbs()
+    s2=fp.Shape2.Shape.toNurbs()
+    len1 = len(s1.Edges)
+    len2 = len(s2.Edges)
     twist = fp.Twist
     if len2 > 1:
         twist = 0
     
     nr_edges = int(len1 * len2 / math.gcd(len1, len2))
 
-    pointslist1 = EdgesToPoints(fp.Shape1.Shape, int(nr_edges / len1), int(fp.InterpolationPoints))
-    pointslist2 = EdgesToPoints(fp.Shape2.Shape, int(nr_edges / len2), int(fp.InterpolationPoints), fp.Twist, fp.TwistReverse)
+    pointslist1 = EdgesToPoints(s1, int(nr_edges / len1), int(fp.InterpolationPoints))
+    pointslist2 = EdgesToPoints(s2, int(nr_edges / len2), int(fp.InterpolationPoints), fp.Twist, fp.TwistReverse)
             
     ribs = []
     if makeStartEnd:
@@ -279,6 +338,9 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
         start = 1
         end = items + 1 
         
+    base1=s1.Placement.Base
+    base2=s2.Placement.Base
+    offset=base2-base1
     for i in range(start, end):
         if hasattr(fp, "Distribution"):
             fraction = CurvedShapes.distribute(i / (items + 1), fp.Distribution, fp.DistributionReverse)
@@ -293,9 +355,10 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
             newpoles = []
             for p in range(0, fp.InterpolationPoints):
                 if alongNormal:
-                    newpoles.append(vectorMiddlePlaneNormal(points1[p], points2[p], fraction, fp.NormalShape1, fp.NormalShape2))
+                    newpoles.append(vectorMiddlePlaneNormal(points1[p], points2[p], fraction, fp.NormalShape1, fp.NormalShape2)-fraction*offset)
                 else:
-                    newpoles.append(vectorMiddlePlane(points1[p], points2[p], fraction, plane))     
+                    newpoles.append(vectorMiddlePlane(points1[p], points2[p], fraction, plane)-fraction*offset)
+                # coordinate has fraction*offset substracted to force the shape to be centered on itself, important for later rotation on path
             
             bc = Part.BSplineCurve()
             bc.approximate(newpoles)
@@ -320,13 +383,14 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
                 ribs.append(wire)
             except Exception as ex:
                 ribs.append(comp)
-        
+        ribs[-1].Placement.Base=fraction*offset #place the whole rib in the right place instead
     return ribs
 
 
 def EdgesToPoints(shape, nr_frac, points_per_edge, twist = 0, twistReverse = False):  
     edges = [] 
-    redges = reorderEdges(shape.Edges, twist, twistReverse)
+    sortedEdges=sum(Part.sortEdges(shape.Edges),[])
+    redges = reorderEdges(sortedEdges, twist, twistReverse)
     if nr_frac == 1:
         edges = redges
     else:
