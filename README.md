@@ -135,6 +135,7 @@ Select two 2D shapes first. The curved segment will be created between them. If 
 - DistributionReverse: Reverses the direction of the Distribution algorithm
 - LoftMaxDegree: degree for surface or solid creation. Play with this parameter if your surface or solid looks distorted
 - MaxLoftSize: Maximum size of a loft segment. The surface is created by creating a loft over many array items, however OpenCascade gets very slow and produces artefacts towards the end of the loft when the array gets too large. Therefore the array gets split up intp sub-arrays of up to MaxLoftSize items. Play with this value if a split between segements ends up in a inconvenient spot. Sensible values are between 10 and 50.
+- ForceInterpolated: By default, CurvedSegment tries a more direct transition from the first to the second object if the objects have the same number of points and lines and interpolates intermediate shapes if they don't. In case the direct approach does not work because the type or order of lines does not match, interpolation can be forced with this parameter even if the number of points is equal. This should only be needed in rare cases.
 
 ### ![CornerShapeIcon](./Resources/icons/CornerShape.svg) Interpolated Middle
 Interpolates a 2D shape into the middle between two 2D curves. The base shapes can be connected to a shape with a sharp corner.
