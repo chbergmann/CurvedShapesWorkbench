@@ -389,7 +389,7 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
 
 def EdgesToPoints(shape, nr_frac, points_per_edge, twist = 0, twistReverse = False):  
     edges = [] 
-    sortedEdges=Part.sortEdges(shape.Edges)[0]
+    sortedEdges=sum(Part.sortEdges(shape.Edges),[])
     redges = reorderEdges(sortedEdges, twist, twistReverse)
     if nr_frac == 1:
         edges = redges
