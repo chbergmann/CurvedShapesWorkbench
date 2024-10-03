@@ -67,38 +67,41 @@ class CurvedSegment:
                    
         if fp.InterpolationPoints <= 1:
             return
+
+        try:
+            self.update = False
+            if fp.NormalShape1 == Vector(0,0,0):        
+                fp.NormalShape1 = CurvedShapes.getNormal(fp.Shape1)
             
-        self.update = False
-        if fp.NormalShape1 == Vector(0,0,0):        
-            fp.NormalShape1 = CurvedShapes.getNormal(fp.Shape1)
-        
-        if fp.NormalShape2 == Vector(0,0,0):    
-            fp.NormalShape2 = CurvedShapes.getNormal(fp.Shape2)
-        
-        self.doScaleXYZ = []
-        self.doScaleXYZsum = [False, False, False]
-        for h in fp.Hullcurves:
-            bbox = h.Shape.BoundBox
-            doScale = [False, False, False]
+            if fp.NormalShape2 == Vector(0,0,0):    
+                fp.NormalShape2 = CurvedShapes.getNormal(fp.Shape2)
             
-            if bbox.XLength > epsilon: 
-                doScale[0] = True 
-                self.doScaleXYZsum[0] = True
-        
-            if bbox.YLength > epsilon: 
-                doScale[1] = True 
-                self.doScaleXYZsum[1] = True
-        
-            if bbox.ZLength > epsilon: 
-                doScale[2] = True 
-                self.doScaleXYZsum[2] = True
-        
-            self.doScaleXYZ.append(doScale)
-        
-        if fp.Items > 0:
-            self.makeRibs(fp)
-        
-        self.update = True
+            self.doScaleXYZ = []
+            self.doScaleXYZsum = [False, False, False]
+            for h in fp.Hullcurves:
+                bbox = h.Shape.BoundBox
+                doScale = [False, False, False]
+                
+                if bbox.XLength > epsilon: 
+                    doScale[0] = True 
+                    self.doScaleXYZsum[0] = True
+            
+                if bbox.YLength > epsilon: 
+                    doScale[1] = True 
+                    self.doScaleXYZsum[1] = True
+            
+                if bbox.ZLength > epsilon: 
+                    doScale[2] = True 
+                    self.doScaleXYZsum[2] = True
+            
+                self.doScaleXYZ.append(doScale)
+            
+            if fp.Items > 0:
+                self.makeRibs(fp)
+            self.update = True
+        except Exception as ex:
+            self.update = True
+            raise ex
         
         
     def onChanged(self, fp, prop):   
