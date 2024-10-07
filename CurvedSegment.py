@@ -405,7 +405,7 @@ def reorderPoints(points, twist, reverse):
         return points
         
     nr = len(points)
-    start = int(nr * twist / 360)    
+    start = int(nr * twist / 360) % nr 
     closed = False
     if nr >= 2 and (points[0] - points[nr - 1]).Length < epsilon:
         closed = True
@@ -456,14 +456,17 @@ class CurvedSegmentViewProvider:
         self.Object = vfp.Object
             
     def getIcon(self):
-        return (os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "curvedSegment.svg"))
+        if self.Object.Path:
+            return (os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "CurvedPathSegment.svg"))
+        else:
+            return (os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "curvedSegment.svg"))
 
     def attach(self, vfp):
         self.Object = vfp.Object
         self.onChanged(vfp,"Shape1")
 
     def claimChildren(self):
-        return [self.Object.Shape1, self.Object.Shape2] + self.Object.Hullcurves
+        return [self.Object.Shape1, self.Object.Shape2, self.Object.Path] + self.Object.Hullcurves
         
     def onDelete(self, feature, subelements):
         return True
@@ -505,7 +508,7 @@ if FreeCAD.GuiUp:
                 else:
                     FreeCADGui.doCommand("hullcurves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
             
-            FreeCADGui.doCommand("CurvedShapes.makeCurvedSegment(%sItems=4, Surface=False, Solid=False)"%(options))
+            FreeCADGui.doCommand("CurvedShapes.makeCurvedSegment(%sItems=16, Surface=False, Solid=False)"%(options))
             FreeCAD.ActiveDocument.recompute()        
 
         def IsActive(self):
@@ -521,5 +524,46 @@ if FreeCAD.GuiUp:
                     'Accel' : "", # a default shortcut (optional)
                     'MenuText': "Curved Segment",
                     'ToolTip' : __doc__ }
+        
+
+    class CurvedPathSegmentCommand():
+            
+        def Activated(self):
+            FreeCADGui.doCommand("import CurvedShapes")
+            
+            selection = FreeCADGui.Selection.getSelectionEx()
+            options = ""
+            for sel in selection:
+                if sel == selection[0]:
+                    FreeCADGui.doCommand("shape1 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
+                    options += "Shape1=shape1, "
+                elif sel == selection[1]:
+                    FreeCADGui.doCommand("shape2 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[1].ObjectName))
+                    options += "Shape2=shape2, "
+                elif sel == selection[2]:
+                    FreeCADGui.doCommand("path = FreeCAD.ActiveDocument.getObject('%s')"%(selection[2].ObjectName))
+                    options += "Path=path, "
+                    FreeCADGui.doCommand("hullcurves = []");
+                    options += "Hullcurves=hullcurves, "
+                else:
+                    FreeCADGui.doCommand("hullcurves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
+            
+            FreeCADGui.doCommand("CurvedShapes.makeCurvedSegment(%sItems=16, Surface=False, Solid=False)"%(options))
+            FreeCAD.ActiveDocument.recompute()        
+
+        def IsActive(self):
+            """Here you can define if the command must be active or not (greyed) if certain conditions
+            are met or not. This function is optional."""
+            #if FreeCAD.ActiveDocument:
+            return(True)
+            #else:
+            #    return(False)
+            
+        def GetResources(self):
+            return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "CurvedPathSegment.svg"),
+                    'Accel' : "", # a default shortcut (optional)
+                    'MenuText': "Curved Path Segment",
+                    'ToolTip' : __doc__ + " along a path" }
 
     FreeCADGui.addCommand('CurvedSegment', CurvedSegmentCommand())
+    FreeCADGui.addCommand('CurvedPathSegment', CurvedPathSegmentCommand())

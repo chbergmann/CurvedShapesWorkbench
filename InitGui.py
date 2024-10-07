@@ -27,9 +27,10 @@ class CurvedShapesWB (Workbench):
         import NotchConnector
         
         self.examples = ["Horten_HIX", "FlyingWingS800",] # A list of command names created in the line above
-        self.list = ["CurvedArray", "CurvedPathArray", "CurvedSegment", "InterpolatedMiddle", "SurfaceCut", "NotchConnector"] # A list of command names created in the line above
+        self.list = ["CurvedArray", "CurvedPathArray", "CurvedSegment", "CurvedPathSegment", "InterpolatedMiddle", "SurfaceCut", "NotchConnector"] # A list of command names created in the line above
         self.appendToolbar("Curved Shapes",self.list) # creates a new toolbar with your commands
         self.appendMenu("Curved Shapes",self.list) # creates a new menu
+        self.appendMenu("Curved Shapes", 'Separator') # creates a new menu
         self.appendMenu("Curved Shapes",self.examples) # creates a new menu
 
     def Activated(self):
