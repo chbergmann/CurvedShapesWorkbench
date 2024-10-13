@@ -390,12 +390,11 @@ def makeCurvedSegment(Shape1 = None,
                     DistributionReverse = False,
                     LoftMaxDegree=5,
                     MaxLoftSize=16,
-                    ActualTwist = 0.0,
                     Path = None,
                     ForceInterpolated=False):
     import CurvedSegment
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedSegment")
-    CurvedSegment.CurvedSegment(obj, Shape1, Shape2, Hullcurves, NormalShape1, NormalShape2, Items, Surface, Solid, InterpolationPoints, Twist, TwistReverse, Distribution, DistributionReverse, LoftMaxDegree, MaxLoftSize, ActualTwist, Path, ForceInterpolated)
+    CurvedSegment.CurvedSegment(obj, Shape1, Shape2, Hullcurves, NormalShape1, NormalShape2, Items, Surface, Solid, InterpolationPoints, Twist, TwistReverse, Distribution, DistributionReverse, LoftMaxDegree, MaxLoftSize, Path, ForceInterpolated)
     if FreeCAD.GuiUp:
         CurvedSegment.CurvedSegmentViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()

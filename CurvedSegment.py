@@ -34,7 +34,6 @@ class CurvedSegment:
                  DistributionReverse = False,
                  LoftMaxDegree=5,
                  MaxLoftSize=16,
-                 ActualTwist=0.0,
                  Path=None,
                  ForceInterpolated = False):
         CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape1",     "CurvedSegment",   "The first object of the segment").Shape1 = shape1
@@ -52,7 +51,6 @@ class CurvedSegment:
         CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "DistributionReverse", "CurvedSegment",  "Reverses direction of Distribution algorithm").DistributionReverse = DistributionReverse
         CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid").LoftMaxDegree = LoftMaxDegree
         CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "MaxLoftSize", "CurvedSegment",   "Max Size of a Loft in Segments.").MaxLoftSize = MaxLoftSize
-        CurvedShapes.addObjectProperty(fp,"App::PropertyFloat", "ActualTwist","CurvedSegment",  "Twists the curve by this much.").ActualTwist = ActualTwist
         CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Path",     "CurvedSegment",   "Sweep path").Path = Path
         CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "ForceInterpolated","CurvedSegment",  "Force Interpolation of sketches").ForceInterpolated = ForceInterpolated
         fp.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'asinusoidal', 'elliptic']
@@ -112,13 +110,12 @@ class CurvedSegment:
             raise ex
         
         
-    def onChanged(self, fp, prop):   
+    def onChanged(self, fp, prop):
+        #backwards compatiblity
         if not hasattr(fp, 'LoftMaxDegree'):
             CurvedShapes.addObjectProperty(fp, "App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
         if not hasattr(fp, 'MaxLoftSize'):
             CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "MaxLoftSize", "CurvedSegment",   "Max Size of a Loft in Segments.", init_val=-1) # backwards compatibility - this upgrades older documents
-        if not hasattr(fp, 'ActualTwist'):
-            CurvedShapes.addObjectProperty(fp,"App::PropertyFloat", "ActualTwist","CurvedSegment",  "Twists the curve by this much.", init_val=0.0) # backwards compatibility - this upgrades older documents
         if not hasattr(fp, 'Path'):
             CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Path",     "CurvedSegment",   "Sweep path", init_val=None) # backwards compatibility - this upgrades older documents
         if not hasattr(fp, 'ForceInterpolated'):
@@ -133,8 +130,8 @@ class CurvedSegment:
             for e in range(0, len(fp.Shape1.Shape.Edges)):
                 edge1 = fp.Shape1.Shape.Edges[e]
                 edge2 = fp.Shape2.Shape.Edges[e]
-                curve1 = edge1.Curve.toBSpline()
-                curve2 = edge2.Curve.toBSpline()
+                curve1 = edge1.Curve.toBSpline(edge1.FirstParameter, edge1.LastParameter)
+                curve2 = edge2.Curve.toBSpline(edge2.FirstParameter, edge2.LastParameter)
                 poles1 = curve1.getPoles()
                 poles2 = curve2.getPoles()
                 if len(poles1) != len(poles2):
@@ -156,7 +153,7 @@ class CurvedSegment:
         
         
     def rescaleRibs(self, fp, ribs):
-        if (fp.makeSurface or fp.makeSolid) and fp.Path is None and abs(fp.ActualTwist)<=epsilon:
+        if (fp.makeSurface or fp.makeSolid) and fp.Path is None and abs(fp.Twist)<=epsilon:
             start = 1
             end = len(ribs) - 1
             items = fp.Items + 3
@@ -179,7 +176,7 @@ class CurvedSegment:
             d = CurvedShapes.distribute(i / items, fp.Distribution, fp.DistributionReverse)
             normal = CurvedShapes.vectorMiddle(fp.NormalShape1, fp.NormalShape2, d)
             #Draft.makeLine(ribs[i].BoundBox.Center, ribs[i].BoundBox.Center + normal)
-            ribs[i] = ribs[i].rotate(bc0+d*(bc1-bc0), normal, fp.ActualTwist * d)
+            ribs[i] = ribs[i].rotate(bc0+d*(bc1-bc0), normal, fp.Twist * d)
             direction = normal
             if maxlen>0:
                 plen = d * maxlen
@@ -246,14 +243,11 @@ def getMidPlane(fp, fraction):
         
 def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
     ribs = []
-    twist = fp.Twist
-    if len(fp.Shape2.Shape.Edges) > 1:
-        twist = 0
         
     base1=fp.Shape1.Placement.Base
     base2=fp.Shape2.Placement.Base
     offset=base2-base1
-    if makeStartEnd and ((fp.Path is not None) or (abs(fp.ActualTwist)>epsilon)):
+    if makeStartEnd and ((fp.Path is not None) or (abs(fp.Twist)>epsilon)):
         start=0
         end=items+2
     else:
@@ -269,14 +263,17 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
         
         edges = []
         curves = []
-        edges2 = reorderEdges(fp.Shape2.Shape.Edges, fp.Twist, fp.TwistReverse)
+        edges2 = fp.Shape2.Shape.Edges.copy()
+        if fp.TwistReverse:
+            edges2.reverse()
+
         for e in range(0, len(fp.Shape1.Shape.Edges)):
             edge1 = fp.Shape1.Shape.Edges[e]
             edge2 = edges2[e]
             curve1 = edge1.Curve.toBSpline(edge1.FirstParameter, edge1.LastParameter)
             curve2 = edge2.Curve.toBSpline(edge2.FirstParameter, edge2.LastParameter)
             poles1 = curve1.getPoles()
-            poles2 = reorderPoints(curve2.getPoles(), twist, fp.TwistReverse)
+            poles2 = curve2.getPoles()
             
             newpoles = []
             for p in range(len(poles1)):
@@ -309,26 +306,23 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
                 ribs.append(Part.makeCompound(curves))
         ribs[-1].Placement.Base=fraction*offset #place the whole rib in the right place instead
             
-    if makeStartEnd and fp.Path is None and abs(fp.ActualTwist)<=epsilon:
+    if makeStartEnd and fp.Path is None and abs(fp.Twist)<=epsilon:
         ribs.insert(0, fp.Shape1.Shape)
         ribs.append(fp.Shape2.Shape)
         
     return ribs
                 
  
-def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
+def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):       
     s1=fp.Shape1.Shape.toNurbs()
     s2=fp.Shape2.Shape.toNurbs()
     len1 = len(s1.Edges)
     len2 = len(s2.Edges)
-    twist = fp.Twist
-    if len2 > 1:
-        twist = 0
     
     nr_edges = int(len1 * len2 / math.gcd(len1, len2))
 
     pointslist1 = EdgesToPoints(s1, int(nr_edges / len1), int(fp.InterpolationPoints))
-    pointslist2 = EdgesToPoints(s2, int(nr_edges / len2), int(fp.InterpolationPoints), fp.Twist, fp.TwistReverse)
+    pointslist2 = EdgesToPoints(s2, int(nr_edges / len2), int(fp.InterpolationPoints), fp.TwistReverse)
             
     ribs = []
     if makeStartEnd:
@@ -351,7 +345,8 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
         newshape = []
         for l in range(0, len(pointslist1)):
             points1 = pointslist1[l]
-            points2 = reorderPoints(pointslist2[l], twist, fp.TwistReverse)
+            points2 = pointslist2[l]
+
             newpoles = []
             for p in range(0, fp.InterpolationPoints):
                 if alongNormal:
@@ -359,7 +354,10 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
                 else:
                     newpoles.append(vectorMiddlePlane(points1[p], points2[p], fraction, plane)-fraction*offset)
                 # coordinate has fraction*offset substracted to force the shape to be centered on itself, important for later rotation on path
-            
+        
+            if fp.TwistReverse:
+                newpoles.reverse()
+
             bc = Part.BSplineCurve()
             bc.approximate(newpoles)
             newshape.append(bc)
@@ -387,10 +385,12 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
     return ribs
 
 
-def EdgesToPoints(shape, nr_frac, points_per_edge, twist = 0, twistReverse = False):  
+def EdgesToPoints(shape, nr_frac, points_per_edge, twistReverse = False):  
     edges = [] 
-    sortedEdges=sum(Part.sortEdges(shape.Edges),[])
-    redges = reorderEdges(sortedEdges, twist, twistReverse)
+    redges = sum(Part.sortEdges(shape.Edges.copy()),[])
+    if twistReverse:
+        redges.reverse()
+
     if nr_frac == 1:
         edges = redges
     else:
@@ -409,56 +409,6 @@ def EdgesToPoints(shape, nr_frac, points_per_edge, twist = 0, twistReverse = Fal
         llpoints.append(edge.discretize(points_per_edge))
         
     return llpoints
-
-
-def reorderPoints(points, twist, reverse):
-    if twist == 0 and not reverse:
-        return points
-        
-    nr = len(points)
-    start = int(nr * twist / 360)    
-    closed = False
-    if nr >= 2 and (points[0] - points[nr - 1]).Length < epsilon:
-        closed = True
-        nr = nr - 1
-        
-    newpoints = []
-    if reverse:
-        for i in range(start, -1, -1):
-            newpoints.append(points[i])  
-        for i in range(nr - 1, start, -1):
-            newpoints.append(points[i]) 
-    else:        
-        for i in range(start, nr):
-            newpoints.append(points[i])  
-        for i in range(0, start):
-            newpoints.append(points[i]) 
-            
-    if closed:
-        newpoints.append(points[start])
-        
-    return newpoints 
- 
- 
-def reorderEdges(edges, twist, reverse):
-    nr = len(edges)
-    if nr == 1:
-        return edges
-        
-    start = int(nr * twist / 360) % nr 
-    newedges = []
-    if reverse:
-        for i in range(start, -1, -1):
-            newedges.append(edges[i])  
-        for i in range(nr - 1, start, -1):
-            newedges.append(edges[i]) 
-    else:        
-        for i in range(start, nr):
-            newedges.append(edges[i])  
-        for i in range(0, start):
-            newedges.append(edges[i]) 
-    
-    return newedges 
        
 
 class CurvedSegmentViewProvider:
@@ -467,14 +417,17 @@ class CurvedSegmentViewProvider:
         self.Object = vfp.Object
             
     def getIcon(self):
-        return (os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "curvedSegment.svg"))
+        if self.Object.Path:
+            return (os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "CurvedPathSegment.svg"))
+        else:
+            return (os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "curvedSegment.svg"))
 
     def attach(self, vfp):
         self.Object = vfp.Object
         self.onChanged(vfp,"Shape1")
 
     def claimChildren(self):
-        return [self.Object.Shape1, self.Object.Shape2] + self.Object.Hullcurves
+        return [self.Object.Shape1, self.Object.Shape2, self.Object.Path] + self.Object.Hullcurves
         
     def onDelete(self, feature, subelements):
         return True
@@ -516,7 +469,7 @@ if FreeCAD.GuiUp:
                 else:
                     FreeCADGui.doCommand("hullcurves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
             
-            FreeCADGui.doCommand("CurvedShapes.makeCurvedSegment(%sItems=4, Surface=False, Solid=False)"%(options))
+            FreeCADGui.doCommand("CurvedShapes.makeCurvedSegment(%sItems=16, Surface=False, Solid=False)"%(options))
             FreeCAD.ActiveDocument.recompute()        
 
         def IsActive(self):
@@ -532,5 +485,46 @@ if FreeCAD.GuiUp:
                     'Accel' : "", # a default shortcut (optional)
                     'MenuText': "Curved Segment",
                     'ToolTip' : __doc__ }
+        
+
+    class CurvedPathSegmentCommand():
+            
+        def Activated(self):
+            FreeCADGui.doCommand("import CurvedShapes")
+            
+            selection = FreeCADGui.Selection.getSelectionEx()
+            options = ""
+            for sel in selection:
+                if sel == selection[0]:
+                    FreeCADGui.doCommand("shape1 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[0].ObjectName))
+                    options += "Shape1=shape1, "
+                elif sel == selection[1]:
+                    FreeCADGui.doCommand("shape2 = FreeCAD.ActiveDocument.getObject('%s')"%(selection[1].ObjectName))
+                    options += "Shape2=shape2, "
+                elif sel == selection[2]:
+                    FreeCADGui.doCommand("path = FreeCAD.ActiveDocument.getObject('%s')"%(selection[2].ObjectName))
+                    options += "Path=path, "
+                    FreeCADGui.doCommand("hullcurves = []");
+                    options += "Hullcurves=hullcurves, "
+                else:
+                    FreeCADGui.doCommand("hullcurves.append(FreeCAD.ActiveDocument.getObject('%s'))"%(sel.ObjectName))
+            
+            FreeCADGui.doCommand("CurvedShapes.makeCurvedSegment(%sItems=16, Surface=False, Solid=False)"%(options))
+            FreeCAD.ActiveDocument.recompute()        
+
+        def IsActive(self):
+            """Here you can define if the command must be active or not (greyed) if certain conditions
+            are met or not. This function is optional."""
+            #if FreeCAD.ActiveDocument:
+            return(True)
+            #else:
+            #    return(False)
+            
+        def GetResources(self):
+            return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "CurvedPathSegment.svg"),
+                    'Accel' : "", # a default shortcut (optional)
+                    'MenuText': "Curved Path Segment",
+                    'ToolTip' : __doc__ + " along a path" }
 
     FreeCADGui.addCommand('CurvedSegment', CurvedSegmentCommand())
+    FreeCADGui.addCommand('CurvedPathSegment', CurvedPathSegmentCommand())
