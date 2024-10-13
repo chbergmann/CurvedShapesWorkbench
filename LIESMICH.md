@@ -96,7 +96,8 @@ Zuerst das Basisobjekt auswählen, danach den Pfad, und zum Schluss die Hüllkur
 - ScaleX: Hullcurves können in X Richtung skalieren
 - ScaleY: Hullcurves können in Y Richtung skalieren
 - ScaleZ: Hullcurves können in Z Richtung skalieren
-- LoftMaxDegree: Gradzahl für die Erstellung von Oberflächen und Festkörpern. 
+- LoftMaxDegree: Gradzahl für die Erstellung von Oberflächen und Festkörpern.
+- MaxLoftSize: Maximale Anzahl von Elementen für die Erstellung von Oberfächen und Festkörpern  
 
 Wenn Hullcurves verwendet werden und die Objekte nicht rechtwinklig zum Path angeordnet sind, muss evtl. die Skaliereng in eine Raumrichtung ausgeschaltet werden, in dem ScaleX, ScaleY oder ScaleZ auf false gesetzt wird.
 
@@ -123,7 +124,34 @@ Zuerst zwei 2D Kurven auswählen, dann optional noch eine oder mehrere Hüllkurv
 - TwistReverse: wenn True, wird die Drehrichtung geändert
 - Distribution: Algorithmus zur Berechnung der Distanz zwischen den Elementen. Default ist 'linear'. Weitere Möglichkeiten: parabolic (x²), x³, sinusoidal, elliptic
 - DistributionReverse: Kehrt die Richtung des Distrubution Algorithmus um
-- LoftMaxDegree: Gradzahl für die Erstellung von Oberflächen und Festkörpern. 
+- LoftMaxDegree: Gradzahl für die Erstellung von Oberflächen und Festkörpern.
+- MaxLoftSize: Maximale Anzahl von Elementen für die Erstellung von Oberfächen und Festkörpern
+- Path: wird nur für Curved Path segment verwendet  
+
+
+### ![](./Resources/icons/CurvedPathSegment.svg) Curved Path Segment
+Interpoliert zwischen zwei 2D Kurven und ordnet diese rechwinklig zu einer Kurve (Path) an. Optional können Größe und Position innerhalb von einer oder mehreren Hüllkurven (Hullcurves) ausgerichtet werden. 
+
+Zuerst zwei 2D Kurven auswählen, dann eine Kurve, die als Path verwendet wird, dann optional noch eine oder mehrere Hüllkurven. Danach das Curved Segment Werkzeug verwenden. 
+
+#### Parameters
+- Shape1: Das erste Object des Segments
+- Shape2: Das letzte Object des Segments
+- Hullcurves: Keine, eine oder mehrere Hüllkurven. Alle Hüllkurven sollten in der XY, XZ oder YZ Raumebene liegen.   
+- NormalShape1: Richtung, in der die Array Elemente von Shape1 aus aufgebaut werden (wird automatisch berechnet)
+- NormalShape2: Richtung, in der die Array Elemente von Shape2 aus aufgebaut werden (wird automatisch berechnet)
+- Items: Anzahl der Array Elemente
+- makeSurface: Eine Oberfläche erstellen
+- makeSolid: Einen Festkörper erstellen (funktioniert nur, wenn Base eine geschlossene Form ist)
+- InterpolationPoints: Wenn Shape1 und Shape2 verschiedenartige Objekte sind, werden die Kurven in diese Anzahl von Einzelpunkten zerlegt  
+- Twist: (Winkel in Grad) kann eine Rotation zwischen Shape1 unf Shape2 kompensieren
+- TwistReverse: wenn True, wird die Drehrichtung geändert
+- Distribution: Algorithmus zur Berechnung der Distanz zwischen den Elementen. Default ist 'linear'. Weitere Möglichkeiten: parabolic (x²), x³, sinusoidal, elliptic
+- DistributionReverse: Kehrt die Richtung des Distrubution Algorithmus um
+- LoftMaxDegree: Gradzahl für die Erstellung von Oberflächen und Festkörpern.
+- MaxLoftSize: Maximale Anzahl von Elementen für die Erstellung von Oberfächen und Festkörpern 
+- Path: Kurve, an der die Segmente rechtwinkling ausgerichtet werden.
+
 
 ### ![](./Resources/icons/CornerShape.svg) Interpolated Middle
 Interpoliert eine 2D Kurve in der Mitte zwischen zwei 2D Kurven. Es kann ein Verbinder mit einem Knick zwischen den den Kurven generiert werden.
@@ -144,6 +172,7 @@ Interpoliert eine 2D Kurve in der Mitte zwischen zwei 2D Kurven. Es kann ein Ver
 - Distribution: Algorithmus zur Berechnung der Distanz zwischen den Elementen. Default ist 'linear'. Weitere Möglichkeiten: parabolic (x²), x³, sinusoidal, elliptic
 - DistributionReverse: Kehrt die Richtung des Distrubution Algorithmus um
 - LoftMaxDegree: Gradzahl für die Erstellung von Oberflächen und Festkörpern. 
+- MaxLoftSize: Maximale Anzahl von Elementen für die Erstellung von Oberfächen und Festkörpern  
   
   
 ### ![](./Resources/icons/surfaceCut.svg) Surface Cut
