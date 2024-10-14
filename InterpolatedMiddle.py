@@ -57,17 +57,20 @@ class InterpolatedMiddle:
             
         if fp.InterpolationPoints <= 1:
             return
+        
+        try:
+            self.update = False
+            if fp.NormalShape1 == Vector(0,0,0):        
+                fp.NormalShape1 = CurvedShapes.getNormal(fp.Shape1)
             
-        self.update = False
-        if fp.NormalShape1 == Vector(0,0,0):        
-            fp.NormalShape1 = CurvedShapes.getNormal(fp.Shape1)
-        
-        if fp.NormalShape2 == Vector(0,0,0):    
-            fp.NormalShape2 = CurvedShapes.getNormal(fp.Shape2)
-        
-        self.makeRibs(fp)
-        
-        self.update = True
+            if fp.NormalShape2 == Vector(0,0,0):    
+                fp.NormalShape2 = CurvedShapes.getNormal(fp.Shape2)
+            
+            self.makeRibs(fp)
+            self.update = True
+        except Exception as ex:
+            self.update = True
+            raise ex
         
         
     def onChanged(self, fp, prop):

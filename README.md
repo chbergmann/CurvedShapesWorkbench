@@ -110,7 +110,8 @@ The first curve that you select for Curved Path Array creation will be the base 
 The parameters ScaleX, ScaleY and ScaleZ have been added because you may want to rescale the items only in one direction, but the hullcurves normally cover 2 or three room directions.  
   
 ### ![curvedSegmentIcon](./Resources/icons/curvedSegment.svg) Curved Segment
-Interpolates between two 2D curves. The interpolated curves can be resized in the bounds of some hullcurves.  
+Interpolates between two 2D curves. The interpolated curves can be resized in the bounds of some hullcurves.
+This does not work for all kinds of shapes. The result may look distorted if the two shapes are too different. The parameters TwistReverse and ForceInterpolated may help to get better results.  
 
 ![CurvedSegment](Examples/CurvedSegment.jpg)
 ![CurvedSegment2](Examples/CurvedSegment2.jpg)
@@ -134,6 +135,7 @@ Select two 2D shapes first. The curved segment will be created between them. If 
 - DistributionReverse: Reverses the direction of the Distribution algorithm
 - LoftMaxDegree: degree for surface or solid creation. Play with this parameter if your surface or solid looks distorted
 - MaxLoftSize: Maximum size of a loft segment. The surface is created by creating a loft over many array items, however OpenCascade gets very slow and produces artefacts towards the end of the loft when the array gets too large. Therefore the array gets split up intp sub-arrays of up to MaxLoftSize items. Play with this value if a split between segements ends up in a inconvenient spot. Sensible values are between 10 and 50.
+- ForceInterpolated: By default, CurvedSegment tries a more direct transition from the first to the second object if the objects have the same number of points and lines and interpolates intermediate shapes if they don't. In case the direct approach does not work because the type or order of lines does not match, interpolation can be forced with this parameter even if the number of points is equal. This should only be needed in rare cases.
 
 ### ![curvedSegmentIcon](./Resources/icons/CurvedPathSegment.svg) Curved Path Segment
 Interpolates between two 2D curves and sweeps the elements around a path curve. The interpolated curves can be resized in the bounds of some hullcurves.  
@@ -141,22 +143,8 @@ Interpolates between two 2D curves and sweeps the elements around a path curve. 
 Select two 2D shapes first, then a sweep path curve. The curved segment will be created between them. If you want to use hullcurves, select them also. Then create the Curved Segment.
 
 #### Parameters
-- Shape1: The first object of the segment
-- Shape2: The last object of the segment
-- Hullcurves: List of one or more bounding curves in XY, XZ or YZ plane (optional)
-- NormalShape1: Direction axis of Shape1 (auto computed)
-- NormalShape2: Direction axis of Shape2 (auto computed)
-- Items: Nr. of items between the segments
-- makeSurface: make a surface over the array items
-- makeSolid: make a solid if Base is a closed shape
-- InterpolationPoints: ignored if Shape1 and Shape2 have the same number of edges and poles. Otherwise all edges will be split (discretized) into this number of points
-- Twist: twist into the shape around the profiles normal axis. Useful for example for threaded parts.
-- TwistReverse: Reverses the rotation of one Shape. This is for correcting misalignment between the shapes, use this if the entire shape is inversed on itself (wasp-tail)
+same as in Curved Segment
 - Path: Sweep path - similar to "Path" in CurvedPathArray. If a path is specified, it supersedes the position and orientation of Shape1 and Shape2. CurvedSegment then behaves like CurvedPathArray but with a blend between a beginning and end profile.
-- Distribution: Algorithm for distance between array elements. Default is 'linear'. Also selectable: parabolic (x²), x³, sinusoidal, elliptic
-- DistributionReverse: Reverses the direction of the Distribution algorithm
-- LoftMaxDegree: degree for surface or solid creation. Play with this parameter if your surface or solid looks distorted
-- MaxLoftSize: Maximum size of a loft segment. The surface is created by creating a loft over many array items, however OpenCascade gets very slow and produces artefacts towards the end of the loft when the array gets too large. Therefore the array gets split up intp sub-arrays of up to MaxLoftSize items. Play with this value if a split between segements ends up in a inconvenient spot. Sensible values are between 10 and 50.
 
 
 ### ![CornerShapeIcon](./Resources/icons/CornerShape.svg) Interpolated Middle

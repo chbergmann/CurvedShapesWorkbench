@@ -34,7 +34,8 @@ class CurvedSegment:
                  DistributionReverse = False,
                  LoftMaxDegree=5,
                  MaxLoftSize=16,
-                 Path=None):
+                 Path=None,
+                 ForceInterpolated = False):
         CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape1",     "CurvedSegment",   "The first object of the segment").Shape1 = shape1
         CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Shape2",     "CurvedSegment",   "The last object of the segment").Shape2 = shape2
         CurvedShapes.addObjectProperty(fp,"App::PropertyLinkList",  "Hullcurves",   "CurvedSegment",   "Bounding curves").Hullcurves = hullcurves        
@@ -51,6 +52,7 @@ class CurvedSegment:
         CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid").LoftMaxDegree = LoftMaxDegree
         CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "MaxLoftSize", "CurvedSegment",   "Max Size of a Loft in Segments.").MaxLoftSize = MaxLoftSize
         CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Path",     "CurvedSegment",   "Sweep path").Path = Path
+        CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "ForceInterpolated","CurvedSegment",  "Force Interpolation of sketches").ForceInterpolated = ForceInterpolated
         fp.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'asinusoidal', 'elliptic']
         fp.Distribution = Distribution
         self.doScaleXYZ = []
@@ -71,52 +73,57 @@ class CurvedSegment:
                    
         if fp.InterpolationPoints <= 1:
             return
+
+        try:
+            self.update = False
+            if fp.NormalShape1 == Vector(0,0,0):        
+                fp.NormalShape1 = CurvedShapes.getNormal(fp.Shape1)
             
-        self.update = False
-        if fp.NormalShape1 == Vector(0,0,0):        
-            fp.NormalShape1 = CurvedShapes.getNormal(fp.Shape1)
-        
-        if fp.NormalShape2 == Vector(0,0,0):    
-            fp.NormalShape2 = CurvedShapes.getNormal(fp.Shape2)
-        
-        self.doScaleXYZ = []
-        self.doScaleXYZsum = [False, False, False]
-        for h in fp.Hullcurves:
-            bbox = h.Shape.BoundBox
-            doScale = [False, False, False]
+            if fp.NormalShape2 == Vector(0,0,0):    
+                fp.NormalShape2 = CurvedShapes.getNormal(fp.Shape2)
             
-            if bbox.XLength > epsilon: 
-                doScale[0] = True 
-                self.doScaleXYZsum[0] = True
+            self.doScaleXYZ = []
+            self.doScaleXYZsum = [False, False, False]
+            for h in fp.Hullcurves:
+                bbox = h.Shape.BoundBox
+                doScale = [False, False, False]
+                
+                if bbox.XLength > epsilon: 
+                    doScale[0] = True 
+                    self.doScaleXYZsum[0] = True
+            
+                if bbox.YLength > epsilon: 
+                    doScale[1] = True 
+                    self.doScaleXYZsum[1] = True
+            
+                if bbox.ZLength > epsilon: 
+                    doScale[2] = True 
+                    self.doScaleXYZsum[2] = True
+            
+                self.doScaleXYZ.append(doScale)
+            
+            if fp.Items > 0:
+                self.makeRibs(fp)
+            self.update = True
+        except Exception as ex:
+            self.update = True
+            raise ex
         
-            if bbox.YLength > epsilon: 
-                doScale[1] = True 
-                self.doScaleXYZsum[1] = True
         
-            if bbox.ZLength > epsilon: 
-                doScale[2] = True 
-                self.doScaleXYZsum[2] = True
-        
-            self.doScaleXYZ.append(doScale)
-        
-        if fp.Items > 0:
-            self.makeRibs(fp)
-        
-        self.update = True
-        
-        
-    def onChanged(self, fp, prop):
-        #backwards compatiblity
+    def onChanged(self, fp, prop):   
         if not hasattr(fp, 'LoftMaxDegree'):
             CurvedShapes.addObjectProperty(fp, "App::PropertyInteger", "LoftMaxDegree", "CurvedSegment",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
         if not hasattr(fp, 'MaxLoftSize'):
             CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "MaxLoftSize", "CurvedSegment",   "Max Size of a Loft in Segments.", init_val=-1) # backwards compatibility - this upgrades older documents
         if not hasattr(fp, 'Path'):
             CurvedShapes.addObjectProperty(fp,"App::PropertyLink",  "Path",     "CurvedSegment",   "Sweep path", init_val=None) # backwards compatibility - this upgrades older documents
- 
+        if not hasattr(fp, 'ForceInterpolated'):
+            CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "ForceInterpolated","CurvedSegment",  "Force Interpolation of sketches", init_val=False) # backwards compatibility - this upgrades older documents
+
+            
     def makeRibs(self, fp):
         interpolate = False
-        if len(fp.Shape1.Shape.Edges) != len(fp.Shape2.Shape.Edges):
+        if fp.ForceInterpolated or len(fp.Shape1.Shape.Edges) != len(fp.Shape2.Shape.Edges):
             interpolate = True
         else:
             for e in range(0, len(fp.Shape1.Shape.Edges)):
@@ -305,14 +312,16 @@ def makeRibsSameShape(fp, items, alongNormal, makeStartEnd = False):
     return ribs
                 
  
-def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):       
-    len1 = len(fp.Shape1.Shape.Edges)
-    len2 = len(fp.Shape2.Shape.Edges)
+def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
+    s1=fp.Shape1.Shape.toNurbs()
+    s2=fp.Shape2.Shape.toNurbs()
+    len1 = len(s1.Edges)
+    len2 = len(s2.Edges)
     
     nr_edges = int(len1 * len2 / math.gcd(len1, len2))
 
-    pointslist1 = EdgesToPoints(fp.Shape1.Shape, int(nr_edges / len1), int(fp.InterpolationPoints))
-    pointslist2 = EdgesToPoints(fp.Shape2.Shape, int(nr_edges / len2), int(fp.InterpolationPoints), fp.TwistReverse)
+    pointslist1 = EdgesToPoints(s1, int(nr_edges / len1), int(fp.InterpolationPoints))
+    pointslist2 = EdgesToPoints(s2, int(nr_edges / len2), int(fp.InterpolationPoints), fp.TwistReverse)
             
     ribs = []
     if makeStartEnd:
@@ -322,8 +331,8 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
         start = 1
         end = items + 1 
         
-    base1=fp.Shape1.Placement.Base
-    base2=fp.Shape2.Placement.Base
+    base1=s1.Placement.Base
+    base2=s2.Placement.Base
     offset=base2-base1
     for i in range(start, end):
         if hasattr(fp, "Distribution"):
@@ -336,6 +345,8 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
         for l in range(0, len(pointslist1)):
             points1 = pointslist1[l]
             points2 = pointslist2[l]
+            if(fp.TwistReverse):
+                points2.reverse()
 
             newpoles = []
             for p in range(0, fp.InterpolationPoints):
@@ -344,10 +355,7 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
                 else:
                     newpoles.append(vectorMiddlePlane(points1[p], points2[p], fraction, plane)-fraction*offset)
                 # coordinate has fraction*offset substracted to force the shape to be centered on itself, important for later rotation on path
-        
-            if fp.TwistReverse:
-                newpoles.reverse()
-
+            
             bc = Part.BSplineCurve()
             bc.approximate(newpoles)
             newshape.append(bc)
@@ -377,14 +385,14 @@ def makeRibsInterpolate(fp, items, alongNormal, makeStartEnd = False):
 
 def EdgesToPoints(shape, nr_frac, points_per_edge, twistReverse = False):  
     edges = [] 
-    redges = shape.Edges.copy()
+    sortedEdges=sum(Part.sortEdges(shape.Edges),[])
     if twistReverse:
-        redges.reverse()
+        sortedEdges.reverse()
 
     if nr_frac == 1:
-        edges = redges
+        edges = sortedEdges
     else:
-        for edge in redges:
+        for edge in sortedEdges:
             edge1 = edge
             for f in range(0, nr_frac - 1):
                 wires1 = edge1.split(edge1.FirstParameter + (edge1.LastParameter - edge1.FirstParameter) / nr_frac)
