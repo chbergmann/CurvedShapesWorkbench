@@ -338,10 +338,11 @@ def makeCurvedArray(Base = None,
                     extract=False,
                     Twists = [],
                     LoftMaxDegree=5,
-                    MaxLoftSize=16):
+                    MaxLoftSize=16,
+                    KeepBase=False):
     import CurvedArray
     obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","CurvedArray")
-    CurvedArray.CurvedArray(obj, Base, Hullcurves, Axis, Items, Position, OffsetStart, OffsetEnd, Twist, Surface, Solid, Distribution, DistributionReverse, False, Twists, LoftMaxDegree, MaxLoftSize)
+    CurvedArray.CurvedArray(obj, Base, Hullcurves, Axis, Items, Position, OffsetStart, OffsetEnd, Twist, Surface, Solid, Distribution, DistributionReverse, False, Twists, LoftMaxDegree, MaxLoftSize, KeepBase)
     if FreeCAD.GuiUp:
         CurvedArray.CurvedArrayViewProvider(obj.ViewObject)
     FreeCAD.ActiveDocument.recompute()

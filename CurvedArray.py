@@ -33,7 +33,8 @@ class CurvedArray:
                  extract=False,
                  Twists = [],
                  LoftMaxDegree=5,
-                 MaxLoftSize=16):
+                 MaxLoftSize=16,
+                 KeepBase=False):
         CurvedShapes.addObjectProperty(obj, "App::PropertyLink",  "Base",     "CurvedArray",   "The object to make an array from").Base = base
         CurvedShapes.addObjectProperty(obj, "App::PropertyLinkList",  "Hullcurves",   "CurvedArray",   "Bounding curves").Hullcurves = hullcurves        
         CurvedShapes.addObjectProperty(obj, "App::PropertyVector", "Axis",    "CurvedArray",   "Direction axis").Axis = axis
@@ -43,6 +44,7 @@ class CurvedArray:
         CurvedShapes.addObjectProperty(obj, "App::PropertyFloat", "OffsetEnd","CurvedArray",  "Offset of the last part from the end in opposite Axis direction").OffsetEnd = OffsetEnd
         CurvedShapes.addObjectProperty(obj, "App::PropertyFloat", "Twist","CurvedArray",  "Rotate around Axis in degrees").Twist = Twist
         CurvedShapes.addObjectProperty(obj, "App::PropertyFloatList","Twists", "CurvedArray","Rotate around Axis in degrees for each item -- overrides Twist").Twists = Twists
+        CurvedShapes.addObjectProperty(obj, "App::PropertyBool", "KeepBase","CurvedArray",  "Include the base shape unmodified").KeepBase = KeepBase
         CurvedShapes.addObjectProperty(obj, "App::PropertyBool", "Surface","CurvedArray",  "Make a surface").Surface = Surface
         CurvedShapes.addObjectProperty(obj, "App::PropertyBool", "Solid","CurvedArray",  "Make a solid").Solid = Solid
         CurvedShapes.addObjectProperty(obj, "App::PropertyEnumeration", "Distribution", "CurvedArray",  "Algorithm for distance between elements")
@@ -60,6 +62,11 @@ class CurvedArray:
         pl = obj.Placement
         ribs = []
         curvebox = FreeCAD.BoundBox(float("-inf"), float("-inf"), float("-inf"), float("inf"), float("inf"), float("inf"))
+
+        startrib = 0
+        if obj.KeepBase:
+            startrib=1
+            ribs.append(obj.Base.Shape)
             
         for n in range(0, len(obj.Hullcurves)):
             cbbx = obj.Hullcurves[n].Shape.BoundBox
@@ -96,7 +103,7 @@ class CurvedArray:
         pos0 = startvec + (obj.OffsetStart * obj.Axis)      
             
         if (not hasattr(obj,"Positions") or len(obj.Positions) == 0):
-            for x in range(0, sections):            
+            for x in range(startrib, sections):
                 if sections > 1:
                     d = CurvedShapes.distribute(x / (sections - 1), obj.Distribution, obj.DistributionReverse)
                                  
@@ -197,6 +204,8 @@ class CurvedArray:
             CurvedShapes.addObjectProperty(fp, "App::PropertyInteger", "LoftMaxDegree", "CurvedArray",   "Max Degree for Surface or Solid", init_val=5) # backwards compatibility - this upgrades older documents
         if not hasattr(fp, 'MaxLoftSize'):
             CurvedShapes.addObjectProperty(fp,"App::PropertyInteger", "MaxLoftSize", "CurvedArray",   "Max Size of a Loft in Segments.", init_val=-1) # backwards compatibility - this upgrades older documents
+        if not hasattr(fp, 'KeepBase'):
+            CurvedShapes.addObjectProperty(fp,"App::PropertyBool", "KeepBase", "CurvedArray",   "Include the base shape unmodified", init_val=False) # backwards compatibility - this upgrades older documents
            
         if "Positions" in prop and len(fp.Positions) != 0:
             setattr(fp,"Items",str(len(fp.Positions)))
