@@ -140,7 +140,6 @@ def boundbox_from_intersect(curves, pos, normal, doScaleXYZ, nearestpoints=True)
 
 
 def scaleByBoundbox(shape, boundbox, doScaleXYZ, copy=True):
-    shape.tessellate(0.01) # causes accurate BoundBox to be recomputed based on tessellation
     basebbox = shape.BoundBox   
       
     scalevec = Vector(1, 1, 1)
