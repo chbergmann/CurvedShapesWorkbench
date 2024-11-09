@@ -51,6 +51,7 @@ The first curve that you select for CurvedArray creation will be the item that i
 - DistributionReverse: Reverses the direction of the Distribution algorithm
 - LoftMaxDegree: degree for surface or solid creation. Play with this parameter if your surface or solid looks distorted
 - MaxLoftSize: Maximum size of a loft segment. The surface is created by creating a loft over many array items, however OpenCascade gets very slow and produces artefacts towards the end of the loft when the array gets too large. Therefore the array gets split up intp sub-arrays of up to MaxLoftSize items. Play with this value if a split between segements ends up in a inconvenient spot. Sensible values are between 10 and 50.
+- KeepBase: use the Base object as one of the endpoints of the array
 
 Distribution Linear  
 ![Linear](Examples/CurvedArrayLinear.jpg)  

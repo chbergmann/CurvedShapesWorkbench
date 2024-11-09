@@ -43,6 +43,8 @@ Zuerst das Basisobjekt auswählen, danach die Hüllkurven. Dann ein Curved Array
 - Distribution: Algorithmus zur Berechnung der Distanz zwischen den Elementen. Default ist 'linear'. Weitere Möglichkeiten: parabolic (x²), x³, sinusoidal, asinusoidal, elliptic
 - DistributionReverse: Kehrt die Richtung des Distrubution Algorithmus um
 - LoftMaxDegree: Gradzahl für die Erstellung von Oberflächen und Festkörpern. 
+- MaxLoftSize: Maximale Anzahl von Elementen für die Erstellung von Oberfächen und Festkörpern  
+- KeepBase: Basisobjekt als erstes oder letztes Array Element benutzen
 
 Distribution Linear  
 ![Linear](Examples/CurvedArrayLinear.jpg)  
