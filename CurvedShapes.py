@@ -6,7 +6,7 @@ import Part
 import math
 import CompoundTools.Explode
 
-epsilon = 1e-7
+epsilon = 1e-6
 
 
 def addObjectProperty(obj, ptype, pname, *args, init_val=None):
