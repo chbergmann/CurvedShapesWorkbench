@@ -44,8 +44,8 @@ class NotchConnector:
         
         fp.Proxy = None
         if fp.CutDirection == Vector(0.0,0.0,0.0):
-            bbox1 = self.extractCompounds([fp.Base])[0].Shape.BoundBox
-            bbox2 = self.extractCompounds(fp.Tools)[0].Shape.BoundBox
+            bbox1 = self.extractCompounds([fp.Base])[0].Shape.optimalBoundingBox(False,False)
+            bbox2 = self.extractCompounds(fp.Tools)[0].Shape.optimalBoundingBox(False,False)
             v = Vector(1,1,1)
             
             if abs(bbox1.XLength - bbox2.XLength) > epsilon:
@@ -115,11 +115,11 @@ class NotchConnector:
                 
                 for tool in self.extractShapes(fp.Tools):  
                     if fp.ShiftLength == 0:  
-                        tbox = tool.optimalBoundingBox()
+                        tbox = tool.optimalBoundingBox(False,False)
                         common = tool.common(bShape)
-                        cbox = common.BoundBox
+                        cbox = common.optimalBoundingBox(False,False)
                         if cbox.XLength + cbox.YLength + cbox.ZLength > epsilon:
-                            cbox = common.optimalBoundingBox()
+                            cbox = common.optimalBoundingBox(False,False)
                             vSize = Vector(cbox.XLength, cbox.YLength, cbox.ZLength)
                             vPlace = Vector(cbox.XMin, cbox.YMin, cbox.ZMin)
                             if vSize.x < epsilon or vSize.x > tbox.XLength: 

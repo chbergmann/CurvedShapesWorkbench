@@ -176,7 +176,7 @@ def draw_HortenHIX():
     Wing.Tool = TurbineCut
     doc.recompute()
     
-    ymax = WingSurface.Shape.BoundBox.YMin + WingSurface.Shape.BoundBox.YLength
+    ymax = WingSurface.Shape.optimalBoundingBox(False,False).YMin + WingSurface.Shape.optimalBoundingBox(False,False).YLength
     rota = FreeCAD.Rotation(Vector(0,0,1), 28)
     vecToWingEnd28 = rota.multVec(Vector(0,1,0))
     WingCutFront = CurvedShapes.cutSurfaces([Wing], Normal = vecToWingEnd28, Position=Vector(0, ymax * 0.85, 0), Face=False, Simplify=0)
