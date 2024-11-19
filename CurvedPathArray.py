@@ -63,7 +63,7 @@ class CurvedPathArray:
         curvebox = FreeCAD.BoundBox(float("-inf"), float("-inf"), float("-inf"), float("inf"), float("inf"), float("inf"))
            
         for n in range(0, len(obj.Hullcurves)):
-            cbbx = obj.Hullcurves[n].Shape.BoundBox
+            cbbx = obj.Hullcurves[n].Shape.optimalBoundingBox(False,False)
             if self.doScaleXYZ[n][0]:
                 if cbbx.XMin > curvebox.XMin: curvebox.XMin = cbbx.XMin
                 if cbbx.XMax < curvebox.XMax: curvebox.XMax = cbbx.XMax
@@ -75,18 +75,19 @@ class CurvedPathArray:
                 if cbbx.ZMax < curvebox.ZMax: curvebox.ZMax = cbbx.ZMax
         
         if len(obj.Hullcurves) > 0: 
+            h0bbox = obj.Hullcurves[0].Shape.optimalBoundingBox(False,False)
             if curvebox.XMin == float("-inf"): 
-                curvebox.XMin = obj.Hullcurves[0].Shape.BoundBox.XMin
+                curvebox.XMin = h0bbox.XMin
             if curvebox.XMax == float("inf"): 
-                curvebox.XMax = obj.Hullcurves[0].Shape.BoundBox.XMax
+                curvebox.XMax = h0bbox.XMax
             if curvebox.YMin == float("-inf"): 
-                curvebox.YMin = obj.Hullcurves[0].Shape.BoundBox.YMin
+                curvebox.YMin = h0bbox.YMin
             if curvebox.YMax == float("inf"): 
-                curvebox.YMax = obj.Hullcurves[0].Shape.BoundBox.YMax
+                curvebox.YMax = h0bbox.YMax
             if curvebox.ZMin == float("-inf"): 
-                curvebox.ZMin = obj.Hullcurves[0].Shape.BoundBox.ZMin
+                curvebox.ZMin = h0bbox.ZMin
             if curvebox.ZMax == float("inf"): 
-                curvebox.ZMax = obj.Hullcurves[0].Shape.BoundBox.ZMax
+                curvebox.ZMax = h0bbox.ZMax
          
         maxlen = 0   
         edgelen = []
@@ -114,7 +115,7 @@ class CurvedPathArray:
                     #dolly = self.makeRib(obj, posvec, direction)
                     dolly = obj.Base.Shape.copy()
                     if rotaxis.Length > epsilon:
-                        dolly = dolly.rotate(dolly.BoundBox.Center, rotaxis, angle)
+                        dolly = dolly.rotate(dolly.optimalBoundingBox(False,False).Center, rotaxis, angle)
 
                     dolly.Placement.Base = posvec
                     if dolly: 
@@ -152,7 +153,7 @@ class CurvedPathArray:
         self.doScaleXYZsum = [False, False, False]
         bbox = None
         for h in prop.Hullcurves:
-            bbox = h.Shape.BoundBox
+            bbox = h.Shape.optimalBoundingBox(False,False)
             doScale = [False, False, False]
             
             if bbox.XLength > epsilon: 
@@ -168,7 +169,7 @@ class CurvedPathArray:
             
         if bbox:    
             for h in prop.Hullcurves:
-                bbox.add(h.Shape.BoundBox)
+                bbox.add(h.Shape.optimalBoundingBox(False,False))
                       
             if bbox.XLength > epsilon: 
                 self.doScaleXYZsum[0] = prop.ScaleX

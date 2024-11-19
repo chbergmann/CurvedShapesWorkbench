@@ -66,7 +66,7 @@ class CurvedArray:
         curvebox = FreeCAD.BoundBox(float("-inf"), float("-inf"), float("-inf"), float("inf"), float("inf"), float("inf"))
 
         for n in range(0, len(obj.Hullcurves)):
-            cbbx = obj.Hullcurves[n].Shape.BoundBox
+            cbbx = obj.Hullcurves[n].Shape.optimalBoundingBox(False,False)
             if self.doScaleXYZ[n][0]:
                 if cbbx.XMin > curvebox.XMin: curvebox.XMin = cbbx.XMin
                 if cbbx.XMax < curvebox.XMax: curvebox.XMax = cbbx.XMax
@@ -76,19 +76,20 @@ class CurvedArray:
             if self.doScaleXYZ[n][2]:
                 if cbbx.ZMin > curvebox.ZMin: curvebox.ZMin = cbbx.ZMin
                 if cbbx.ZMax < curvebox.ZMax: curvebox.ZMax = cbbx.ZMax
-            
+           
+        h0bbox = obj.Hullcurves[0].Shape.optimalBoundingBox(False,False)
         if curvebox.XMin == float("-inf"): 
-            curvebox.XMin = obj.Hullcurves[0].Shape.BoundBox.XMin
+            curvebox.XMin = h0bbox.XMin
         if curvebox.XMax == float("inf"): 
-            curvebox.XMax = obj.Hullcurves[0].Shape.BoundBox.XMax
+            curvebox.XMax = h0bbox.XMax
         if curvebox.YMin == float("-inf"): 
-            curvebox.YMin = obj.Hullcurves[0].Shape.BoundBox.YMin
+            curvebox.YMin = h0bbox.YMin
         if curvebox.YMax == float("inf"): 
-            curvebox.YMax = obj.Hullcurves[0].Shape.BoundBox.YMax
+            curvebox.YMax = h0bbox.YMax
         if curvebox.ZMin == float("-inf"): 
-            curvebox.ZMin = obj.Hullcurves[0].Shape.BoundBox.ZMin
+            curvebox.ZMin = h0bbox.ZMin
         if curvebox.ZMax == float("inf"): 
-            curvebox.ZMax = obj.Hullcurves[0].Shape.BoundBox.ZMax
+            curvebox.ZMax = h0bbox.ZMax
          
         areavec = Vector(curvebox.XLength, curvebox.YLength, curvebox.ZLength)
         deltavec = areavec.scale(obj.Axis.x, obj.Axis.y ,obj.Axis.z) - (obj.OffsetStart + obj.OffsetEnd) * obj.Axis
@@ -137,10 +138,11 @@ class CurvedArray:
     def makeRibRotate(self, obj, posvec, x, d, ribs):
         dolly = self.makeRib(obj, posvec)
         if dolly:
+            dbbox = dolly.optimalBoundingBox(False,False)
             if x < len(obj.Twists):
-                dolly = dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twists[x])
+                dolly = dolly.rotate(dbbox.Center, obj.Axis, obj.Twists[x])
             elif not obj.Twist == 0:
-                dolly = dolly.rotate(dolly.BoundBox.Center, obj.Axis, obj.Twist * d)        
+                dolly = dolly.rotate(dbbox.Center, obj.Axis, obj.Twist * d)        
         
             ribs.append(dolly)            
         
@@ -167,7 +169,7 @@ class CurvedArray:
         self.doScaleXYZsum = [False, False, False]
         sumbbox=None   #Define the variable other wise it causes error 
         for h in prop.Hullcurves:
-            bbox = h.Shape.BoundBox
+            bbox = h.Shape.optimalBoundingBox(False,False)
             if h == prop.Hullcurves[0]:
                 sumbbox = bbox
             else:

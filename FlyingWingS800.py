@@ -186,7 +186,7 @@ def draw_S800():
     
     doc.recompute()
     axis=cutpathPoints[1].sub(cutpathPoints[0])
-    center = ElevonLeft.Placement.Base.add(Vector(midWidth/2, midLength, ElevonLeft.Shape.BoundBox.ZMax))
+    center = ElevonLeft.Placement.Base.add(Vector(midWidth/2, midLength, ElevonLeft.Shape.optimalBoundingBox(False,False).ZMax))
     Draft.rotate([ElevonLeft], ElevonLeftAngle, center, axis=axis, copy=False)
     Draft.rotate([ElevonRight1], ElevonRightAngle, center, axis=axis, copy=False)
     

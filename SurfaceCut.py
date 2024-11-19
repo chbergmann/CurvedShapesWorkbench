@@ -53,10 +53,11 @@ class SurfaceCut:
         else:
             bbox = None
             for obj in fp.Surfaces:
+                obbox = obj.Shape.optimalBoundingBox(False,False)
                 if not bbox:
-                    bbox = obj.Shape.BoundBox
+                    bbox = obbox
                 else:
-                    bbox = bbox.united(obj.Shape.BoundBox)
+                    bbox = bbox.united(obbox)
                 
             vOffset = Vector(bbox.XMin, bbox.YMin, bbox.ZMin)
             

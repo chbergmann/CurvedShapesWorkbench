@@ -85,7 +85,7 @@ class CurvedSegment:
             self.doScaleXYZ = []
             self.doScaleXYZsum = [False, False, False]
             for h in fp.Hullcurves:
-                bbox = h.Shape.BoundBox
+                bbox = h.Shape.optimalBoundingBox(False,False)
                 doScale = [False, False, False]
                 
                 if bbox.XLength > epsilon: 
@@ -174,7 +174,7 @@ class CurvedSegment:
         for i in range(start, end):
             d = CurvedShapes.distribute(i / items, fp.Distribution, fp.DistributionReverse)
             normal = CurvedShapes.vectorMiddle(fp.NormalShape1, fp.NormalShape2, d)
-            #Draft.makeLine(ribs[i].BoundBox.Center, ribs[i].BoundBox.Center + normal)
+            #Draft.makeLine(ribs[i].optimalBoundingBox(False,False).Center, ribs[i].optimalBoundingBox(False,False).Center + normal)
             ribs[i] = ribs[i].rotate(bc0+d*(bc1-bc0), normal, fp.Twist * d)
             direction = normal
             if maxlen>0:
@@ -193,7 +193,7 @@ class CurvedSegment:
                         ribs[i].Placement.Base = posvec
 
             if len(fp.Hullcurves) > 0:
-                bbox = CurvedShapes.boundbox_from_intersect(fp.Hullcurves, ribs[i].BoundBox.Center, direction, self.doScaleXYZ)
+                bbox = CurvedShapes.boundbox_from_intersect(fp.Hullcurves, ribs[i].optimalBoundingBox(False,False).Center, direction, self.doScaleXYZ)
                 if bbox:              
                     ribs[i] = CurvedShapes.scaleByBoundbox(ribs[i], bbox, self.doScaleXYZsum, copy=False)
 
@@ -235,7 +235,7 @@ def vectorMiddlePlaneNormal(vec1, vec2, fraction, normalShape1, normalShape2):
 
 
 def getMidPlane(fp, fraction):
-    midvec = CurvedShapes.vectorMiddle(fp.Shape1.Shape.BoundBox.Center, fp.Shape2.Shape.BoundBox.Center, fraction)
+    midvec = CurvedShapes.vectorMiddle(fp.Shape1.Shape.optimalBoundingBox(False,False).Center, fp.Shape2.Shape.optimalBoundingBox(False,False).Center, fraction)
     midnorm = CurvedShapes.vectorMiddle(fp.NormalShape1, fp.NormalShape2, fraction)
     return Part.Plane(midvec, midnorm)
         
