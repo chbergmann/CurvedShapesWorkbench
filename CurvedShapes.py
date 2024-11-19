@@ -140,7 +140,7 @@ def boundbox_from_intersect(curves, pos, normal, doScaleXYZ, nearestpoints=True)
 
 
 def scaleByBoundbox(shape, boundbox, doScaleXYZ, copy=True):
-    basebbox = shape.BoundBox   
+    basebbox = shape.optimalBoundingBox(False,False)
       
     scalevec = Vector(1, 1, 1)
     if doScaleXYZ[0] and basebbox.XLength > epsilon: scalevec.x = boundbox.XLength / basebbox.XLength
