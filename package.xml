@@ -8,7 +8,7 @@
   <license file="LICENSE">LGPL-2.1</license>
   <url type="repository" branch="master">https://github.com/chbergmann/CurvedShapesWorkbench</url>
   <url type="documentation">https://github.com/chbergmann/CurvedShapesWorkbench/README.md</url>
-  <icon>Resources/icon/curvedArray.svg</icon>
+  <icon>Resources/icons/curvedArray.svg</icon>
 
   <content>
     <workbench>
