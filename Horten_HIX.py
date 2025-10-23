@@ -5,24 +5,22 @@ import Part
 import Draft
 import CurvedShapes
 import BOPTools.JoinFeatures
-        
+
 epsilon = CurvedShapes.epsilon
+translate = FreeCAD.Qt.translate
 
-def draw_HortenHIX():    
-
+def draw_HortenHIX():
     length = 500
     scaleFactor = 1
     twist = 3 
-    
 
     if FreeCAD.ActiveDocument is not None and FreeCAD.ActiveDocument.Name == "Horten_HIX":
         FreeCAD.closeDocument(FreeCAD.ActiveDocument.Name)
         FreeCAD.setActiveDocument("")
         FreeCAD.ActiveDocument=None
-        
+
     doc = FreeCAD.newDocument('Horten_HIX')
-   
-    
+
     WingTop_parts = []
     line = Draft.makeWire([Vector(0.0, 73.39, 0.0) * scaleFactor, Vector(72.64, 27.65, 0.0) * scaleFactor])
     WingTop_parts.append(line)
@@ -59,7 +57,7 @@ def draw_HortenHIX():
     WingTop.Placement.Rotation = Rotation (0.0, 0.0, 0.0, 1.0)
     WingTop.ViewObject.LineColor = (1.0 ,0.0 ,0.0 ,0.0)
     WingTop.ViewObject.LineColorArray = [(1.0 ,0.0 ,0.0 ,0.0)]
-    
+
     WingFront_parts = []
     line = Draft.makeWire([Vector(0.0, -4.31, 0.0) * scaleFactor, Vector(77.02, 2.59, 0.0) * scaleFactor])
     WingFront_parts.append(line)
@@ -86,7 +84,7 @@ def draw_HortenHIX():
     WingFront.Placement.Rotation = Rotation (0.7071067811865475, -0.0, -0.0, 0.7071067811865476)
     WingFront.ViewObject.LineColor = (1.0 ,0.0 ,0.5 ,0.0)
     WingFront.ViewObject.LineColorArray = [(1.0 ,0.0 ,0.5 ,0.0)]
-    
+
     WingProfile_parts = []
     poles = []
     poles.append(Vector(65.04, 0.0, 0.0) * scaleFactor)
@@ -113,16 +111,15 @@ def draw_HortenHIX():
     WingProfile.ViewObject.LineColor = (1.0 ,0.33 ,0.0 ,0.0)
     WingProfile.ViewObject.LineColorArray = [(1.0 ,0.33 ,0.0 ,0.0)]
     # Profiles ^^^
-   
-    doc.recompute()      
-    
+
+    doc.recompute()
+
     twists = [] 
     positions = []
     for i in range(0, 10):
         positions.append(i * 0.11)
         twists.append(i)
-  
-    
+
     WingArray = CurvedShapes.makeCurvedArray(Base=WingProfile, 
                                          Hullcurves=[WingTop, WingFront], 
                                          Axis=Vector(1,0,0), 
@@ -136,18 +133,18 @@ def draw_HortenHIX():
                                          Distribution = 'parabolic',
                                          DistributionReverse = True,
                                          extract=False)
-    
+
     WingTopLeft = doc.addObject('Part::Mirroring', 'WingTopLeft')
     WingTopLeft.Normal = Vector(1.0, 0.0, 0.0)
     WingTopLeft.Source = WingTop
     WingTopLeft.ViewObject.hide()
-    
+
     WingFrontLeft = doc.addObject('Part::Mirroring', 'WingFrontLeft')
     WingFrontLeft.Normal = Vector(1.0, 0.0, 0.0)
     WingFrontLeft.Source = WingFront
     WingFrontLeft.ViewObject.hide()
     doc.recompute()
-    
+
     WingSurface = CurvedShapes.makeCurvedArray(Base=WingProfile, 
                                              Hullcurves=[WingTopLeft, WingFrontLeft], 
                                              Axis=Vector(-1,0,0), 
@@ -159,12 +156,11 @@ def draw_HortenHIX():
                                              Solid=True,
                                              Distribution = 'parabolic',
                                              DistributionReverse=True) 
-    
-    
+
     WingSurface.Label = "WingSurface"
-    
+
     Cockpit = drawCockpit(doc, scaleFactor, WingSurface)
-    
+
     Turbine = makeTurbine(doc, scaleFactor)
     TurbineCut = makeTurbineCut(doc, scaleFactor)
     doc.recompute()
@@ -175,23 +171,23 @@ def draw_HortenHIX():
     Wing.Base = WingSurface
     Wing.Tool = TurbineCut
     doc.recompute()
-    
+
     ymax = WingSurface.Shape.BoundBox.YMin + WingSurface.Shape.BoundBox.YLength
     rota = FreeCAD.Rotation(Vector(0,0,1), 28)
     vecToWingEnd28 = rota.multVec(Vector(0,1,0))
     WingCutFront = CurvedShapes.cutSurfaces([Wing], Normal = vecToWingEnd28, Position=Vector(0, ymax * 0.85, 0), Face=False, Simplify=0)
     WingCutFront.Label = "WingCutFront"
-    
+
     rota = FreeCAD.Rotation(Vector(0,0,1), 18)
     vecToWingEnd18 = rota.multVec(Vector(0,1,0))
     WingCutBack = CurvedShapes.cutSurfaces([Wing], Normal = vecToWingEnd18, Position=Vector(0, ymax * 0.55, 0), Face=False, Simplify=0)
     WingCutBack.Label = "WingCutBack"
-    
+
     doc.recompute()
     FreeCADGui.activeDocument().activeView().viewIsometric()
     FreeCADGui.SendMsgToActiveView("ViewFit")
-    
-            
+
+
 def drawCockpit(doc, scaleFactor, Wing):
     CockpitFront_parts = []
     poles = []
@@ -211,7 +207,7 @@ def drawCockpit(doc, scaleFactor, Wing):
     CockpitFront.Placement.Base = Vector(0.0, 0.0, 0.0) * scaleFactor
     CockpitFront.Placement.Rotation = Rotation (-0.7071067811865475, 0.0, 0.0, -0.7071067811865475)
     CockpitFront.ViewObject.Visibility = False
-    
+
     CockpitTop_parts = []
     poles = []
     poles.append(Vector(0.0, 66.8, 0.0) * scaleFactor)
@@ -231,12 +227,12 @@ def drawCockpit(doc, scaleFactor, Wing):
     CockpitTop.Links = CockpitTop_parts
     CockpitTop.Placement.Base = Vector(0.0, 0.0, 5.3) * scaleFactor
     CockpitTop.Placement.Rotation = Rotation (0.0, 0.0, 0.0, 1.0)
-    
+
     CockpitTopLeft = doc.addObject('Part::Mirroring', 'CockpitTopLeft')
     CockpitTopLeft.Normal = Vector(1.0, 0.0, 0.0)
     CockpitTopLeft.Source = CockpitTop
     CockpitTopLeft.ViewObject.hide()
-    
+
     CockpitSide_parts = []
     poles = []
     poles.append(Vector(33.9, 5.23, 0.0) * scaleFactor)
@@ -255,29 +251,29 @@ def drawCockpit(doc, scaleFactor, Wing):
     CockpitSide.Placement.Base = Vector(0.0, 0.0, 0.0) * scaleFactor
     CockpitSide.Placement.Rotation = Rotation (0.5, 0.5, 0.5, 0.5)
     CockpitSide.ViewObject.Visibility = False
-    
+
     doc.recompute() 
-    
+
     CockpitRight = CurvedShapes.makeCurvedPathArray(CockpitFront, CockpitSide, [CockpitSide, CockpitTop], Items=24, OffsetStart=0, OffsetEnd=0, Surface=False, Solid=False)
     CockpitRight.Label = "CockpitRight"
-    
+
     CockpitFrontLeft = doc.addObject('Part::Mirroring', 'CockpitFrontLeft')
     CockpitFrontLeft.Normal = Vector(1.0, 0.0, 0.0)
     CockpitFrontLeft.Source = CockpitFront
     CockpitFrontLeft.ViewObject.hide()
     doc.recompute()
-    
+
     CockpitLeft = CurvedShapes.makeCurvedPathArray(CockpitFrontLeft, CockpitSide, [CockpitSide, CockpitTopLeft], Items=24, OffsetStart=0, OffsetEnd=0, Surface=True, Solid=False)
     CockpitLeft.Label = "CockpitLeft"
     CockpitLeft.ViewObject.Transparency = 50
-    
+
     Cockpit = doc.addObject('Part::Compound', 'Cockpit')
     Cockpit.Links = [CockpitRight, CockpitLeft]
     Cockpit.ViewObject.Transparency = 50
-    
+
     return Cockpit
 
-    
+
 def makeTurbine(doc, scaleFactor = 1):
     Turbine_parts = []
     poles = []
@@ -341,6 +337,7 @@ def makeTurbine(doc, scaleFactor = 1):
     Revolve.Solid = True
     return Revolve
 
+
 def makeTurbineCut(doc, scaleFactor = 1):
     Turbinecut_parts = []
     line = Draft.makeWire([Vector(-6.0, 0.0, 0.0) * scaleFactor, Vector(-9.5, 0.0, 0.0) * scaleFactor])
@@ -366,18 +363,23 @@ def makeTurbineCut(doc, scaleFactor = 1):
     Revolve.Solid = True
     return Revolve
 
-        
+
 class Horten_HIX():
+    def QT_TRANSLATE_NOOP(context, text):
+        return text
+
+
     def Activated(self):
         import Horten_HIX
         draw_HortenHIX()
-        
+
+
     def GetResources(self):
         import CurvedShapes
         import os
         return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "Horten_HIX.svg"),
-                'MenuText': "Horten H IX",
-                'ToolTip' : "Example shape of a stealth fighter from WW2" }
+                'MenuText': QT_TRANSLATE_NOOP("Horten_HIX", "Horten H IX"),
+                'ToolTip' : QT_TRANSLATE_NOOP("Horten_HIX", "Example shape of a stealth fighter from WW2")}
 
 
 FreeCADGui.addCommand('Horten_HIX', Horten_HIX())
