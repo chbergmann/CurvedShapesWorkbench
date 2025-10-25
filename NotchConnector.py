@@ -13,6 +13,8 @@ import CurvedShapes
 if FreeCAD.GuiUp:
     import FreeCADGui
 
+from PySide.QtCore import QT_TRANSLATE_NOOP
+
 epsilon = 1e-6
 translate = FreeCAD.Qt.translate
 
@@ -216,10 +218,6 @@ class NotchConnectorViewProvider:
 if FreeCAD.GuiUp:
 
     class NotchConnectorCommand():
-        def QT_TRANSLATE_NOOP(context, text):
-            return text
-
-
         def Activated(self):
             FreeCADGui.doCommand("import CurvedShapes")
             FreeCADGui.doCommand("import NotchConnector")

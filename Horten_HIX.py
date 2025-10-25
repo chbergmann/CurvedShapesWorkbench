@@ -5,6 +5,7 @@ import Part
 import Draft
 import CurvedShapes
 import BOPTools.JoinFeatures
+from PySide.QtCore import QT_TRANSLATE_NOOP
 
 epsilon = CurvedShapes.epsilon
 translate = FreeCAD.Qt.translate
@@ -365,10 +366,6 @@ def makeTurbineCut(doc, scaleFactor = 1):
 
 
 class Horten_HIX():
-    def QT_TRANSLATE_NOOP(context, text):
-        return text
-
-
     def Activated(self):
         import Horten_HIX
         draw_HortenHIX()

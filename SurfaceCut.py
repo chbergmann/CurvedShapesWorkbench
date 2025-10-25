@@ -12,6 +12,8 @@ import CurvedShapes
 if FreeCAD.GuiUp:
     import FreeCADGui
 
+from PySide.QtCore import QT_TRANSLATE_NOOP
+
 epsilon = CurvedShapes.epsilon
 translate = FreeCAD.Qt.translate
 
@@ -162,10 +164,6 @@ class SurfaceCutViewProvider:
 if FreeCAD.GuiUp:
 
     class SurfaceCutCommand():
-        def QT_TRANSLATE_NOOP(context, text):
-            return text
-
-
         def Activated(self):
             import SurfaceCut
             FreeCADGui.doCommand("import CurvedShapes")

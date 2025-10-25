@@ -15,6 +15,8 @@ import math
 if FreeCAD.GuiUp:
     import FreeCADGui
 
+from PySide.QtCore import QT_TRANSLATE_NOOP
+
 epsilon = CurvedShapes.epsilon
 translate = FreeCAD.Qt.translate
 
@@ -240,10 +242,6 @@ class CurvedPathArrayViewProvider:
 if FreeCAD.GuiUp:
 
     class CurvedPathArrayCommand():
-        def QT_TRANSLATE_NOOP(context, text):
-            return text
-
-
         def Activated(self):
             FreeCADGui.doCommand("import CurvedShapes")
 

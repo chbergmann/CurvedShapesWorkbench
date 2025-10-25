@@ -8,6 +8,7 @@ import CompoundTools.Explode
 import math
 import FreeCADGui
 import CurvedShapes
+from PySide.QtCore import QT_TRANSLATE_NOOP
 
 translate = FreeCAD.Qt.translate
 
@@ -334,10 +335,6 @@ def makeWingletProfile(doc):
 
 
 class FlyingWingS800():
-    def QT_TRANSLATE_NOOP(context, text):
-        return text
-
-
     def Activated(self):
         import FlyingWingS800
         draw_S800()
