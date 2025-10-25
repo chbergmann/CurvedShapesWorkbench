@@ -9,56 +9,56 @@ import math
 import FreeCADGui
 import CurvedShapes
 
+translate = FreeCAD.Qt.translate
+
 def draw_S800():
     sweep_offset = 210
     wing_span = 820
     midWidth = 150
     midLength = 200
-    
+
     WingInside_height_top = 25
     WingInside_height_bot =  5
     WingInside_length = 260
-    
+
     WingOutside_height_top = 20
     WingOutside_height_bot = 3
     WingOutside_length = 165
-    
+
     Middle_height_top = 40
     Middle_height_bot = 20
     Middle_length = WingInside_length
-    
+
     WingletTop_height_top = 3
     WingletTop_height_bot = 3
-    Winglet_angle_y = 10    
+    Winglet_angle_y = 10
     WingletBottom_height_top = WingletTop_height_top
     WingletBottom_height_bot = WingletTop_height_bot
     WingletBottom_length = WingOutside_length
-    
+
     ElevonThickness = 1
     ElevonLeftAngle = 20
     ElevonRightAngle = -20
-    
-    
+
     if FreeCAD.ActiveDocument is not None and FreeCAD.ActiveDocument.Name == "S800":
         FreeCAD.closeDocument(FreeCAD.ActiveDocument.Name)
         FreeCAD.setActiveDocument("")
         FreeCAD.ActiveDocument=None
-        
+
     doc = FreeCAD.newDocument('S800')
-    
     
     SplineFoilWingInside = doc.addObject('Sketcher::SketchObject', 'SplineFoilWingInside')
     makeSplineFoilSketch(SplineFoilWingInside, WingInside_length, WingInside_height_top, WingInside_height_bot, ElevonThickness)
     SplineFoilWingInside.ViewObject.Visibility = False
     SplineFoilWingInside.Placement = Placement(Vector (midWidth / 2, 0.0, 1.0), Rotation (0.5, 0.5, 0.5, 0.5))
     SplineFoilWingInside.ViewObject.Visibility = False
-    
+
     SplineFoilWingOutside = doc.addObject('Sketcher::SketchObject', 'SplineFoilWingOutside')
     makeSplineFoilSketch(SplineFoilWingOutside, WingOutside_length, WingOutside_height_top, WingOutside_height_bot, ElevonThickness)
     SplineFoilWingOutside.ViewObject.Visibility = False
     SplineFoilWingOutside.Placement = Placement(Vector (wing_span / 2, sweep_offset, 1.0), Rotation (0.5, 0.5, 0.5, 0.5))
     SplineFoilWingOutside.ViewObject.Visibility = False
-    
+
     SplineFoilWingletBottom = doc.addObject('Sketcher::SketchObject', 'SplineFoilWingletBottom')
     makeSplineFoilSketch(SplineFoilWingletBottom, WingletBottom_length, WingletBottom_height_top, WingletBottom_height_bot, 0.5)
     SplineFoilWingletBottom.ViewObject.Visibility = False
@@ -68,41 +68,41 @@ def draw_S800():
     SplineFoilWingletBottom.Placement.Base.x = wing_span / 2 + WingletTop_height_bot *1.5 
     SplineFoilWingletBottom.Placement.Base.z = WingOutside_height_top
     SplineFoilWingletBottom.ViewObject.Visibility = False
-    
+
     doc.recompute()
     Draft.rotate([SplineFoilWingletBottom], Winglet_angle_y, SplineFoilWingletBottom.Placement.Base, Vector(0, 1, 0), copy=False)
     doc.recompute()
-    
+
     SplineFoilMiddle = doc.addObject('Sketcher::SketchObject', 'SplineFoilMiddle')
     makeSplineFoilSketch(SplineFoilMiddle, Middle_length, Middle_height_top, Middle_height_bot, ElevonThickness)
     SplineFoilMiddle.Placement = Placement(Vector (0.0, 0.0, 0.0), Rotation (0.5, 0.5, 0.5, 0.5))
     SplineFoilMiddle.ViewObject.Visibility = False
-    
+
     MiddleProfile = createSketch_MiddleProfile(doc)
     MiddleProfile.ViewObject.Visibility = False
-    
+
     MiddlePart1 = CurvedShapes.makeCurvedSegment(SplineFoilMiddle, SplineFoilWingInside, [MiddleProfile], Items=8, Surface=True, Solid=True, Distribution='elliptic', DistributionReverse=True, LoftMaxDegree=3)
     MiddlePart1.Label = "MiddlePart1"
     MiddlePart1.ViewObject.Visibility = False
-    
+
     MainWing = doc.addObject('Part::Loft', 'MainWing') 
     MainWing.Sections = [SplineFoilWingInside ,SplineFoilWingOutside]
     MainWing.Solid = True
-    
+
     WingToWinglet = CurvedShapes.makeInterpolatedMiddle(SplineFoilWingOutside, SplineFoilWingletBottom, Surface=True, Solid=True)
     WingToWinglet.Label = "WingToWinglet"
-    
+
     WingletProfile = makeWingletProfile(doc)
     WingletProfile.ViewObject.Visibility = False
-    
+
     doc.recompute()
     Winglet = CurvedShapes.makeCurvedArray(SplineFoilWingletBottom, [WingletProfile], Items=8, OffsetStart=0.01, OffsetEnd=0.01, Surface=True, Solid=True)
     Winglet.Label = "Winget"
-    
+
     doc.recompute()
     Draft.rotate([Winglet], Winglet_angle_y, SplineFoilWingletBottom.Placement.Base, Vector(0, 1, 0), copy=False)
     doc.recompute()
-    
+
     sketchCutout = doc.addObject('Sketcher::SketchObject', 'sketchCutout')
     sketchCutout.addGeometry(Part.LineSegment(Vector (0.0, 400.0, 0.0), Vector (275, 400.0, 0.0)), False)
     sketchCutout.addGeometry(Part.LineSegment(Vector (275, 400.0, 0.0), Vector (75.0, 200.0, 0.0)), False)
@@ -122,7 +122,7 @@ def draw_S800():
     sketchCutout.addConstraint(Sketcher.Constraint('DistanceY', 3, 1, 3, 2, midLength))
     sketchCutout.ViewObject.Visibility = False
     sketchCutout.Placement.Base.x = -1
-    
+
     cutout = doc.addObject('Part::Extrusion', 'cutout')
     cutout.Base = sketchCutout
     cutout.DirMode = "Normal"
@@ -131,11 +131,11 @@ def draw_S800():
     cutout.Solid = True
     cutout.Symmetric = True
     cutout.ViewObject.Visibility = False
-    
+
     MiddlePart = doc.addObject('Part::Cut', 'MiddlePart')
     MiddlePart.Base = MiddlePart1
     MiddlePart.Tool = cutout
-    
+
     cutpathPoints = [Vector(midWidth/2 , midLength, -WingInside_height_bot)]
     cutpathPoints.append(Vector(wing_span/2, midLength + sweep_offset - WingInside_length + WingOutside_length, -WingOutside_height_bot))
     cutpath = Draft.makeWire(cutpathPoints)
@@ -144,15 +144,15 @@ def draw_S800():
     cutExtrude.Base = cutpath
     cutExtrude.DirMode = "Normal"
     cutExtrude.LengthFwd = WingInside_height_bot + WingInside_height_top
-    
+
     doc.recompute()
-    
+
     Wing = doc.addObject('Part::Cut', 'Wing')
     Wing.Base = MainWing
     Wing.Tool = cutout
-    
+
     doc.recompute()
-    
+
     WingSlice = BOPTools.SplitFeatures.makeSlice(name= 'WingSlice')
     WingSlice.Base = [Wing, cutExtrude][0]
     WingSlice.Tools = [Wing, cutExtrude][1:]
@@ -162,28 +162,27 @@ def draw_S800():
     WingSlice.ViewObject.Visibility = False
     for obj in WingSlice.ViewObject.Proxy.claimChildren():
         obj.ViewObject.hide()
-    
+
     WingAndElevon = CompoundTools.Explode.explodeCompound(WingSlice)
     Wing1 = WingAndElevon[0].Group[1]
     Wing1.Label = "Wing1"
     ElevonLeft = WingAndElevon[0].Group[0]
     ElevonLeft.Label = "ElevonLeft"
-    
-    
+
     HalfWing = doc.addObject('Part::Compound', 'HalfWing')
     HalfWing.Links = [MiddlePart, Wing1, WingToWinglet, Winglet]
-    
+
     FullWing = doc.addObject('Part::Mirroring', 'FullWing')
     FullWing.Normal = Vector (1.0, 0.0, 0.0)
     FullWing.Source = HalfWing
-    
+
     ElevonRight1 = Draft.clone(ElevonLeft)
     ElevonRight1.ViewObject.Visibility = False
-    
+
     ElevonRight = doc.addObject('Part::Mirroring', 'ElevonRight')
     ElevonRight.Normal = Vector (1.0, 0.0, 0.0)
     ElevonRight.Source = ElevonRight1
-    
+
     doc.recompute()
     axis=cutpathPoints[1].sub(cutpathPoints[0])
     center = ElevonLeft.Placement.Base.add(Vector(midWidth/2, midLength, ElevonLeft.Shape.BoundBox.ZMax))
@@ -193,13 +192,13 @@ def draw_S800():
     FreeCADGui.activeDocument().activeView().viewIsometric()
     FreeCADGui.SendMsgToActiveView("ViewFit")
     return
-    
-    
+
+
 def makeSplineFoilSketch(sketch, length, height_top, height_bottom, back_width = 0):
     print(sketch.Label)
     sketch.Placement = FreeCAD.Placement(FreeCAD.Vector(0.000000,0.000000,0.000000),FreeCAD.Rotation(0.5, 0.5, 0.5, 0.5))
     sketch.MapMode = "Deactivated"
-    
+
     points = []
     conList = []
     points.append(FreeCAD.Vector(length, back_width, 0))
@@ -215,8 +214,8 @@ def makeSplineFoilSketch(sketch, length, height_top, height_bottom, back_width =
     points.append(FreeCAD.Vector(length * 0.57, height_bottom * -0.75, 0))
     points.append(FreeCAD.Vector(length * 0.75, height_bottom * -0.55, 0))
     points.append(FreeCAD.Vector(length, -back_width, 0))
-        
-    n = 0    
+
+    n = 0
     for p in points:
         circle = sketch.addGeometry(Part.Circle(p,FreeCAD.Vector(0,0,1),10),True)
         sketch.addConstraint(Sketcher.Constraint('Radius',circle, 1)) 
@@ -224,7 +223,7 @@ def makeSplineFoilSketch(sketch, length, height_top, height_bottom, back_width =
         sketch.addConstraint(Sketcher.Constraint('DistanceY',circle,3, p.y)) 
         conList.append(Sketcher.Constraint('InternalAlignment:Sketcher::BSplineControlPoint',circle,3,13,n))
         n = n + 1
-    
+
     bspline = sketch.addGeometry(Part.BSplineCurve(points,None,None,False,3,None,False),False)
     sketch.addConstraint(conList)
     sketch.exposeInternalGeometry(13)
@@ -333,18 +332,23 @@ def makeWingletProfile(doc):
     WingletProfile.Placement = Placement(Vector(0.0, 0.0, 0.0), Rotation (0.5, 0.5, 0.5, 0.5))
     return WingletProfile
 
- 
+
 class FlyingWingS800():
+    def QT_TRANSLATE_NOOP(context, text):
+        return text
+
+
     def Activated(self):
         import FlyingWingS800
         draw_S800()
-        
+
+
     def GetResources(self):
         import CurvedShapes
         import os
         return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "FlyingWingS800.svg"),
-                'MenuText': "S800",
-                'ToolTip' : "A cheap flying wing" }
+                'MenuText': QT_TRANSLATE_NOOP("FlyingWingS800", "S800"),
+                'ToolTip' : QT_TRANSLATE_NOOP("FlyingWingS800", "A cheap flying wing")}
 
 
 FreeCADGui.addCommand('FlyingWingS800', FlyingWingS800())
