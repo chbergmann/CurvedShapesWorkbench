@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+from PySide.QtCore import QT_TRANSLATE_NOOP
 
 __title__ = "CurvedArray"
 __author__ = "Christian Bergmann"
 __license__ = "LGPL 2.1"
-__doc__ = "Creates an array and resizes the items in the bounds of curves in the XY, XZ or YZ plane."
+__doc__ = QT_TRANSLATE_NOOP("CurvedArray", "Creates an array and resizes the items in the bounds of curves in the XY, XZ or YZ plane.")
 
 import os
 import FreeCAD
@@ -14,7 +15,6 @@ import CurvedShapes
 if FreeCAD.GuiUp:
     import FreeCADGui
 
-from PySide.QtCore import QT_TRANSLATE_NOOP
 
 epsilon = CurvedShapes.epsilon
 translate = FreeCAD.Qt.translate
@@ -307,7 +307,7 @@ if FreeCAD.GuiUp:
             return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "curvedArray.svg"),
                     'Accel' : "", # a default shortcut (optional)
                     'MenuText': QT_TRANSLATE_NOOP("CurvedArray", "Curved Array"),
-                    'ToolTip' : QT_TRANSLATE_NOOP("CurvedArray", __doc__)}
+                    'ToolTip' : __doc__}
 
 
     FreeCADGui.addCommand('CurvedArray', CurvedArrayCommand())

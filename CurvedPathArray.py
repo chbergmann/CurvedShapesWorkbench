@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+from PySide.QtCore import QT_TRANSLATE_NOOP
 
 __title__ = "CurvedPathArray"
 __author__ = "Christian Bergmann"
 __license__ = "LGPL 2.1"
-__doc__ = "Creates an array, sweeps the elements around a path curve, and resizes the items in the bounds of optional hullcurves."
+__doc__ = QT_TRANSLATE_NOOP("CurvedPathArray", "Creates an array, sweeps the elements around a path curve, and resizes the items in the bounds of optional hullcurves.")
 
 import os
 import FreeCAD
@@ -15,7 +16,6 @@ import math
 if FreeCAD.GuiUp:
     import FreeCADGui
 
-from PySide.QtCore import QT_TRANSLATE_NOOP
 
 epsilon = CurvedShapes.epsilon
 translate = FreeCAD.Qt.translate
@@ -276,7 +276,7 @@ if FreeCAD.GuiUp:
             return {'Pixmap'  : os.path.join(CurvedShapes.get_module_path(), "Resources", "icons", "CurvedPathArray.svg"),
                     'Accel' : "", # a default shortcut (optional)
                     'MenuText': QT_TRANSLATE_NOOP("CurvedPathArray", "Curved Path Array"),
-                    'ToolTip' : QT_TRANSLATE_NOOP("CurvedPathArray", __doc__)}
+                    'ToolTip' : __doc__}
 
 
     FreeCADGui.addCommand('CurvedPathArray', CurvedPathArrayCommand())

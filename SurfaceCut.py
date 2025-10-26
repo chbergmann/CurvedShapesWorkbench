@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+from PySide.QtCore import QT_TRANSLATE_NOOP
+
 __title__ = "SurfaceCut"
 __author__ = "Christian Bergmann"
 __license__ = "LGPL 2.1"
-__doc__ = "Creates a wire by cutting through surfaces"
+__doc__ = QT_TRANSLATE_NOOP("SurfaceCut", "Creates a wire by cutting through surfaces")
 
 import os
 import FreeCAD
@@ -11,8 +13,6 @@ import Part
 import CurvedShapes
 if FreeCAD.GuiUp:
     import FreeCADGui
-
-from PySide.QtCore import QT_TRANSLATE_NOOP
 
 epsilon = CurvedShapes.epsilon
 translate = FreeCAD.Qt.translate

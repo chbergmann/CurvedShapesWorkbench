@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+from PySide.QtCore import QT_TRANSLATE_NOOP
 
 __title__ = "NotchConnector"
 __author__ = "Christian Bergmann"
 __license__ = "LGPL 2.1"
-__doc__ = "Cuts notches into an object to make it connectable other objects with a notch"
+__doc__ = QT_TRANSLATE_NOOP("NotchConnector", "Cuts notches into an object to make it connectable other objects with a notch")
 
 import os
 import FreeCAD
@@ -12,8 +13,6 @@ import Part
 import CurvedShapes
 if FreeCAD.GuiUp:
     import FreeCADGui
-
-from PySide.QtCore import QT_TRANSLATE_NOOP
 
 epsilon = 1e-6
 translate = FreeCAD.Qt.translate

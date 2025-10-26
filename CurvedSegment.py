@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+from PySide.QtCore import QT_TRANSLATE_NOOP
 
 __title__ = "CurvedSegment"
 __author__ = "Christian Bergmann"
 __license__ = "LGPL 2.1"
-__doc__ = "Interpolates a 3D shape between two 2D curves and optional hullcurves"
+__doc__ = QT_TRANSLATE_NOOP("CurvedSegment", "Interpolates a 3D shape between two 2D curves and optional hullcurves")
 
 import os
 import FreeCAD
@@ -13,8 +14,6 @@ import CurvedShapes
 import math
 if FreeCAD.GuiUp:
     import FreeCADGui
-
-from PySide.QtCore import QT_TRANSLATE_NOOP
 
 epsilon = CurvedShapes.epsilon
 translate = FreeCAD.Qt.translate

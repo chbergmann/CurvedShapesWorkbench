@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+from PySide.QtCore import QT_TRANSLATE_NOOP
 
 __title__ = "InterpolatedMiddle"
 __author__ = "Christian Bergmann"
 __license__ = "LGPL 2.1"
-__doc__ = "Interpolates a 2D shape into the middle between two 2D curves"
+__doc__ = QT_TRANSLATE_NOOP("InterpolatedMiddle", "Interpolates a 2D shape into the middle between two 2D curves")
 
 import os
 import FreeCAD
@@ -13,8 +14,6 @@ import CurvedShapes
 import CurvedSegment
 if FreeCAD.GuiUp:
     import FreeCADGui
-
-from PySide.QtCore import QT_TRANSLATE_NOOP
 
 epsilon = CurvedShapes.epsilon
 translate = FreeCAD.Qt.translate
