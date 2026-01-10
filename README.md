@@ -1,8 +1,8 @@
 # Curved Shapes Workbench
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/chbergmann/CurvedShapesWorkbench.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/chbergmann/CurvedShapesWorkbench/alerts/) [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/chbergmann/CurvedShapesWorkbench.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/chbergmann/CurvedShapesWorkbench/context:python)  
-[> deutsch <](https://github.com/chbergmann/CurvedShapesWorkbench/blob/master/LIESMICH.md)  
 
 A FreeCAD External Workbench for creating 3D shapes from 2D curves
+
+[> deutsch <](https://github.com/chbergmann/CurvedShapesWorkbench/blob/master/LIESMICH.md)  
 
 ## Installation
 
