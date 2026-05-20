@@ -29,11 +29,12 @@ class CurvedShapesWB (Workbench):
         import InterpolatedMiddle 
         import Horten_HIX
         import FlyingWingS800
+        import FishingLure
         import SurfaceCut
         import NotchConnector
         from PySide.QtCore import QT_TRANSLATE_NOOP
 
-        self.examples = ['Horten_HIX', 'FlyingWingS800'] # A list of command names created in the line above
+        self.examples = ['Horten_HIX', 'FlyingWingS800', 'FishingLure'] # A list of command names created in the line above
         self.list = ['CurvedArray', 'CurvedPathArray', 'CurvedSegment', 'CurvedPathSegment', 'InterpolatedMiddle', 'SurfaceCut', 'NotchConnector'] # A list of command names created in the line above
         self.appendToolbar(QT_TRANSLATE_NOOP('Curved Shapes', 'Curved Shapes'), self.list) # creates a new toolbar with your commands
         self.appendMenu(QT_TRANSLATE_NOOP('Curved Shapes', 'Curved Shapes'), self.list) # creates a new menu 'Curved Functions'
