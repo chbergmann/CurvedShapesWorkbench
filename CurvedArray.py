@@ -37,9 +37,10 @@ class CurvedArray:
                  Twists = [],
                  LoftMaxDegree=5,
                  MaxLoftSize=16,
-                 KeepBase='None'):
+                 KeepBase='None',
+                 PreserveAspectRatio=False):
         CurvedShapes.addObjectProperty(obj, "App::PropertyLink", "Base", "CurvedArray", QT_TRANSLATE_NOOP("App::Property", "The object to make an array from")).Base = base
-        CurvedShapes.addObjectProperty(obj, "App::PropertyLinkList", "Hullcurves", "CurvedArray", QT_TRANSLATE_NOOP("App::Property", "Bounding curves")).Hullcurves = hullcurves
+        CurvedShapes.addObjectProperty(obj, "App::PropertyLinkList", "Hullcurves", "CurvedArray", QT_TRANSLATE_NOOP("App::Property", "Bounding curves. Use a single curve with PreserveAspectRatio to scale the Base shape uniformly.")).Hullcurves = hullcurves
         CurvedShapes.addObjectProperty(obj, "App::PropertyVector", "Axis", "CurvedArray", QT_TRANSLATE_NOOP("App::Property", "Direction axis")).Axis = axis
         CurvedShapes.addObjectProperty(obj, "App::PropertyQuantity", "Items", "CurvedArray", QT_TRANSLATE_NOOP("App::Property", "Nr. of array items")).Items = items
         CurvedShapes.addObjectProperty(obj, "App::PropertyFloatList", "Positions", "CurvedArray", QT_TRANSLATE_NOOP("App::Property", "Positions for ribs (as floats from 0.0 to 1.0) -- overrides Items")).Positions = Positions
@@ -54,6 +55,7 @@ class CurvedArray:
         CurvedShapes.addObjectProperty(obj, "App::PropertyBool", "DistributionReverse", "CurvedArray", QT_TRANSLATE_NOOP("App::Property", "Reverses direction of Distribution algorithm")).DistributionReverse = DistributionReverse
         CurvedShapes.addObjectProperty(obj, "App::PropertyInteger", "LoftMaxDegree", "CurvedArray", QT_TRANSLATE_NOOP("App::Property", "Max Degree for Surface or Solid")).LoftMaxDegree = LoftMaxDegree
         CurvedShapes.addObjectProperty(obj, "App::PropertyInteger", "MaxLoftSize", "CurvedArray", QT_TRANSLATE_NOOP("App::Property", "Max Size of a Loft in Segments.")).MaxLoftSize = MaxLoftSize
+        CurvedShapes.addObjectProperty(obj, "App::PropertyBool", "PreserveAspectRatio", "CurvedArray", QT_TRANSLATE_NOOP("App::Property", "Scale the Base shape uniformly based on the single Hullcurve, preserving its aspect ratio. Requires exactly one Hullcurve.")).PreserveAspectRatio = PreserveAspectRatio
         obj.Distribution = ['linear', 'parabolic', 'x³', 'sinusoidal', 'asinusoidal', 'elliptic']
         obj.Distribution = Distribution
         obj.KeepBase = ['None', 'First', 'Last']
@@ -160,7 +162,54 @@ class CurvedArray:
         #box.Placement.Base.z = bbox.ZMin
         #Part.show(box)
 
-        return CurvedShapes.scaleByBoundbox(obj.Base.Shape, bbox, self.doScaleXYZsum, copy=True)
+        doScaleXYZ = self.doScaleXYZsum
+        if hasattr(obj, 'PreserveAspectRatio') and obj.PreserveAspectRatio and len(obj.Hullcurves) == 1:
+            bbox, doScaleXYZ = self._applyAspectRatio(obj, bbox, list(self.doScaleXYZsum))
+
+        return CurvedShapes.scaleByBoundbox(obj.Base.Shape, bbox, doScaleXYZ, copy=True)
+
+
+    def _applyAspectRatio(self, obj, bbox, doScaleXYZ):
+        basebbox = obj.Base.Shape.BoundBox
+        ax = obj.Axis
+
+        axabs = [abs(ax.x), abs(ax.y), abs(ax.z)]
+        sorted_abs = sorted(axabs, reverse=True)
+        if sorted_abs[0] - sorted_abs[1] < 0.1:
+            FreeCAD.Console.PrintWarning(translate("Curved Shapes", "PreserveAspectRatio: Axis is not clearly aligned with a coordinate axis — aspect ratio adjustment skipped.\n"))
+            return bbox, doScaleXYZ
+        primary = axabs.index(max(axabs))
+        cross_axes = [i for i in range(3) if i != primary]
+
+        constrained = [i for i in cross_axes if doScaleXYZ[i]]
+        unconstrained = [i for i in cross_axes if not doScaleXYZ[i]]
+
+        if len(constrained) != 1 or len(unconstrained) != 1:
+            return bbox, doScaleXYZ
+
+        c = constrained[0]
+        u = unconstrained[0]
+
+        base_lengths = [basebbox.XLength, basebbox.YLength, basebbox.ZLength]
+        bbox_lengths = [bbox.XLength, bbox.YLength, bbox.ZLength]
+
+        if base_lengths[c] <= epsilon:
+            return bbox, doScaleXYZ
+
+        scale_factor = bbox_lengths[c] / base_lengths[c]
+
+        base_mins = [basebbox.XMin, basebbox.YMin, basebbox.ZMin]
+        base_maxs = [basebbox.XMax, basebbox.YMax, basebbox.ZMax]
+        mins = [bbox.XMin, bbox.YMin, bbox.ZMin]
+        maxs = [bbox.XMax, bbox.YMax, bbox.ZMax]
+
+        new_length = base_lengths[u] * scale_factor
+        center = (base_mins[u] + base_maxs[u]) / 2
+        mins[u] = center - new_length / 2
+        maxs[u] = center + new_length / 2
+        doScaleXYZ[u] = True
+
+        return FreeCAD.BoundBox(mins[0], mins[1], mins[2], maxs[0], maxs[1], maxs[2]), doScaleXYZ
 
 
     def execute(self, prop):
@@ -201,6 +250,9 @@ class CurvedArray:
             if sumbbox.ZLength > epsilon: 
                 self.doScaleXYZsum[2] = True
 
+        if hasattr(prop, 'PreserveAspectRatio') and prop.PreserveAspectRatio and len(prop.Hullcurves) != 1:
+            FreeCAD.Console.PrintWarning(translate("Curved Shapes", "PreserveAspectRatio requires exactly one Hullcurve — ignored.\n"))
+
         if (hasattr(prop,"Positions") and len(prop.Positions) != 0) or (prop.Items and prop.Base and hasattr(prop.Base, "Shape") and len(prop.Hullcurves) > 0):
             self.makeRibs(prop)
             return
@@ -215,6 +267,8 @@ class CurvedArray:
             CurvedShapes.addObjectProperty(fp, "App::PropertyEnumeration", "KeepBase", "CurvedArray", QT_TRANSLATE_NOOP("App::Property", "Include the base shape unmodified and where"))
             fp.KeepBase = ['None', 'First', 'Last']
             fp.KeepBase = 'None'
+        if not hasattr(fp, 'PreserveAspectRatio'):
+            CurvedShapes.addObjectProperty(fp, "App::PropertyBool", "PreserveAspectRatio", "CurvedArray", QT_TRANSLATE_NOOP("App::Property", "Scale the Base shape uniformly based on the single Hullcurve, preserving its aspect ratio. Requires exactly one Hullcurve."), init_val=False)
            
         if "Positions" in prop and len(fp.Positions) != 0:
             setattr(fp,"Items",str(len(fp.Positions)))
