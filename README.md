@@ -37,7 +37,8 @@ The first curve that you select for CurvedArray creation will be the item that i
 
 #### Parameters
 - Base: The object to make an array from
-- Hullcurves: List of one or more bounding curves        
+- Hullcurves: List of one or more bounding curves
+- PreserveAspectRatio: Useful when only one hullcurve exists. Will scale based on the ratio of your base object's height/width. See [Fishing Lure example](#fishing-lure) for more info.
 - Axis: Direction axis of the Base shape
 - Items: Nr. of array items
 - Positions: Array of position for each rib (as floats from 0.0 to 1.0) -- overrides Items
@@ -220,8 +221,15 @@ A python script that creates the shape of a flying wing RC model.
 ### Faster Better Corsair |JOKO ENGINEERING|
 [!["FreeCAD Curved Surfaces Workbench in Action: Faster Better Corsair |JOKO ENGINEERING|"](http://img.youtube.com/vi/tjT9gt0dArQ/0.jpg)](http://www.youtube.com/watch?v=tjT9gt0dArQ "FreeCAD Curved Surfaces Workbench in Action: Faster Better Corsair |JOKO ENGINEERING|") 
 
+### ![FishingLure_Icon](./Resources/icons/FishingLure.svg) Fishing Lure
+
+This example demonstrates the PreserveAspectRatio property of CurvedArray. It creates 5 curved arrays for visual comparison and model inspection. 
+
+You can see that when a circle is used as a base object, it remains a circle across all items when PreservedAspectRatio is set to True.
+
+
 ## Discussion
-Please offer feedback or connect with the developer via the [dedicated FreeCAD forum thread](https://forum.freecadweb.org/viewtopic.php?f=8&t=36989).
+Please offer feedback or connect with the developer via the [dedicated FreeCAD forum thread](https://forum.freecad.org/viewtopic.php?f=8&t=36989).
 
 ## License
 GNU Lesser General Public License v3.0
