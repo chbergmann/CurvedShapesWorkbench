@@ -38,7 +38,7 @@ The first curve that you select for CurvedArray creation will be the item that i
 #### Parameters
 - Base: The object to make an array from
 - Hullcurves: List of one or more bounding curves
-- PreserveAspectRatio: Useful when only one hullcurve exists. Will scale based on the ratio of your base object's height/width. See [Fishing Lure example](#fishing-lure) for more info.
+- PreserveAspectRatio: Useful when only one hullcurve exists. Will scale based on the ratio of your base object's height/width. See [Fishing Lure example](#-fishing-lure) for more info.
 - Axis: Direction axis of the Base shape
 - Items: Nr. of array items
 - Positions: Array of position for each rib (as floats from 0.0 to 1.0) -- overrides Items
@@ -225,7 +225,11 @@ A python script that creates the shape of a flying wing RC model.
 
 This example demonstrates the PreserveAspectRatio property of CurvedArray. It creates 5 curved arrays for visual comparison and model inspection. 
 
-You can see that when a circle is used as a base object, it remains a circle across all items when PreservedAspectRatio is set to True.
+You can see that when a circle is used as a base object, it remains a circle across all items when PreservedAspectRatio is set to True. With PreserveAspectRatio = False, a circle would become an ellipsis when the hullcurve geometry is non-parallel. Works for other geometry, not just a circle.
+
+In this screenshot, the top two rows show the effect of PreservedAspectRatio being true and false for the same hullcurve and base object. (The fifth object uses two hullcurves to control top width.)
+
+![FishingLure](Examples/FishingLure.jpg)
 
 
 ## Discussion
