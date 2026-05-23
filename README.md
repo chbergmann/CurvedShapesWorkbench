@@ -225,9 +225,9 @@ A python script that creates the shape of a flying wing RC model.
 
 This example demonstrates the PreserveAspectRatio property of CurvedArray. It creates 5 curved arrays for visual comparison and model inspection. 
 
-You can see that when a circle is used as a base object, it remains a circle across all items when PreservedAspectRatio is set to True. With PreserveAspectRatio = False, a circle would become an ellipsis when the hullcurve geometry is non-parallel. Works for other geometry, not just a circle.
+You can see that when a circle is used as a base object, it remains a circle across all items when PreserveAspectRatio is set to True. With PreserveAspectRatio = False, a circle would become an ellipsis when the hullcurve geometry is non-parallel. Works for other geometry, not just a circle.
 
-In this screenshot, the top two rows show the effect of PreservedAspectRatio being true and false for the same hullcurve and base object. (The fifth object uses two hullcurves to control top width.)
+In this screenshot, the top two rows show the effect of PreserveAspectRatio being true and false for the same hullcurve and base object. (The fifth object uses two hullcurves to control top width.)
 
 ![FishingLure](Examples/FishingLure.jpg)
 

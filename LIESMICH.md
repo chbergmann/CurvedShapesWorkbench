@@ -45,6 +45,7 @@ Zuerst das Basisobjekt auswählen, danach die Hüllkurven. Dann ein Curved Array
 - LoftMaxDegree: Gradzahl für die Erstellung von Oberflächen und Festkörpern. 
 - MaxLoftSize: Maximale Anzahl von Elementen für die Erstellung von Oberfächen und Festkörpern  
 - KeepBase: Basisobjekt als erstes oder letztes Array Element benutzen
+- PreserveAspectRatio: Das Verhältnis von Höhe/Breite von Base wird beibehalten. Nützlich falls nur eine hullcurve existiert. Siehe [Fishing Lure example](#-fishing-lure).
 
 Distribution Linear  
 ![Linear](Examples/CurvedArrayLinear.jpg)  
@@ -201,6 +202,14 @@ Ein Python Skript zum Generieren einer [Horten H IX (auch Horten Ho 229 genannt)
 Ein Python Skript, dass einen Nurflügler generiert. 
   
 ![S800](Examples/S800.jpg)
+
+### ![FishingLure_Icon](./Resources/icons/FishingLure.svg) Fisch Köder
+
+Dieses Beispiel demonstriert das PreserveAspectRatio property von CurvedArray. Es zeigt 5 curved arrays zum Vergleich.  
+Als Basisobjekt wird ein Kreis verwendet. Mit PreservedAspectRatio = True bleibt der Kreis ein Kreis, mit False wird er zur Ellipse. 
+
+
+![FishingLure](Examples/FishingLure.jpg)
 
 ### Faster Better Corsair |JOKO ENGINEERING|
 [!["FreeCAD Curved Surfaces Workbench in Action: Faster Better Corsair |JOKO ENGINEERING|"](http://img.youtube.com/vi/tjT9gt0dArQ/0.jpg)](http://www.youtube.com/watch?v=tjT9gt0dArQ "FreeCAD Curved Surfaces Workbench in Action: Faster Better Corsair |JOKO ENGINEERING|") 
